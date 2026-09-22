@@ -298,11 +298,59 @@ td.right,th.right{text-align:right}
   .topbar{padding:10px 16px}
   .kv{grid-template-columns:1fr}
 }
+
+/* ---- sign-in ---- */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;background:var(--ground)}
+.login-card{width:100%;max-width:424px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:30px 28px}
+.login-brand{margin-bottom:22px}
+.login-brand .mark{display:block;font-family:Newsreader,Georgia,serif;font-size:27px;font-weight:600;color:var(--ink);letter-spacing:-.01em}
+.login-brand .sub{display:block;font-size:11px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
+.login-card h1{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:5px}
+.login-card .intro{font-size:12.5px;color:var(--ink-2);margin-bottom:20px;line-height:1.5}
+.login-card .field{margin-bottom:14px}
+.login-card button[type=submit]{width:100%;justify-content:center;margin-top:5px}
+.login-foot{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-3);line-height:1.75}
+.login-foot .mono{color:var(--ink-2)}
+.login-env{margin-top:12px;font-size:11px;color:var(--ink-3)}
+.login-env button{background:none;border:0;padding:0;font:inherit;color:var(--accent);cursor:pointer;text-decoration:underline}
 </style>
 
 </head>
 <body>
-<div class="shell">
+<div class="login-wrap" id="login-wrap" data-testid="login-view" hidden>
+  <div class="login-card">
+    <div class="login-brand">
+      <span class="mark">Cavendish</span>
+      <span class="sub">Private Wealth · Client Ops</span>
+    </div>
+    <h1>Sign in</h1>
+    <p class="intro">Use your Cavendish network credentials. Access is recorded against your user for audit purposes.</p>
+    <div id="login-banner"></div>
+    <form id="login-form" data-testid="login-form" novalidate>
+      <div class="field" id="f-username-wrap">
+        <label for="login-username">Username *</label>
+        <input type="text" id="login-username" data-testid="input-username" autocomplete="username" placeholder="firstname.lastname">
+        <span class="err" id="err-username" data-testid="error-username" hidden></span>
+      </div>
+      <div class="field" id="f-password-wrap">
+        <label for="login-password">Password *</label>
+        <input type="password" id="login-password" data-testid="input-password" autocomplete="current-password">
+        <span class="err" id="err-password" data-testid="error-password" hidden></span>
+      </div>
+      <button class="btn btn-primary" type="submit" data-testid="login-submit">Sign in</button>
+    </form>
+    <div class="login-foot" data-testid="demo-credentials">
+      <b>Demo credentials</b><br>
+      <span class="mono">lena.fairbrook</span> — Relationship Manager<br>
+      <span class="mono">desmond.achebe</span> — Compliance Officer<br>
+      <span class="mono">yuki.mori</span> — Client Operations<br>
+      Password for all three: <span class="mono">Cavendish#2026</span>
+      <div class="login-env">Environment UAT · Build <span class="mono" id="login-build">—</span> · <button type="button" id="login-reset-btn" data-testid="login-reset">Reset demo data</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="shell" id="app-shell" hidden>
   <aside class="sidebar">
     <div class="brand">
       <span class="mark">Cavendish</span>
@@ -319,10 +367,11 @@ td.right,th.right{text-align:right}
     <header class="topbar">
       <span class="crumb" id="crumb" data-testid="breadcrumb">—</span>
       <span class="spacer"></span>
-      <div class="field" style="min-width:186px">
-        <label for="actor-select" style="display:none">Acting as</label>
-        <select id="actor-select" data-testid="actor-select" aria-label="Acting as"></select>
+      <div class="row" style="gap:8px" data-testid="current-user">
+        <span style="font-size:12.5px;font-weight:600;color:var(--ink-2)" id="who-name">—</span>
+        <span class="pill p-info" id="who-role">—</span>
       </div>
+      <button class="btn btn-sm" id="signout-btn" data-testid="sign-out">Sign out</button>
       <button class="btn btn-sm" id="reset-btn" data-testid="reset-data">Reset demo data</button>
     </header>
     <main class="content" id="view" data-testid="view"></main>
@@ -340,15 +389,15 @@ td.right,th.right{text-align:right}
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.1";
+const BUILD = "2026.09.2";
 const STORE_KEY = "cavendish.cmo.v1";
 
 /* ---------------- reference data ---------------- */
 const ADVISERS = ["A. Whitcombe","R. Nakamura","P. Oyelaran","S. Da Costa","M. Lindqvist"];
 const ACTORS = [
-  {id:"adviser",  name:"Lena Fairbrook — Relationship Manager", role:"Adviser"},
-  {id:"compliance", name:"Desmond Achebe — Compliance Officer", role:"Compliance"},
-  {id:"ops", name:"Yuki Mori — Client Operations", role:"Operations"}
+  {id:"adviser",  name:"Lena Fairbrook — Relationship Manager", role:"Adviser", username:"lena.fairbrook", password:"Cavendish#2026"},
+  {id:"compliance", name:"Desmond Achebe — Compliance Officer", role:"Compliance", username:"desmond.achebe", password:"Cavendish#2026"},
+  {id:"ops", name:"Yuki Mori — Client Operations", role:"Operations", username:"yuki.mori", password:"Cavendish#2026"}
 ];
 const COUNTRIES = ["United Kingdom","Ireland","United States","Canada","Singapore","Hong Kong SAR","Japan","Germany","Switzerland","United Arab Emirates","South Africa","Nigeria","India","Brazil","Cayman Islands","Panama","Russian Federation","Islamic Republic of Iran"];
 const HIGH_RISK_JURISDICTIONS = ["Russian Federation","Islamic Republic of Iran","Panama","Cayman Islands"];
@@ -504,7 +553,7 @@ function blankClient(){
 let state = null;
 
 function defaultState(){
-  return { clients: seedClients(), draft: null, actor:"adviser", nextId: 10053 };
+  return { clients: seedClients(), draft: null, actor:"adviser", nextId: 10053, session:null, attempts:{}, locked:[] };
 }
 function save(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){/* private mode */}
@@ -512,12 +561,21 @@ function save(){
 function load(){
   try{
     const raw = localStorage.getItem(STORE_KEY);
-    if(raw){ const p = JSON.parse(raw); if(p && Array.isArray(p.clients)) return p; }
+    if(raw){ const p = JSON.parse(raw); if(p && Array.isArray(p.clients)){
+      if(!("session" in p)) p.session = null;
+      if(!p.attempts) p.attempts = {};
+      if(!Array.isArray(p.locked)) p.locked = [];
+      return p;
+    } }
   }catch(e){/* ignore */}
   return defaultState();
 }
 function resetState(){
-  state = defaultState(); save();
+  const keep = state && state.session ? state.session : null;
+  state = defaultState();
+  state.session = keep;
+  if(keep) state.actor = keep.actorId;
+  save();
   toast("Demo data reset — 12 seeded clients restored.");
   go("#/dashboard");
 }
@@ -577,7 +635,10 @@ function renderNav(){
   $("#nav").innerHTML = html;
 }
 function renderActor(){
-  $("#actor-select").innerHTML = ACTORS.map(a=>`<option value="${a.id}"${a.id===state.actor?" selected":""}>${esc(a.name)}</option>`).join("");
+  const a = actor();
+  const n = $("#who-name"), r = $("#who-role");
+  if(n) n.textContent = a.name;
+  if(r) r.textContent = a.role;
 }
 
 /* ============================================================
@@ -1507,7 +1568,86 @@ function rejectConfirm(id){
 }
 
 /* ---------------- render ---------------- */
+/* ---------------- sign-in ---------------- */
+let loginUI = { errors:{}, banner:null };
+const LOGIN_MSG = {
+  noUser: "Enter your username.",
+  noPass: "Enter your password.",
+  bad:    "The username or password is incorrect.",
+  locked: "This account is locked after 5 failed sign-in attempts. Reset the demo data to unlock it."
+};
+
+function userByName(u){
+  const k = String(u||"").trim().toLowerCase();
+  return ACTORS.find(a=>a.username === k) || null;
+}
+
+function renderLogin(){
+  const lw = $("#login-wrap"), sh = $("#app-shell");
+  if(sh) sh.hidden = true;
+  if(lw) lw.hidden = false;
+  const lb = $("#login-build"); if(lb) lb.textContent = BUILD;
+  const eu = $("#err-username"), ep = $("#err-password");
+  if(eu){ eu.textContent = loginUI.errors.username || ""; eu.hidden = !loginUI.errors.username; }
+  if(ep){ ep.textContent = loginUI.errors.password || ""; ep.hidden = !loginUI.errors.password; }
+  const uw = $("#f-username-wrap"), pw = $("#f-password-wrap");
+  if(uw) uw.className = "field" + (loginUI.errors.username ? " bad" : "");
+  if(pw) pw.className = "field" + (loginUI.errors.password ? " bad" : "");
+  const bn = $("#login-banner");
+  if(bn) bn.innerHTML = loginUI.banner
+    ? `<div class="banner b-risk" style="margin-bottom:16px" data-testid="${loginUI.banner.id}"><div>${esc(loginUI.banner.text)}</div></div>`
+    : "";
+  document.title = "Sign in \u00b7 Cavendish Private Wealth";
+}
+
+function attemptLogin(){
+  const uEl = $("#login-username"), pEl = $("#login-password");
+  const u = (uEl && uEl.value || "").trim(), p = (pEl && pEl.value) || "";
+  loginUI = { errors:{}, banner:null };
+  if(!u) loginUI.errors.username = LOGIN_MSG.noUser;
+  if(!p) loginUI.errors.password = LOGIN_MSG.noPass;
+  if(Object.keys(loginUI.errors).length){ renderLogin(); return; }
+
+  const key = u.toLowerCase();
+  if((state.locked||[]).includes(key)){
+    loginUI.banner = { id:"login-locked", text:LOGIN_MSG.locked };
+    renderLogin(); return;
+  }
+  const a = userByName(u);
+  if(!a || a.password !== p){
+    state.attempts[key] = (state.attempts[key] || 0) + 1;
+    if(state.attempts[key] >= 5 && !state.locked.includes(key)) state.locked.push(key);
+    save();
+    loginUI.banner = state.locked.includes(key)
+      ? { id:"login-locked", text:LOGIN_MSG.locked }
+      : { id:"login-error", text:LOGIN_MSG.bad };
+    if(pEl) pEl.value = "";
+    renderLogin(); return;
+  }
+  delete state.attempts[key];
+  state.actor = a.id;
+  state.session = { actorId:a.id, at:new Date().toISOString() };
+  save();
+  loginUI = { errors:{}, banner:null };
+  if(!location.hash) location.hash = "#/dashboard";
+  render();
+  toast(`Signed in as ${a.role}.`);
+}
+
+function signOut(){
+  state.session = null; save();
+  loginUI = { errors:{}, banner:null };
+  const u = $("#login-username"), p = $("#login-password");
+  if(u) u.value = ""; if(p) p.value = "";
+  renderLogin();
+  toast("Signed out. Your draft has been kept.");
+}
+
 function render(){
+  if(!state.session){ renderLogin(); return; }
+  const lw = $("#login-wrap"), sh = $("#app-shell");
+  if(lw) lw.hidden = true;
+  if(sh) sh.hidden = false;
   const hash = currentRoute();
   renderNav(); renderActor();
   $("#build-id").textContent = BUILD;
@@ -1645,7 +1785,6 @@ document.addEventListener("change", ev => {
     const map = {"f-stage":"stage","f-risk":"risk","f-adviser":"adviser"};
     listUI[map[el.id]] = el.value; listUI.page = 1; render(); return;
   }
-  if(el.id === "actor-select"){ state.actor = el.value; save(); render(); toast(`Acting as ${actor().role}.`); return; }
 });
 
 function renderListOnly(){
@@ -1662,6 +1801,15 @@ $("#reset-btn").addEventListener("click", ()=>{
     `<button class="btn btn-primary" data-act="modal-close" id="confirm-reset" data-testid="reset-confirm">Reset now</button>
      <button class="btn" data-act="modal-close">Cancel</button>`);
   setTimeout(()=>{ const b = $("#confirm-reset"); if(b) b.addEventListener("click", resetState); }, 0);
+});
+
+$("#login-form").addEventListener("submit", ev => { ev.preventDefault(); attemptLogin(); });
+$("#signout-btn").addEventListener("click", signOut);
+$("#login-reset-btn").addEventListener("click", ()=>{
+  state = defaultState(); save();
+  loginUI = { errors:{}, banner:null };
+  renderLogin();
+  toast("Demo data reset \u2014 12 seeded clients restored.");
 });
 
 window.addEventListener("hashchange", ()=>{ wiz.errors = {}; clientTab = "overview"; render(); });
