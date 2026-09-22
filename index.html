@@ -389,7 +389,7 @@ td.right,th.right{text-align:right}
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.2";
+const BUILD = "2026.09.5";
 const STORE_KEY = "cavendish.cmo.v1";
 
 /* ---------------- reference data ---------------- */
@@ -1244,11 +1244,11 @@ function stepBody(d){
       <div class="field${bad("objective")}"><label for="w-obj">Stated investment objective *</label>
         <select id="w-obj" data-field="objective" data-testid="input-objective">${opts(Object.keys(OBJECTIVE_RISK_FLOOR),d.objective,"Select…")}</select>${errFor("objective")}</div>
       <div class="field${bad("horizon")}"><label for="w-hor">Time horizon *</label>
-        <select id="w-hor" data-field="horizon" data-testid="input-horizon">${opts(["Under 3 years","3–5 years","5–10 years","Over 10 years"],d.horizon,"Select…")}</select>${errFor("horizon")}</div>
+        <select id="w-hor" data-field="horizon" data-testid="input-horizon">${opts(["Under 3 years","3-5 years","5-10 years","Over 10 years"],d.horizon,"Select…")}</select>${errFor("horizon")}</div>
       <div class="field${bad("liquidity")}"><label for="w-liq">Liquidity requirement *</label>
         <select id="w-liq" data-field="liquidity" data-testid="input-liquidity">${opts(["Immediate access to all assets","Up to 10% within one month","Up to 25% within one quarter","No near-term requirement"],d.liquidity,"Select…")}</select>${errFor("liquidity")}</div>
       <div class="field"><label for="w-esg">ESG preference</label>
-        <select id="w-esg" data-field="esg" data-testid="input-esg">${opts(["No preference","Exclusions only","Article 8 — promotes ESG characteristics","Article 9 — sustainable objective"],d.esg,"")}</select></div>
+        <select id="w-esg" data-field="esg" data-testid="input-esg">${opts(["No preference","Exclusions only","Article 8 - promotes ESG characteristics","Article 9 - sustainable objective"],d.esg,"")}</select></div>
     </div>
     ${provisional && d.objective ? suitabilityFlag({...d, riskCategory:provisional}) : ""}`;
   }
@@ -1742,30 +1742,61 @@ document.addEventListener("click", ev => {
   }
 });
 
-document.addEventListener("input", ev => {
-  const el = ev.target;
-  if(el.id === "f-search"){ listUI.q = el.value; listUI.page = 1; renderListOnly(); return; }
+/* ---- field writes -------------------------------------------------------
+   Registered on BOTH "input" and "change".
+   Automation drivers (WebDriver select-by-text, and some element-set paths)
+   fire "change" only and never "input", so a listener on "input" alone loses
+   every dropdown selection made by a test tool. Writing on both events keeps
+   manual and automated interaction identical. The write is idempotent; the
+   re-render is de-duplicated so a human click (which fires both) renders once.
+------------------------------------------------------------------------- */
+const LIVE_FIELDS = ["fundingAmount","currency","modelPortfolio","objective","clientType","taxResidency","country","pep","screeningOverride","declaration"];
+let _lastFieldRender = { el:null, t:0 };
+
+function fieldWrite(el){
+  if(!el || !el.dataset) return false;
   if(el.dataset.field){
     const dd = ensureDraft();
     const k = el.dataset.field;
     dd[k] = el.type === "checkbox" ? el.checked : el.value;
     delete wiz.errors[k];
-    // live-updating regions
-    if(["fundingAmount","currency","modelPortfolio","objective","clientType","taxResidency","country","pep","screeningOverride","declaration"].includes(k)) { save(); render(); return; }
-    save(); return;
+    save();
+    return LIVE_FIELDS.includes(k) ? "render" : true;
   }
   if(el.dataset.answer){
     const dd = ensureDraft();
     dd.answers = dd.answers || {};
     dd.answers[el.dataset.answer] = Number(el.value);
     delete wiz.errors[el.dataset.answer];
-    save(); render(); return;
+    save();
+    return "render";
   }
   if(el.dataset.sig !== undefined && el.dataset.sigfield){
     const dd = ensureDraft();
     dd.signatories[Number(el.dataset.sig)][el.dataset.sigfield] = el.value;
-    delete wiz.errors.signatories; save(); return;
+    delete wiz.errors.signatories;
+    save();
+    return true;
   }
+  return false;
+}
+
+function handleFieldEvent(el){
+  const r = fieldWrite(el);
+  if(!r) return false;
+  if(r === "render"){
+    const now = Date.now();
+    if(_lastFieldRender.el === el && (now - _lastFieldRender.t) < 60) return true;
+    _lastFieldRender = { el:el, t:now };
+    render();
+  }
+  return true;
+}
+
+document.addEventListener("input", ev => {
+  const el = ev.target;
+  if(el.id === "f-search"){ listUI.q = el.value; listUI.page = 1; renderListOnly(); return; }
+  if(handleFieldEvent(el)) return;
   if(el.dataset.upload){
     const f = el.files && el.files[0];
     if(f){
@@ -1784,6 +1815,18 @@ document.addEventListener("change", ev => {
   if(["f-stage","f-risk","f-adviser"].includes(el.id)){
     const map = {"f-stage":"stage","f-risk":"risk","f-adviser":"adviser"};
     listUI[map[el.id]] = el.value; listUI.page = 1; render(); return;
+  }
+  if(handleFieldEvent(el)) return;
+  if(el.dataset.upload){
+    const f = el.files && el.files[0];
+    if(f){
+      const dd = ensureDraft();
+      dd.documents[el.dataset.upload] = {name:f.name, size:f.size, at:new Date().toISOString()};
+      delete wiz.errors[el.dataset.upload];
+      save(); render();
+      toast(`${f.name} attached.`);
+    }
+    return;
   }
 });
 
