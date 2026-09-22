@@ -2202,12 +2202,12 @@ function qStepBody(d){
       ${qtext("vehicleModel","Model",d,{ph:"Golf"})}
       ${qnum("vehicleYear","Year of manufacture",d,{min:1980,max:2026,ph:"2021"})}
       ${qnum("vehicleGroup","Insurance group",d,{min:1,max:50,ph:"14",hint:"1 to 50. Higher groups rate higher."})}
-      ${qnum("vehicleValue","Estimated value",d,{min:0,step:500,ph:"18500"})}
+      ${qnum("vehicleValue","Estimated value (GBP)",d,{min:0,step:500,ph:"18500"})}
     </div>
     <div class="grid g2" style="margin-bottom:14px">
       ${qsel("useClass","Use class",USE_CLASSES,d)}
       ${qsel("parking","Overnight parking",PARKING,d)}
-      ${qnum("mileage","Annual mileage",d,{min:0,step:1000,ph:"9000"})}
+      ${qnum("mileage","Annual mileage (miles)",d,{min:0,step:1000,ph:"9000"})}
     </div>
     <div class="field${qbad("modifications")}">
       <label>Any modifications declared? *</label>
@@ -2240,14 +2240,14 @@ function qStepBody(d){
     return `
     <div class="grid g2" style="margin-bottom:16px">
       ${qsel("ncdYears","No-claims discount (years)",["0","1","2","3","4","5","6","7","8","9"],d)}
-      ${qsel("excess","Voluntary excess",EXCESS_OPTIONS.map(String),d)}
+      ${qsel("excess","Voluntary excess",EXCESS_OPTIONS.map(v=>({value:String(v),label:money(v)})),d)}
     </div>
     <div class="field" style="margin-bottom:16px"><label>Optional extras</label>
       <div data-testid="extras-list">${EXTRAS.map(x=>`<div class="field check" style="margin-bottom:6px">
         <input type="checkbox" id="x-${x.id}" data-qextra="${x.id}" ${d.extras&&d.extras[x.id]?"checked":""} data-testid="extra-${x.id}">
         <label for="x-${x.id}">${esc(x.name)} — ${money(x.price)}</label></div>`).join("")}</div></div>
     <div class="prem" style="margin-bottom:16px" data-testid="premium-summary">
-      <div class="k legend">Total annual premium</div>
+      <div class="k legend">Total annual premium (GBP)</div>
       <div><span class="amt mono" data-testid="premium-headline">${money(r.total)}</span><span class="per">including insurance premium tax</span></div>
     </div>
     ${premiumTable(d, r)}`;
@@ -2291,7 +2291,7 @@ function qStepBody(d){
         <dt>Start date</dt><dd>${fmtDate(d.startDate)}</dd>
         <dt>Payment</dt><dd>${esc(d.payment||"-")}</dd>
         <dt>No-claims discount</dt><dd>${esc(String(d.ncdYears||"0"))} years</dd>
-        <dt>Voluntary excess</dt><dd class="mono">${d.excess!==""?money(d.excess):"-"}</dd>
+        <dt>Voluntary excess</dt><dd class="mono">${d.excess!==""&&d.excess!=null?money(d.excess):"-"}</dd>
         <dt>Total premium</dt><dd class="mono" style="font-weight:600">${money(r.total)}</dd></dl></div>
     </div>`;
   }
