@@ -9,6 +9,13 @@
 html,body{margin:0}
 img{max-width:100%}
 [hidden]{display:none!important}
+
+/* ---- editable date field: text entry in dd-mm-yyyy + calendar picker ---- */
+.datefield{display:flex;gap:6px;align-items:stretch;position:relative}
+.datefield > input[type="text"]{flex:1;min-width:0}
+.datefield .datebtn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:38px;padding:0;cursor:pointer}
+.datefield .datebtn svg{width:16px;height:16px;display:block}
+.datefield input[type="date"].cal-hidden{position:absolute;right:0;bottom:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none}
 </style>
 <title>Cavendish Private Wealth</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -389,7 +396,7 @@ td.right,th.right{text-align:right}
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.5";
+const BUILD = "2026.09.6";
 const STORE_KEY = "cavendish.cmo.v1";
 
 /* ---------------- reference data ---------------- */
@@ -1072,6 +1079,28 @@ function viewWizard(){
 
 function errFor(k){ return wiz.errors[k] ? `<span class="err" data-testid="error-${k}">${esc(wiz.errors[k])}</span>` : ""; }
 function bad(k){ return wiz.errors[k] ? " bad" : ""; }
+/* ---- date display helpers -----------------------------------------------
+   The draft always stores ISO (yyyy-mm-dd) so every validation rule, seeded
+   record and documented boundary value is unaffected. Only the visible entry
+   format is dd-mm-yyyy. ISO input is also accepted, so a step written against
+   the stored format still works. */
+function isoToUK(iso){
+  if(!iso) return "";
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : String(iso);
+}
+function ukToISO(v){
+  if(v === undefined || v === null) return "";
+  const s = String(v).trim();
+  if(!s) return "";
+  const t = s.replace(/[\/.\s]/g, "-");
+  let m = t.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if(m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+  m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m) return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
+  return null;
+}
+
 function opts(list, sel, placeholder){
   return `${placeholder?`<option value="">${esc(placeholder)}</option>`:""}${list.map(o=>{
     const v = typeof o === "string" ? o : o.value, l = typeof o === "string" ? o : o.label;
@@ -1115,7 +1144,11 @@ function stepBody(d){
         <div class="field${bad("lastName")}"><label for="w-last">Last name *</label>
           <input type="text" id="w-last" data-field="lastName" data-testid="input-lastName" value="${esc(d.lastName)}">${errFor("lastName")}</div>
         <div class="field${bad("dob")}"><label for="w-dob">Date of birth *</label>
-          <input type="date" id="w-dob" data-field="dob" data-testid="input-dob" value="${esc(d.dob)}">
+          <div class="datefield">
+            <input type="text" id="w-dob" data-field="dob" data-datefmt="1" data-testid="input-dob" value="${esc(isoToUK(d.dob))}" placeholder="dd-mm-yyyy" inputmode="numeric" maxlength="10" autocomplete="off">
+            <button type="button" class="btn btn-sm datebtn" data-act="open-cal" data-testid="calendar-dob" aria-label="Open calendar for date of birth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg></button>
+            <input type="date" class="cal-hidden" data-datefor="dob" value="${esc(d.dob)}" tabindex="-1" aria-hidden="true">
+          </div>
           <span class="hint">Client must be 18 or over.</span>${errFor("dob")}</div>
       </div>`}
 
@@ -1156,7 +1189,11 @@ function stepBody(d){
       <div class="field${bad("idNumber")}"><label for="w-idnum">Document number *</label>
         <input type="text" id="w-idnum" data-field="idNumber" data-testid="input-idNumber" value="${esc(d.idNumber)}">${errFor("idNumber")}</div>
       <div class="field${bad("idExpiry")}"><label for="w-idexp">Expiry date *</label>
-        <input type="date" id="w-idexp" data-field="idExpiry" data-testid="input-idExpiry" value="${esc(d.idExpiry)}">
+        <div class="datefield">
+            <input type="text" id="w-idexp" data-field="idExpiry" data-datefmt="1" data-testid="input-idExpiry" value="${esc(isoToUK(d.idExpiry))}" placeholder="dd-mm-yyyy" inputmode="numeric" maxlength="10" autocomplete="off">
+            <button type="button" class="btn btn-sm datebtn" data-act="open-cal" data-testid="calendar-idExpiry" aria-label="Open calendar for expiry date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg></button>
+            <input type="date" class="cal-hidden" data-datefor="idExpiry" value="${esc(d.idExpiry)}" tabindex="-1" aria-hidden="true">
+          </div>
         <span class="hint">Documents expiring within 3 months are rejected.</span>${errFor("idExpiry")}</div>
     </div>
 
@@ -1317,7 +1354,7 @@ function stepBody(d){
 
     <div class="sep"></div>
     <h3 style="margin-bottom:10px">Indicative annual fee</h3>
-    ${feeTable(d.fundingAmount, d.currency)}`;
+    <div id="fee-live" data-testid="fee-live">${feeTable(d.fundingAmount, d.currency)}</div>`;
 
   case "review": {
     const checks = completeness(d);
@@ -1676,6 +1713,11 @@ document.addEventListener("click", ev => {
   const act = t.dataset.act, d = state.draft;
   switch(act){
     case "modal-close": closeModal(); return;
+    case "open-cal": {
+      const inp = t.parentNode && t.parentNode.querySelector('input[type="date"]');
+      if(inp){ try{ inp.showPicker ? inp.showPicker() : inp.focus(); }catch(e){ inp.focus(); } }
+      return;
+    }
     case "open-client": go(`#/clients/${t.dataset.id}`); return;
     case "client-tab": clientTab = t.dataset.tab; render(); return;
     case "sort": {
@@ -1750,18 +1792,42 @@ document.addEventListener("click", ev => {
    manual and automated interaction identical. The write is idempotent; the
    re-render is de-duplicated so a human click (which fires both) renders once.
 ------------------------------------------------------------------------- */
-const LIVE_FIELDS = ["fundingAmount","currency","modelPortfolio","objective","clientType","taxResidency","country","pep","screeningOverride","declaration"];
+/* Fields whose change alters what is displayed elsewhere on the page.
+   Text-entry fields must NOT appear here: a full re-render replaces the
+   input mid-keystroke, so the caret (and an automation driver's element
+   handle) is destroyed after the first character. Text fields that drive a
+   live region update that region only - see PARTIAL_FIELDS. */
+const LIVE_FIELDS = ["currency","modelPortfolio","objective","clientType","taxResidency","country","pep","screeningOverride","declaration"];
+const PARTIAL_FIELDS = {
+  fundingAmount(d){ const n = document.getElementById("fee-live"); if(n) n.innerHTML = feeTable(d.fundingAmount, d.currency); }
+};
 let _lastFieldRender = { el:null, t:0 };
 
 function fieldWrite(el){
   if(!el || !el.dataset) return false;
+  if(el.dataset.datefor){
+    const dd = ensureDraft(), dk = el.dataset.datefor;
+    dd[dk] = el.value;
+    delete wiz.errors[dk];
+    const txt = document.querySelector('[data-field="' + dk + '"][data-datefmt]');
+    if(txt) txt.value = isoToUK(el.value);
+    save();
+    return true;
+  }
   if(el.dataset.field){
     const dd = ensureDraft();
     const k = el.dataset.field;
-    dd[k] = el.type === "checkbox" ? el.checked : el.value;
+    if(el.dataset.datefmt){
+      const iso = ukToISO(el.value);
+      dd[k] = iso === null ? el.value : iso;
+    }else{
+      dd[k] = el.type === "checkbox" ? el.checked : el.value;
+    }
     delete wiz.errors[k];
     save();
-    return LIVE_FIELDS.includes(k) ? "render" : true;
+    if(PARTIAL_FIELDS[k]){ try{ PARTIAL_FIELDS[k](dd); }catch(e){} return true; }
+    const typed = (el.tagName === "TEXTAREA") || (el.tagName === "INPUT" && !["radio","checkbox"].includes(el.type));
+    return (LIVE_FIELDS.includes(k) && !typed) ? "render" : true;
   }
   if(el.dataset.answer){
     const dd = ensureDraft();
