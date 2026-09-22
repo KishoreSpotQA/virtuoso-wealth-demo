@@ -1,0 +1,1676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Cavendish Private Wealth - client management and onboarding demo application.">
+<style>
+:root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Cavendish Private Wealth</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#eef1f5;
+  --surface:#ffffff;
+  --surface-2:#f7f9fb;
+  --surface-3:#e9edf3;
+  --line:#d4dae4;
+  --line-strong:#b8c1d0;
+  --ink:#141b26;
+  --ink-2:#48566b;
+  --ink-3:#71809a;
+  --primary:#1b2a4a;
+  --primary-ink:#ffffff;
+  --accent:#2f6f8f;
+  --accent-soft:#e3eef4;
+  --ok:#1a6f54;
+  --ok-soft:#e0f0e9;
+  --warn:#96661a;
+  --warn-soft:#f7eddb;
+  --risk:#a33c33;
+  --risk-soft:#f8e6e3;
+  --info-soft:#e6ebf5;
+  --shadow:0 1px 2px rgba(20,27,38,.06),0 8px 24px -12px rgba(20,27,38,.18);
+  --radius:6px;
+  --nav-w:236px;
+  --nav-line:rgba(255,255,255,.13);
+  --nav-hover:rgba(255,255,255,.08);
+  --nav-active:rgba(255,255,255,.15);
+  --nav-chip:rgba(255,255,255,.17);
+  --bw-fg:#5e4110; --bw-bd:#e0c68a;
+  --br-fg:#7d2b23; --br-bd:#e6b3ac;
+  --bo-fg:#124a38; --bo-bd:#a6d4c3;
+  --bi-fg:#243356; --bi-bd:#c2cde6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0b1017;
+    --surface:#141b25;
+    --surface-2:#1a222e;
+    --surface-3:#232d3b;
+    --line:#2b3644;
+    --line-strong:#3e4c5e;
+    --ink:#e6ebf2;
+    --ink-2:#a7b3c4;
+    --ink-3:#7b889b;
+    --primary:#1a222e;
+    --primary-ink:#e6ebf2;
+    --accent:#72b2d0;
+    --accent-soft:#16303d;
+    --ok:#5ec39e;
+    --ok-soft:#113029;
+    --warn:#dcae5e;
+    --warn-soft:#332608;
+    --risk:#e08c81;
+    --risk-soft:#381713;
+    --info-soft:#1c2740;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.6);
+    --nav-line:#2b3644;
+    --nav-hover:#232d3b;
+    --nav-active:#2b3644;
+    --nav-chip:#2b3644;
+    --bw-fg:#f0d9a8; --bw-bd:#5e4110;
+    --br-fg:#f3bdb5; --br-bd:#7d2b23;
+    --bo-fg:#a6d4c3; --bo-bd:#124a38;
+    --bi-fg:#c2cde6; --bi-bd:#2f3f63;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0b1017;
+  --surface:#141b25;
+  --surface-2:#1a222e;
+  --surface-3:#232d3b;
+  --line:#2b3644;
+  --line-strong:#3e4c5e;
+  --ink:#e6ebf2;
+  --ink-2:#a7b3c4;
+  --ink-3:#7b889b;
+  --primary:#1a222e;
+  --primary-ink:#e6ebf2;
+  --accent:#72b2d0;
+  --accent-soft:#16303d;
+  --ok:#5ec39e;
+  --ok-soft:#113029;
+  --warn:#dcae5e;
+  --warn-soft:#332608;
+  --risk:#e08c81;
+  --risk-soft:#381713;
+  --info-soft:#1c2740;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.6);
+  --nav-line:#2b3644;
+  --nav-hover:#232d3b;
+  --nav-active:#2b3644;
+  --nav-chip:#2b3644;
+  --bw-fg:#f0d9a8; --bw-bd:#5e4110;
+  --br-fg:#f3bdb5; --br-bd:#7d2b23;
+  --bo-fg:#a6d4c3; --bo-bd:#124a38;
+  --bi-fg:#c2cde6; --bi-bd:#2f3f63;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:Newsreader,Georgia,serif;font-weight:500;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:26px}h2{font-size:20px}h3{font-size:16px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+button{font-family:inherit;font-size:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- shell ---------- */
+.shell{display:flex;min-height:100vh}
+.sidebar{
+  width:var(--nav-w);flex:0 0 var(--nav-w);background:var(--primary);color:var(--primary-ink);
+  display:flex;flex-direction:column;position:sticky;top:0;align-self:flex-start;height:100vh;
+}
+.brand{padding:20px 18px 16px;border-bottom:1px solid var(--nav-line)}
+.brand .mark{font-family:Newsreader,serif;font-size:19px;line-height:1.15;display:block}
+.brand .sub{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.62;margin-top:5px;display:block}
+.nav{padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1}
+.nav-group{font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.5;padding:14px 8px 6px}
+.nav a{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:8px 10px;border-radius:var(--radius);color:inherit;text-decoration:none;
+  font-size:13.5px;opacity:.82;
+}
+.nav a:hover{background:var(--nav-hover);opacity:1}
+.nav a[aria-current="page"]{background:var(--nav-active);opacity:1;font-weight:600}
+.nav a.disabled{opacity:.38;cursor:not-allowed}
+.nav .count{font-family:"IBM Plex Mono",monospace;font-size:11px;background:var(--nav-chip);padding:1px 6px;border-radius:10px}
+.nav a .tag{border-color:var(--nav-line);color:inherit}
+.sidefoot{padding:12px 14px;border-top:1px solid var(--nav-line);font-size:11.5px;opacity:.6}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);
+  border-bottom:1px solid var(--line);padding:10px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.topbar .crumb{font-size:12px;color:var(--ink-3);letter-spacing:.02em}
+.spacer{flex:1}
+.content{padding:24px;max-width:1240px;width:100%}
+.page-head{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.page-head p{margin:6px 0 0;color:var(--ink-2);max-width:62ch}
+
+/* ---------- controls ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:var(--radius);
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;
+}
+.btn:hover{background:var(--surface-2)}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.btn-primary:hover{filter:brightness(1.15)}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-danger{border-color:var(--risk);color:var(--risk)}
+.btn-danger:hover{background:var(--risk-soft)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn-sm{padding:4px 9px;font-size:12px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:12px;font-weight:600;color:var(--ink-2)}
+.field .hint{font-size:11.5px;color:var(--ink-3)}
+.field .err{font-size:11.5px;color:var(--risk);font-weight:500}
+input[type=text],input[type=email],input[type=date],input[type=number],input[type=tel],select,textarea{
+  padding:7px 9px;border:1px solid var(--line-strong);border-radius:var(--radius);
+  background:var(--surface);color:var(--ink);font-family:inherit;font-size:13.5px;width:100%;
+}
+input:invalid{box-shadow:none}
+.field.bad input,.field.bad select,.field.bad textarea{border-color:var(--risk);background:var(--risk-soft)}
+textarea{min-height:64px;resize:vertical}
+input[type=file]{font-size:12.5px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.radio-set{display:flex;gap:8px;flex-wrap:wrap}
+.radio-set label{
+  display:flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--line-strong);
+  border-radius:var(--radius);background:var(--surface);font-size:13px;font-weight:500;cursor:pointer;
+}
+.radio-set label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px}
+
+/* ---------- surfaces ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.card-body{padding:18px}
+.card-foot{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.tile .k{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.tile .v{font-family:"IBM Plex Mono",monospace;font-size:24px;font-weight:600;margin-top:6px;font-variant-numeric:tabular-nums}
+.tile .d{font-size:11.5px;color:var(--ink-2);margin-top:3px}
+.kv{display:grid;grid-template-columns:minmax(120px,170px) 1fr;gap:8px 16px;font-size:13.5px}
+.kv dt{color:var(--ink-3);font-size:12px;font-weight:600;padding-top:1px}
+.kv dd{margin:0}
+.sep{height:1px;background:var(--line);margin:16px 0}
+
+/* ---------- pills ---------- */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:11px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
+.p-risk{background:var(--risk-soft);color:var(--risk)}
+.p-info{background:var(--accent-soft);color:var(--accent)}
+.p-mute{background:var(--surface-3);color:var(--ink-2)}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border:1px solid var(--line-strong);border-radius:3px;color:var(--ink-2)}
+
+/* ---------- banners ---------- */
+.banner{display:flex;gap:11px;padding:12px 14px;border-radius:var(--radius);border:1px solid;font-size:13px;align-items:flex-start}
+.banner b{display:block;margin-bottom:2px}
+.b-warn{background:var(--warn-soft);border-color:var(--bw-bd);color:var(--bw-fg)}
+.b-risk{background:var(--risk-soft);border-color:var(--br-bd);color:var(--br-fg)}
+.b-ok{background:var(--ok-soft);border-color:var(--bo-bd);color:var(--bo-fg)}
+.b-info{background:var(--info-soft);border-color:var(--bi-bd);color:var(--bi-fg)}
+
+/* ---------- table ---------- */
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{
+  text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+  font-weight:600;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface-2);
+}
+th button{background:none;border:0;padding:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr[data-clickable]{cursor:pointer}
+td.right,th.right{text-align:right}
+.empty{padding:36px 18px;text-align:center;color:var(--ink-3)}
+
+/* ---------- stepper ---------- */
+.stepper{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px}
+.stepper button{
+  flex:1;min-width:112px;text-align:left;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:9px 11px;cursor:pointer;color:var(--ink-2);
+}
+.stepper button .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);display:block}
+.stepper button .t{font-size:12.5px;font-weight:600;display:block;margin-top:2px}
+.stepper button[aria-current="step"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.stepper button[data-done="yes"] .n::after{content:" ✓";color:var(--ok)}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{
+  background:none;border:0;border-bottom:2px solid transparent;padding:9px 13px;cursor:pointer;
+  color:var(--ink-2);font-size:13.5px;font-weight:500;white-space:nowrap;
+}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+
+/* ---------- misc ---------- */
+.funnel{display:flex;flex-direction:column;gap:7px}
+.funnel-row{display:grid;grid-template-columns:150px 1fr 42px;gap:10px;align-items:center;font-size:12.5px}
+.funnel-bar{height:16px;background:var(--surface-3);border-radius:3px;overflow:hidden}
+.funnel-bar span{display:block;height:100%;background:var(--accent)}
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.timeline li{display:grid;grid-template-columns:132px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.timeline li:last-child{border-bottom:0}
+.timeline time{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3)}
+.doc-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.doc-row:last-child{border-bottom:0}
+.doc-row .nm{font-weight:600;font-size:13.5px}
+.doc-row .mt{font-size:11.5px;color:var(--ink-3)}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
+.toast-stack{position:fixed;bottom:18px;right:18px;z-index:80;display:flex;flex-direction:column;gap:8px;max-width:340px}
+.toast{background:var(--primary);color:var(--primary-ink);padding:11px 14px;border-radius:var(--radius);font-size:13px;box-shadow:var(--shadow);border:1px solid var(--nav-line)}
+.modal-back{position:fixed;inset:0;background:rgba(10,15,22,.55);z-index:70;display:flex;align-items:center;justify-content:center;padding:18px}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);max-width:520px;width:100%;box-shadow:var(--shadow)}
+.legend{font-size:11.5px;color:var(--ink-3)}
+.scorebar{height:9px;border-radius:5px;background:var(--surface-3);overflow:hidden}
+.scorebar span{display:block;height:100%;background:var(--accent)}
+
+@media (max-width:860px){
+  .shell{flex-direction:column}
+  .sidebar{width:100%;flex:none;height:auto;position:static}
+  .nav{flex-direction:row;flex-wrap:wrap;overflow:visible}
+  .nav-group{display:none}
+  .nav a{flex:1 1 auto}
+  .sidefoot{display:none}
+  .content{padding:16px}
+  .topbar{padding:10px 16px}
+  .kv{grid-template-columns:1fr}
+}
+</style>
+
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="mark">Cavendish</span>
+      <span class="sub">Private Wealth · Client Ops</span>
+    </div>
+    <nav class="nav" id="nav" data-testid="main-nav"></nav>
+    <div class="sidefoot">
+      <div>Environment: <span class="mono">UAT</span></div>
+      <div style="margin-top:3px">Build <span class="mono" id="build-id">—</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <span class="crumb" id="crumb" data-testid="breadcrumb">—</span>
+      <span class="spacer"></span>
+      <div class="field" style="min-width:186px">
+        <label for="actor-select" style="display:none">Acting as</label>
+        <select id="actor-select" data-testid="actor-select" aria-label="Acting as"></select>
+      </div>
+      <button class="btn btn-sm" id="reset-btn" data-testid="reset-data">Reset demo data</button>
+    </header>
+    <main class="content" id="view" data-testid="view"></main>
+  </div>
+</div>
+
+<div class="toast-stack" id="toasts" data-testid="toasts"></div>
+<div id="modal-root"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Cavendish Private Wealth — Client Management & Onboarding
+   Single-file demo application for test-automation exercises.
+   No backend. State in memory + localStorage (best effort).
+   ============================================================ */
+
+const BUILD = "2026.09.1";
+const STORE_KEY = "cavendish.cmo.v1";
+
+/* ---------------- reference data ---------------- */
+const ADVISERS = ["A. Whitcombe","R. Nakamura","P. Oyelaran","S. Da Costa","M. Lindqvist"];
+const ACTORS = [
+  {id:"adviser",  name:"Lena Fairbrook — Relationship Manager", role:"Adviser"},
+  {id:"compliance", name:"Desmond Achebe — Compliance Officer", role:"Compliance"},
+  {id:"ops", name:"Yuki Mori — Client Operations", role:"Operations"}
+];
+const COUNTRIES = ["United Kingdom","Ireland","United States","Canada","Singapore","Hong Kong SAR","Japan","Germany","Switzerland","United Arab Emirates","South Africa","Nigeria","India","Brazil","Cayman Islands","Panama","Russian Federation","Islamic Republic of Iran"];
+const HIGH_RISK_JURISDICTIONS = ["Russian Federation","Islamic Republic of Iran","Panama","Cayman Islands"];
+const CURRENCIES = ["GBP","USD","EUR","CHF","SGD","AED"];
+const CUSTODIANS = ["Pershing Nexus","Northern Vault Trust","Interactive Custody Ltd","Lombard Fiduciary SA"];
+const MODEL_PORTFOLIOS = [
+  {id:"MP-01",name:"Capital Defence",             risk:"Conservative", equity:20},
+  {id:"MP-02",name:"Income & Stability",          risk:"Conservative", equity:35},
+  {id:"MP-03",name:"Balanced Multi-Asset",        risk:"Balanced",     equity:55},
+  {id:"MP-04",name:"Global Growth",               risk:"Growth",       equity:75},
+  {id:"MP-05",name:"Concentrated Equity Alpha",   risk:"Aggressive",   equity:95},
+  {id:"MP-06",name:"Sustainable Balanced (Art.8)",risk:"Balanced",     equity:58}
+];
+const REQUIRED_DOCS = [
+  {id:"doc-id",     name:"Proof of identity",                note:"Passport or national ID, in date", required:true},
+  {id:"doc-address",name:"Proof of address",                 note:"Dated within 3 months",            required:true},
+  {id:"doc-sow",    name:"Source of wealth evidence",        note:"Sale agreement, payslips, accounts",required:true},
+  {id:"doc-tax",    name:"Tax residency form (W-8BEN / CRS)",note:"Required for non-UK tax residents", required:false},
+  {id:"doc-ima",    name:"Signed investment management agreement", note:"Countersigned copy",          required:false}
+];
+const RISK_QUESTIONS = [
+  {id:"q1", text:"What is the primary purpose of this portfolio?", opts:["Preserve capital in nominal terms","Generate a predictable income","Grow capital steadily over a cycle","Maximise long-term growth, volatility accepted"]},
+  {id:"q2", text:"Over what period do you expect to draw materially on these assets?", opts:["Under 3 years","3 to 5 years","5 to 10 years","More than 10 years"]},
+  {id:"q3", text:"A 20% fall in portfolio value over six months would lead you to:", opts:["Sell out entirely","Move to cash in part","Hold the position","Invest further at lower prices"]},
+  {id:"q4", text:"What proportion of your total net worth do these assets represent?", opts:["Over 75%","50–75%","25–50%","Under 25%"]},
+  {id:"q5", text:"How would you describe your investment experience?", opts:["None beyond deposits","Funds and bonds only","Direct equities and ETFs","Derivatives, private markets, structured products"]},
+  {id:"q6", text:"How dependent is your lifestyle on income from this portfolio?", opts:["Entirely dependent","Substantially dependent","Partly dependent","Not dependent"]},
+  {id:"q7", text:"Which statement best reflects your view of illiquid holdings?", opts:["Unacceptable — I need daily access","Acceptable for a small share","Comfortable up to a quarter of assets","Comfortable with substantial lock-ups"]},
+  {id:"q8", text:"Expected additional contributions over the next three years:", opts:["None — likely withdrawals","None","Regular modest contributions","Significant further contributions"]}
+];
+const RISK_BANDS = [
+  {name:"Conservative", max:13, equity:"15–30% growth assets"},
+  {name:"Balanced",     max:20, equity:"40–60% growth assets"},
+  {name:"Growth",       max:26, equity:"65–80% growth assets"},
+  {name:"Aggressive",   max:99, equity:"85–100% growth assets"}
+];
+const OBJECTIVE_RISK_FLOOR = {
+  "Capital preservation":"Conservative",
+  "Income":"Conservative",
+  "Balanced growth":"Balanced",
+  "Capital growth":"Growth",
+  "Aggressive growth":"Aggressive"
+};
+const STAGES = ["Draft","KYC in progress","Risk profiled","Documents pending","Awaiting approval","Active","Rejected"];
+const FEE_TIERS = [
+  {upTo:1_000_000,  bps:95},
+  {upTo:5_000_000,  bps:75},
+  {upTo:10_000_000, bps:55},
+  {upTo:Infinity,   bps:40}
+];
+
+/* ---------------- helpers ---------------- */
+const $ = (s,r=document)=>r.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = (n,c="GBP") => n==null||n===""?"—":new Intl.NumberFormat("en-GB",{style:"currency",currency:c,maximumFractionDigits:0}).format(Number(n));
+const num = n => new Intl.NumberFormat("en-GB").format(Number(n||0));
+const today = () => new Date("2026-09-22T09:00:00Z");
+const fmtDate = d => d ? new Date(d).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) : "—";
+const fmtDT = d => d ? new Date(d).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"2-digit",hour:"2-digit",minute:"2-digit"}) : "—";
+const daysBetween = (a,b) => Math.round((new Date(b)-new Date(a))/86400000);
+const slug = s => String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+
+function riskBand(score){ return RISK_BANDS.find(b=>score<=b.max).name; }
+function bandIndex(name){ return RISK_BANDS.findIndex(b=>b.name===name); }
+function annualFee(amount){
+  let remaining = Number(amount||0), prev = 0, fee = 0, lines = [];
+  for(const t of FEE_TIERS){
+    const slice = Math.max(0, Math.min(remaining, t.upTo - prev));
+    if(slice > 0){ fee += slice * t.bps / 10000; lines.push({slice, bps:t.bps}); remaining -= slice; }
+    prev = t.upTo;
+    if(remaining <= 0) break;
+  }
+  return {fee, lines};
+}
+function screeningVerdict(c){
+  const name = `${c.firstName||""} ${c.lastName||""} ${c.entityName||""}`.toLowerCase();
+  const watchlist = ["petrov","al-mansour","okonkwo-sanction","delacroix-holdings"];
+  const hit = watchlist.find(w=>name.includes(w));
+  const jurisdictionFlag = HIGH_RISK_JURISDICTIONS.includes(c.nationality) || HIGH_RISK_JURISDICTIONS.includes(c.taxResidency);
+  if(hit) return {result:"Potential match", severity:"risk", detail:`Name similarity against OFAC/UK HMT consolidated list entry “${hit}”. Requires level 2 adjudication.`};
+  if(c.pep === "yes") return {result:"PEP confirmed", severity:"warn", detail:"Self-declared politically exposed person. Enhanced due diligence and senior sign-off required."};
+  if(jurisdictionFlag) return {result:"Elevated risk", severity:"warn", detail:"Nationality or tax residency falls within a high-risk jurisdiction. Enhanced due diligence applies."};
+  return {result:"Clear", severity:"ok", detail:"No adverse media, sanctions or PEP matches returned across 4 lists."};
+}
+
+/* ---------------- seed data ---------------- */
+function seedClients(){
+  const raw = [
+    ["CW-10041","Individual","Adaeze","Okonkwo",  "Nigeria",        "United Kingdom","A. Whitcombe","Active","Balanced",   2_450_000,"GBP","Discretionary","2026-02-14","2027-02-14","Clear"],
+    ["CW-10042","Joint",     "Hugo","Almeida",    "Brazil",         "Ireland",       "R. Nakamura", "Active","Growth",     6_180_000,"EUR","Discretionary","2025-11-03","2026-11-03","Clear"],
+    ["CW-10043","Trust",     "","",               "Cayman Islands", "Cayman Islands","P. Oyelaran", "Active","Conservative",11_900_000,"USD","Advisory",     "2025-06-21","2026-06-21","Elevated risk"],
+    ["CW-10044","Individual","Marit","Lindqvist", "Germany",        "Switzerland",   "S. Da Costa", "Active","Aggressive",  920_000,"CHF","Execution-only","2026-04-30","2027-04-30","Clear"],
+    ["CW-10045","Corporate", "","",               "Singapore",      "Singapore",     "M. Lindqvist","Active","Balanced",   18_400_000,"SGD","Discretionary","2026-01-09","2027-01-09","Clear"],
+    ["CW-10046","Individual","Tomás","Delacroix",  "United Kingdom","United Kingdom","A. Whitcombe","Awaiting approval","Growth",1_500_000,"GBP","Discretionary",null,null,"Potential match"],
+    ["CW-10047","Individual","Priya","Raghunathan","India",         "United Arab Emirates","R. Nakamura","Documents pending","Balanced",3_250_000,"USD","Advisory",null,null,"Clear"],
+    ["CW-10048","Individual","Nikolai","Petrov",   "Russian Federation","United Kingdom","P. Oyelaran","Rejected","Growth",4_000_000,"GBP","Discretionary",null,null,"Potential match"],
+    ["CW-10049","Individual","Eleanor","Whitfield","United Kingdom","United Kingdom","S. Da Costa","KYC in progress","Conservative",780_000,"GBP","Advisory",null,null,"Pending"],
+    ["CW-10050","Joint",     "Chen","Wei-Lin",     "Hong Kong SAR", "Hong Kong SAR", "M. Lindqvist","Risk profiled","Growth",5_600_000,"USD","Discretionary",null,null,"Clear"],
+    ["CW-10051","Individual","Yusuf","Al-Mansour","United Arab Emirates","United Arab Emirates","A. Whitcombe","Awaiting approval","Balanced",9_750_000,"AED","Discretionary",null,null,"Potential match"],
+    ["CW-10052","Corporate", "","",               "United Kingdom", "United Kingdom","R. Nakamura","Active","Conservative",27_300_000,"GBP","Advisory",     "2026-03-18","2027-03-18","Clear"]
+  ];
+  const entityNames = {"CW-10043":"Halvorsen Family Trust","CW-10045":"Marlowe Ridge Holdings Pte Ltd","CW-10052":"Bannerman Estates Ltd"};
+  return raw.map(r=>{
+    const [id,type,fn,ln,nat,tax,adv,stage,risk,aum,ccy,mandate,kycDate,kycDue,screen] = r;
+    const c = blankClient();
+    Object.assign(c,{
+      id, clientType:type, firstName:fn, lastName:ln, entityName:entityNames[id]||"",
+      nationality:nat, taxResidency:tax, adviser:adv, stage, riskCategory:risk,
+      aum, currency:ccy, mandate, kycCompletedOn:kycDate, kycReviewDue:kycDue,
+      email: fn ? `${slug(fn)}.${slug(ln)}@example.net` : `ops@${slug(entityNames[id]||"entity")}.example`,
+      phone:"+44 20 7946 "+ (1000 + Number(id.slice(-2))),
+      createdAt: new Date(Date.parse("2026-01-05T10:00:00Z") + Number(id.slice(-2))*86400000*3).toISOString(),
+      screening: screen==="Pending" ? null : {result:screen, severity: screen==="Clear"?"ok":(screen==="Elevated risk"?"warn":"risk"), detail:"Historic screening record retained from onboarding.", at:kycDate||"2026-05-01"},
+      riskScore: {Conservative:11,Balanced:18,Growth:24,Aggressive:29}[risk],
+      objective: {Conservative:"Capital preservation",Balanced:"Balanced growth",Growth:"Capital growth",Aggressive:"Aggressive growth"}[risk],
+      fundingAmount: aum,
+      modelPortfolio: MODEL_PORTFOLIOS.find(m=>m.risk===risk)?.id || "MP-03",
+      custodian: CUSTODIANS[Number(id.slice(-1))%CUSTODIANS.length],
+      documents: REQUIRED_DOCS.reduce((a,d)=>(a[d.id]= stage==="Active" ? {name:d.id+"-scan.pdf",size:184320,at:kycDate||"2026-05-01"} : null, a),{}),
+      audit: [{at:new Date(Date.parse("2026-01-05T10:00:00Z")+Number(id.slice(-2))*86400000*3).toISOString(), actor:"System", text:`Record migrated from legacy CRM as “${stage}”.`}]
+    });
+    if(stage==="Active"){
+      c.audit.push({at:kycDate+"T11:20:00Z", actor:"Desmond Achebe — Compliance Officer", text:"Onboarding approved. Mandate activated."});
+    }
+    if(stage==="Rejected"){
+      c.rejectReason = "Sanctions match adjudicated as a true positive against the UK HMT consolidated list.";
+      c.audit.push({at:"2026-06-02T14:05:00Z", actor:"Desmond Achebe — Compliance Officer", text:"Onboarding rejected — sanctions true positive."});
+    }
+    return c;
+  });
+}
+
+function blankClient(){
+  return {
+    id:null, clientType:"Individual", firstName:"", lastName:"", entityName:"",
+    dob:"", nationality:"", taxResidency:"", email:"", phone:"",
+    addressLine:"", city:"", postcode:"", country:"",
+    registrationNo:"", lei:"", trustee:"", settlor:"", ubos:[],
+    introducedBy:"", adviser:"",
+    idType:"", idNumber:"", idExpiry:"", pep:"", pepDetail:"",
+    sourceOfWealth:"", sourceOfFunds:"", expectedInflow:"",
+    screening:null,
+    answers:{}, riskScore:null, riskCategory:"", objective:"", horizon:"", liquidity:"", esg:"No preference",
+    documents:REQUIRED_DOCS.reduce((a,d)=>(a[d.id]=null,a),{}),
+    mandate:"", currency:"GBP", fundingAmount:"", modelPortfolio:"", custodian:"", signatories:[],
+    stage:"Draft", submittedBy:null, submittedAt:null, approvedBy:null,
+    kycCompletedOn:null, kycReviewDue:null, aum:0, rejectReason:"",
+    createdAt:new Date().toISOString(), audit:[]
+  };
+}
+
+/* ---------------- state ---------------- */
+let state = null;
+
+function defaultState(){
+  return { clients: seedClients(), draft: null, actor:"adviser", nextId: 10053 };
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){/* private mode */}
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){ const p = JSON.parse(raw); if(p && Array.isArray(p.clients)) return p; }
+  }catch(e){/* ignore */}
+  return defaultState();
+}
+function resetState(){
+  state = defaultState(); save();
+  toast("Demo data reset — 12 seeded clients restored.");
+  go("#/dashboard");
+}
+function actor(){ return ACTORS.find(a=>a.id===state.actor) || ACTORS[0]; }
+function audit(client, text){
+  client.audit = client.audit || [];
+  client.audit.push({at:new Date().toISOString(), actor:actor().name, text});
+}
+
+/* ---------------- toasts & modal ---------------- */
+function toast(msg){
+  const el = document.createElement("div");
+  el.className = "toast"; el.setAttribute("role","status");
+  el.setAttribute("data-testid","toast");
+  el.textContent = msg;
+  $("#toasts").appendChild(el);
+  setTimeout(()=>el.remove(), 4200);
+}
+function closeModal(){ $("#modal-root").innerHTML = ""; }
+function modal(title, bodyHtml, footHtml){
+  $("#modal-root").innerHTML = `
+    <div class="modal-back" data-testid="modal">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+        <div class="card-head"><h3 style="flex:1">${esc(title)}</h3>
+          <button class="btn btn-sm" data-act="modal-close" data-testid="modal-close">Close</button></div>
+        <div class="card-body">${bodyHtml}</div>
+        ${footHtml ? `<div class="card-foot">${footHtml}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+/* ---------------- routing ---------------- */
+const ROUTES = [
+  {href:"#/dashboard",     label:"Dashboard",           group:"Overview"},
+  {href:"#/clients",       label:"Clients",             group:"Client management", count:()=>state.clients.length},
+  {href:"#/onboarding",    label:"Onboarding pipeline", group:"Client management", count:()=>state.clients.filter(c=>!["Active","Rejected"].includes(c.stage)).length},
+  {href:"#/onboarding/new",label:"New client",          group:"Client management"},
+  {href:"#/compliance",    label:"Compliance queue",    group:"Client management", count:()=>state.clients.filter(c=>c.stage==="Awaiting approval").length},
+  {href:"#/portfolios",    label:"Portfolio management",group:"Other modules", disabled:true},
+  {href:"#/billing",       label:"Fees & billing",      group:"Other modules", disabled:true},
+  {href:"#/reporting",     label:"Client reporting",    group:"Other modules", disabled:true}
+];
+function go(hash){ if(location.hash === hash) render(); else location.hash = hash; }
+function currentRoute(){ return location.hash || "#/dashboard"; }
+
+function renderNav(){
+  const cur = currentRoute();
+  let html = "", lastGroup = null;
+  for(const r of ROUTES){
+    if(r.group !== lastGroup){ html += `<span class="nav-group">${esc(r.group)}</span>`; lastGroup = r.group; }
+    const active = cur === r.href || (r.href==="#/clients" && cur.startsWith("#/clients/")) ? ' aria-current="page"' : "";
+    const n = r.count ? `<span class="count">${r.count()}</span>` : "";
+    html += r.disabled
+      ? `<a class="disabled" href="#/dashboard" aria-disabled="true" data-testid="nav-${slug(r.label)}" title="Module not enabled in this demo">${esc(r.label)}<span class="tag">soon</span></a>`
+      : `<a href="${r.href}"${active} data-testid="nav-${slug(r.label)}">${esc(r.label)}${n}</a>`;
+  }
+  $("#nav").innerHTML = html;
+}
+function renderActor(){
+  $("#actor-select").innerHTML = ACTORS.map(a=>`<option value="${a.id}"${a.id===state.actor?" selected":""}>${esc(a.name)}</option>`).join("");
+}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+
+function viewDashboard(){
+  const cs = state.clients;
+  const active = cs.filter(c=>c.stage==="Active");
+  const inFlight = cs.filter(c=>!["Active","Rejected"].includes(c.stage));
+  const aum = active.reduce((s,c)=>s+Number(c.aum||0),0);
+  const pendingApproval = cs.filter(c=>c.stage==="Awaiting approval");
+  const reviewsDue = active.filter(c=>c.kycReviewDue && daysBetween(today(), c.kycReviewDue) <= 120);
+  const stageCounts = STAGES.map(s=>({s, n:cs.filter(c=>c.stage===s).length}));
+  const maxStage = Math.max(...stageCounts.map(x=>x.n), 1);
+  const recent = cs.flatMap(c=>(c.audit||[]).map(a=>({...a, id:c.id, who:clientName(c)})))
+                   .sort((a,b)=>new Date(b.at)-new Date(a.at)).slice(0,8);
+
+  return `
+  <div class="page-head">
+    <div style="flex:1;min-width:260px">
+      <h1>Client operations</h1>
+      <p>Onboarding pipeline, KYC obligations and mandate status across the book as at ${fmtDate(today())}.</p>
+    </div>
+    <a class="btn btn-primary" href="#/onboarding/new" data-testid="dash-new-client">Onboard a new client</a>
+  </div>
+
+  <div class="grid g4" style="margin-bottom:18px">
+    <div class="tile" data-testid="tile-aum"><div class="k">Assets under management</div><div class="v">${money(aum)}</div><div class="d">${active.length} active mandates</div></div>
+    <div class="tile" data-testid="tile-inflight"><div class="k">In onboarding</div><div class="v">${inFlight.length}</div><div class="d">${pendingApproval.length} awaiting compliance sign-off</div></div>
+    <div class="tile" data-testid="tile-reviews"><div class="k">KYC reviews due ≤120d</div><div class="v">${reviewsDue.length}</div><div class="d">Periodic refresh obligation</div></div>
+    <div class="tile" data-testid="tile-flags"><div class="k">Screening flags open</div><div class="v">${cs.filter(c=>c.screening && c.screening.severity!=="ok" && c.stage!=="Rejected").length}</div><div class="d">PEP, sanctions or jurisdiction</div></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:start">
+    <section class="card" data-testid="card-pipeline">
+      <div class="card-head"><h3 style="flex:1">Pipeline by stage</h3><a class="btn btn-sm" href="#/onboarding">Open pipeline</a></div>
+      <div class="card-body">
+        <div class="funnel">
+          ${stageCounts.map(x=>`
+            <div class="funnel-row" data-testid="funnel-${slug(x.s)}">
+              <span>${esc(x.s)}</span>
+              <div class="funnel-bar"><span style="width:${Math.round(x.n/maxStage*100)}%"></span></div>
+              <span class="mono right">${x.n}</span>
+            </div>`).join("")}
+        </div>
+      </div>
+    </section>
+
+    <section class="card" data-testid="card-approvals">
+      <div class="card-head"><h3 style="flex:1">Awaiting compliance approval</h3><a class="btn btn-sm" href="#/compliance">Queue</a></div>
+      <div class="card-body" style="padding:0">
+        ${pendingApproval.length ? `<div class="table-wrap"><table><tbody>
+          ${pendingApproval.map(c=>`<tr data-clickable data-act="open-client" data-id="${c.id}">
+            <td><div style="font-weight:600">${esc(clientName(c))}</div><div class="mono" style="font-size:11.5px;color:var(--ink-3)">${c.id}</div></td>
+            <td>${screenPill(c)}</td>
+            <td class="right">${money(c.fundingAmount, c.currency)}</td>
+          </tr>`).join("")}
+        </tbody></table></div>` : `<div class="empty">Nothing awaiting approval.</div>`}
+      </div>
+    </section>
+
+    <section class="card" data-testid="card-activity">
+      <div class="card-head"><h3>Recent activity</h3></div>
+      <div class="card-body">
+        <ul class="timeline">
+          ${recent.map(a=>`<li><time>${fmtDT(a.at)}</time><div><b>${esc(a.who)}</b> — ${esc(a.text)}<div style="color:var(--ink-3);font-size:11.5px">${esc(a.actor)}</div></div></li>`).join("")}
+        </ul>
+      </div>
+    </section>
+  </div>`;
+}
+
+function clientName(c){
+  if(c.clientType==="Corporate" || c.clientType==="Trust") return c.entityName || "(unnamed entity)";
+  const n = `${c.firstName||""} ${c.lastName||""}`.trim();
+  return n || "(unnamed client)";
+}
+function stagePill(stage){
+  const map = {"Active":"p-ok","Rejected":"p-risk","Awaiting approval":"p-warn","Draft":"p-mute"};
+  return `<span class="pill ${map[stage]||"p-info"}">${esc(stage)}</span>`;
+}
+function screenPill(c){
+  if(!c.screening) return `<span class="pill p-mute">Not screened</span>`;
+  const cls = {ok:"p-ok",warn:"p-warn",risk:"p-risk"}[c.screening.severity];
+  return `<span class="pill ${cls}">${esc(c.screening.result)}</span>`;
+}
+
+/* ---------------- clients list ---------------- */
+let listUI = {q:"", stage:"", risk:"", adviser:"", sort:"id", dir:1, page:1, per:8};
+
+function viewClients(){
+  let rows = state.clients.slice();
+  const q = listUI.q.trim().toLowerCase();
+  if(q) rows = rows.filter(c => (clientName(c)+" "+c.id+" "+(c.email||"")).toLowerCase().includes(q));
+  if(listUI.stage) rows = rows.filter(c=>c.stage===listUI.stage);
+  if(listUI.risk) rows = rows.filter(c=>c.riskCategory===listUI.risk);
+  if(listUI.adviser) rows = rows.filter(c=>c.adviser===listUI.adviser);
+  const key = listUI.sort;
+  rows.sort((a,b)=>{
+    const va = key==="name" ? clientName(a) : key==="aum" ? Number(a.aum||0) : a[key] ?? "";
+    const vb = key==="name" ? clientName(b) : key==="aum" ? Number(b.aum||0) : b[key] ?? "";
+    return (va>vb?1:va<vb?-1:0)*listUI.dir;
+  });
+  const total = rows.length;
+  const pages = Math.max(1, Math.ceil(total/listUI.per));
+  listUI.page = Math.min(listUI.page, pages);
+  const slice = rows.slice((listUI.page-1)*listUI.per, listUI.page*listUI.per);
+  const th = (k,label,cls="") => `<th class="${cls}"><button data-act="sort" data-key="${k}" data-testid="sort-${k}">${esc(label)}${listUI.sort===k?(listUI.dir===1?" ▲":" ▼"):""}</button></th>`;
+
+  return `
+  <div class="page-head">
+    <div style="flex:1;min-width:260px"><h1>Clients</h1><p>The full book, including prospects still in onboarding. ${total} of ${state.clients.length} records match the current filters.</p></div>
+    <a class="btn btn-primary" href="#/onboarding/new" data-testid="clients-new">New client</a>
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <div class="field" style="flex:2;min-width:200px">
+        <label for="f-search">Search name, client ID or email</label>
+        <input type="text" id="f-search" data-testid="filter-search" value="${esc(listUI.q)}" placeholder="e.g. Okonkwo or CW-10041">
+      </div>
+      <div class="field" style="min-width:150px"><label for="f-stage">Stage</label>
+        <select id="f-stage" data-testid="filter-stage"><option value="">All stages</option>${STAGES.map(s=>`<option${s===listUI.stage?" selected":""}>${s}</option>`).join("")}</select></div>
+      <div class="field" style="min-width:140px"><label for="f-risk">Risk profile</label>
+        <select id="f-risk" data-testid="filter-risk"><option value="">All profiles</option>${RISK_BANDS.map(b=>`<option${b.name===listUI.risk?" selected":""}>${b.name}</option>`).join("")}</select></div>
+      <div class="field" style="min-width:150px"><label for="f-adviser">Adviser</label>
+        <select id="f-adviser" data-testid="filter-adviser"><option value="">All advisers</option>${ADVISERS.map(a=>`<option${a===listUI.adviser?" selected":""}>${a}</option>`).join("")}</select></div>
+      <button class="btn" data-act="clear-filters" data-testid="filter-clear">Clear</button>
+    </div>
+    <div class="table-wrap">
+      <table data-testid="clients-table">
+        <thead><tr>${th("id","Client ID")}${th("name","Name")}<th>Type</th>${th("stage","Stage")}<th>Screening</th>${th("riskCategory","Risk")}${th("adviser","Adviser")}${th("aum","AUM","right")}<th>KYC review</th></tr></thead>
+        <tbody>
+          ${slice.length ? slice.map(c=>`
+            <tr data-clickable data-act="open-client" data-id="${c.id}" data-testid="client-row-${c.id}">
+              <td class="mono">${c.id}</td>
+              <td style="font-weight:600">${esc(clientName(c))}</td>
+              <td><span class="tag">${esc(c.clientType)}</span></td>
+              <td>${stagePill(c.stage)}</td>
+              <td>${screenPill(c)}</td>
+              <td>${esc(c.riskCategory||"—")}</td>
+              <td>${esc(c.adviser||"—")}</td>
+              <td class="right mono">${c.stage==="Active"?money(c.aum,c.currency):"—"}</td>
+              <td class="mono" style="font-size:12px">${c.kycReviewDue?fmtDate(c.kycReviewDue):"—"}</td>
+            </tr>`).join("") : `<tr><td colspan="9" class="empty" data-testid="clients-empty">No clients match those filters.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-foot">
+      <span class="legend" data-testid="pager-label">Page ${listUI.page} of ${pages} · ${total} record${total===1?"":"s"}</span>
+      <span class="spacer"></span>
+      <button class="btn btn-sm" data-act="page" data-to="${listUI.page-1}" data-testid="pager-prev" ${listUI.page<=1?"disabled":""}>Previous</button>
+      <button class="btn btn-sm" data-act="page" data-to="${listUI.page+1}" data-testid="pager-next" ${listUI.page>=pages?"disabled":""}>Next</button>
+    </div>
+  </section>`;
+}
+
+/* ---------------- onboarding pipeline ---------------- */
+function viewPipeline(){
+  const inFlight = state.clients.filter(c=>!["Active"].includes(c.stage));
+  const byStage = STAGES.filter(s=>s!=="Active").map(s=>({s, rows:inFlight.filter(c=>c.stage===s)}));
+  return `
+  <div class="page-head">
+    <div style="flex:1;min-width:260px"><h1>Onboarding pipeline</h1><p>Every prospect between first contact and mandate activation, grouped by stage. Draft records can be resumed; submitted records sit with compliance.</p></div>
+    <a class="btn btn-primary" href="#/onboarding/new" data-testid="pipeline-new">New client</a>
+  </div>
+  ${byStage.map(g=>`
+    <section class="card" style="margin-bottom:14px" data-testid="stage-${slug(g.s)}">
+      <div class="card-head"><h3 style="flex:1">${esc(g.s)}</h3><span class="pill p-mute">${g.rows.length}</span></div>
+      <div class="card-body" style="padding:0">
+        ${g.rows.length ? `<div class="table-wrap"><table><tbody>
+          ${g.rows.map(c=>`<tr data-clickable data-act="open-client" data-id="${c.id}" data-testid="pipeline-row-${c.id}">
+            <td class="mono" style="width:100px">${c.id}</td>
+            <td style="font-weight:600">${esc(clientName(c))}</td>
+            <td>${screenPill(c)}</td>
+            <td>${esc(c.riskCategory||"Not profiled")}</td>
+            <td>${esc(c.adviser||"Unassigned")}</td>
+            <td class="right mono">${money(c.fundingAmount,c.currency)}</td>
+            <td class="right"><span class="legend">in stage ${Math.max(0,daysBetween(c.createdAt, today()))}d</span></td>
+          </tr>`).join("")}
+        </tbody></table></div>` : `<div class="empty">No records at this stage.</div>`}
+      </div>
+    </section>`).join("")}`;
+}
+
+/* ---------------- compliance queue ---------------- */
+function viewCompliance(){
+  const queue = state.clients.filter(c=>c.stage==="Awaiting approval");
+  const canApprove = actor().role === "Compliance";
+  return `
+  <div class="page-head">
+    <div style="flex:1;min-width:260px"><h1>Compliance queue</h1><p>Four-eyes approval. A record must be approved by a compliance officer other than the adviser who submitted it.</p></div>
+  </div>
+  ${canApprove ? "" : `<div class="banner b-info" data-testid="role-notice" style="margin-bottom:16px"><div><b>Read-only for this role</b>You are acting as ${esc(actor().role)}. Switch to the compliance officer in the header to adjudicate these records.</div></div>`}
+  <section class="card">
+    <div class="card-head"><h3 style="flex:1">Pending adjudication</h3><span class="pill p-warn">${queue.length} open</span></div>
+    <div class="table-wrap">
+      <table data-testid="compliance-table">
+        <thead><tr><th>Client ID</th><th>Name</th><th>Screening</th><th>Risk</th><th>Submitted by</th><th>Waiting</th><th class="right">Action</th></tr></thead>
+        <tbody>
+        ${queue.length ? queue.map(c=>`
+          <tr data-testid="compliance-row-${c.id}">
+            <td class="mono">${c.id}</td>
+            <td style="font-weight:600"><a href="#/clients/${c.id}">${esc(clientName(c))}</a></td>
+            <td>${screenPill(c)}</td>
+            <td>${esc(c.riskCategory||"—")}</td>
+            <td style="font-size:12.5px">${esc(c.submittedBy||"—")}</td>
+            <td class="mono" style="font-size:12px">${c.submittedAt?Math.max(0,daysBetween(c.submittedAt,today()))+"d":"—"}</td>
+            <td class="right">
+              <button class="btn btn-sm btn-accent" data-act="approve" data-id="${c.id}" data-testid="approve-${c.id}" ${canApprove?"":"disabled"}>Approve</button>
+              <button class="btn btn-sm btn-danger" data-act="reject" data-id="${c.id}" data-testid="reject-${c.id}" ${canApprove?"":"disabled"}>Reject</button>
+            </td>
+          </tr>`).join("") : `<tr><td colspan="7" class="empty" data-testid="compliance-empty">Queue is clear.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+/* ---------------- client 360 ---------------- */
+let clientTab = "overview";
+
+function viewClient(id){
+  const c = state.clients.find(x=>x.id===id);
+  if(!c) return `<div class="card"><div class="empty" data-testid="client-not-found">No client with reference <span class="mono">${esc(id)}</span>.</div></div>`;
+  const band = RISK_BANDS.find(b=>b.name===c.riskCategory);
+  const mp = MODEL_PORTFOLIOS.find(m=>m.id===c.modelPortfolio);
+  const reviewDays = c.kycReviewDue ? daysBetween(today(), c.kycReviewDue) : null;
+  const tabs = [["overview","Overview"],["kyc","KYC & compliance"],["mandate","Mandate & accounts"],["documents","Documents"],["audit","Audit trail"]];
+
+  const tabBody = {
+    overview: `
+      <div class="grid g2">
+        <div>
+          <h3 style="margin-bottom:10px">Client particulars</h3>
+          <dl class="kv" data-testid="kv-particulars">
+            <dt>Client reference</dt><dd class="mono">${c.id}</dd>
+            <dt>Classification</dt><dd>${esc(c.clientType)}</dd>
+            ${c.clientType==="Corporate"||c.clientType==="Trust"
+              ? `<dt>Entity name</dt><dd>${esc(c.entityName||"—")}</dd>
+                 <dt>${c.clientType==="Trust"?"Trustee":"Registration no."}</dt><dd>${esc(c.clientType==="Trust"?(c.trustee||"—"):(c.registrationNo||"—"))}</dd>`
+              : `<dt>Full name</dt><dd>${esc(clientName(c))}</dd><dt>Date of birth</dt><dd>${c.dob?fmtDate(c.dob):"—"}</dd>`}
+            <dt>Nationality</dt><dd>${esc(c.nationality||"—")}</dd>
+            <dt>Tax residency</dt><dd>${esc(c.taxResidency||"—")}</dd>
+            <dt>Email</dt><dd>${esc(c.email||"—")}</dd>
+            <dt>Telephone</dt><dd class="mono">${esc(c.phone||"—")}</dd>
+            <dt>Relationship manager</dt><dd>${esc(c.adviser||"Unassigned")}</dd>
+            <dt>Introduced by</dt><dd>${esc(c.introducedBy||"—")}</dd>
+          </dl>
+        </div>
+        <div>
+          <h3 style="margin-bottom:10px">Suitability</h3>
+          <dl class="kv" data-testid="kv-suitability">
+            <dt>Risk profile</dt><dd><b>${esc(c.riskCategory||"Not profiled")}</b>${c.riskScore?` <span class="legend">score ${c.riskScore}/32</span>`:""}</dd>
+            <dt>Growth allocation</dt><dd>${esc(band?band.equity:"—")}</dd>
+            <dt>Stated objective</dt><dd>${esc(c.objective||"—")}</dd>
+            <dt>Time horizon</dt><dd>${esc(c.horizon||"—")}</dd>
+            <dt>Liquidity requirement</dt><dd>${esc(c.liquidity||"—")}</dd>
+            <dt>ESG preference</dt><dd>${esc(c.esg||"—")}</dd>
+            <dt>Model portfolio</dt><dd>${mp?`${esc(mp.name)} <span class="legend">(${mp.equity}% equity)</span>`:"—"}</dd>
+          </dl>
+          ${suitabilityFlag(c)}
+        </div>
+      </div>`,
+    kyc: `
+      <div class="grid g2">
+        <div>
+          <h3 style="margin-bottom:10px">Identification</h3>
+          <dl class="kv" data-testid="kv-identification">
+            <dt>Document type</dt><dd>${esc(c.idType||"—")}</dd>
+            <dt>Document number</dt><dd class="mono">${esc(c.idNumber||"—")}</dd>
+            <dt>Expiry</dt><dd>${c.idExpiry?fmtDate(c.idExpiry):"—"}</dd>
+            <dt>PEP declaration</dt><dd>${c.pep==="yes"?`<span class="pill p-warn">Declared</span>`:c.pep==="no"?`<span class="pill p-ok">None</span>`:"—"}</dd>
+            ${c.pep==="yes"?`<dt>PEP detail</dt><dd>${esc(c.pepDetail||"—")}</dd>`:""}
+            <dt>Source of wealth</dt><dd>${esc(c.sourceOfWealth||"—")}</dd>
+            <dt>Source of funds</dt><dd>${esc(c.sourceOfFunds||"—")}</dd>
+            <dt>Expected annual inflow</dt><dd class="mono">${money(c.expectedInflow,c.currency)}</dd>
+          </dl>
+        </div>
+        <div>
+          <h3 style="margin-bottom:10px">Screening & review</h3>
+          ${c.screening ? `<div class="banner b-${c.screening.severity==="ok"?"ok":c.screening.severity==="warn"?"warn":"risk"}" data-testid="screening-result">
+              <div><b>${esc(c.screening.result)}</b>${esc(c.screening.detail)}</div></div>`
+            : `<div class="banner b-info"><div><b>Not yet screened</b>Sanctions, PEP and adverse media screening has not been run for this record.</div></div>`}
+          <dl class="kv" style="margin-top:14px">
+            <dt>KYC completed</dt><dd>${c.kycCompletedOn?fmtDate(c.kycCompletedOn):"—"}</dd>
+            <dt>Periodic review due</dt><dd>${c.kycReviewDue?`${fmtDate(c.kycReviewDue)} ${reviewDays!=null?`<span class="pill ${reviewDays<0?"p-risk":reviewDays<=120?"p-warn":"p-ok"}">${reviewDays<0?`${Math.abs(reviewDays)}d overdue`:`in ${reviewDays}d`}</span>`:""}`:"—"}</dd>
+            <dt>Approved by</dt><dd>${esc(c.approvedBy||"—")}</dd>
+          </dl>
+          ${c.rejectReason?`<div class="banner b-risk" style="margin-top:12px"><div><b>Rejected</b>${esc(c.rejectReason)}</div></div>`:""}
+        </div>
+      </div>`,
+    mandate: `
+      <div class="grid g2">
+        <div>
+          <h3 style="margin-bottom:10px">Mandate</h3>
+          <dl class="kv" data-testid="kv-mandate">
+            <dt>Service</dt><dd>${esc(c.mandate||"—")}</dd>
+            <dt>Base currency</dt><dd class="mono">${esc(c.currency||"—")}</dd>
+            <dt>Initial funding</dt><dd class="mono">${money(c.fundingAmount,c.currency)}</dd>
+            <dt>Custodian</dt><dd>${esc(c.custodian||"—")}</dd>
+            <dt>Status</dt><dd>${stagePill(c.stage)}</dd>
+          </dl>
+        </div>
+        <div>
+          <h3 style="margin-bottom:10px">Indicative annual fee</h3>
+          ${feeTable(c.fundingAmount, c.currency)}
+        </div>
+      </div>
+      <div class="sep"></div>
+      <h3 style="margin-bottom:10px">Authorised signatories</h3>
+      ${(c.signatories||[]).length ? `<div class="table-wrap"><table data-testid="signatories-table"><thead><tr><th>Name</th><th>Capacity</th><th>Authority</th></tr></thead><tbody>
+        ${c.signatories.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.capacity)}</td><td>${esc(s.authority)}</td></tr>`).join("")}
+      </tbody></table></div>` : `<p class="legend">No additional signatories recorded.</p>`}`,
+    documents: `
+      <div data-testid="documents-list">
+        ${REQUIRED_DOCS.map(d=>{
+          const f = c.documents?.[d.id];
+          return `<div class="doc-row" data-testid="doc-${d.id}">
+            <div><div class="nm">${esc(d.name)} ${d.required?`<span class="tag">mandatory</span>`:`<span class="tag">conditional</span>`}</div>
+            <div class="mt">${f?`${esc(f.name)} · ${Math.round(f.size/1024)} KB · uploaded ${fmtDate(f.at)}`:esc(d.note)}</div></div>
+            <div>${f?`<span class="pill p-ok">Received</span>`:`<span class="pill ${d.required?"p-risk":"p-mute"}">${d.required?"Outstanding":"Not supplied"}</span>`}</div>
+          </div>`;
+        }).join("")}
+      </div>`,
+    audit: `
+      <ul class="timeline" data-testid="audit-trail">
+        ${(c.audit||[]).slice().reverse().map(a=>`<li><time>${fmtDT(a.at)}</time><div>${esc(a.text)}<div style="color:var(--ink-3);font-size:11.5px">${esc(a.actor)}</div></div></li>`).join("") || `<li><div class="legend">No audit entries.</div></li>`}
+      </ul>`
+  }[clientTab];
+
+  const canApprove = actor().role==="Compliance" && c.stage==="Awaiting approval";
+
+  return `
+  <div class="page-head">
+    <div style="flex:1;min-width:260px">
+      <div class="row" style="gap:8px;margin-bottom:6px"><a href="#/clients" class="legend" data-testid="back-to-clients">← Clients</a></div>
+      <h1 data-testid="client-name">${esc(clientName(c))}</h1>
+      <p><span class="mono">${c.id}</span> · ${esc(c.clientType)} · ${stagePill(c.stage)} ${screenPill(c)}</p>
+    </div>
+    <div class="row">
+      ${c.stage==="Draft"?`<button class="btn" data-act="resume-draft" data-id="${c.id}" data-testid="resume-draft">Resume onboarding</button>`:""}
+      ${canApprove?`<button class="btn btn-accent" data-act="approve" data-id="${c.id}" data-testid="client-approve">Approve onboarding</button>
+                    <button class="btn btn-danger" data-act="reject" data-id="${c.id}" data-testid="client-reject">Reject</button>`:""}
+    </div>
+  </div>
+
+  <div class="grid g4" style="margin-bottom:18px">
+    <div class="tile"><div class="k">${c.stage==="Active"?"Assets under management":"Initial funding"}</div><div class="v">${money(c.stage==="Active"?c.aum:c.fundingAmount, c.currency)}</div><div class="d">${esc(c.mandate||"Mandate not set")}</div></div>
+    <div class="tile"><div class="k">Risk profile</div><div class="v" style="font-size:19px">${esc(c.riskCategory||"—")}</div><div class="d">${c.riskScore?`Score ${c.riskScore} / 32`:"Questionnaire outstanding"}</div></div>
+    <div class="tile"><div class="k">Documents received</div><div class="v">${Object.values(c.documents||{}).filter(Boolean).length}<span style="font-size:14px;color:var(--ink-3)"> / ${REQUIRED_DOCS.length}</span></div><div class="d">${REQUIRED_DOCS.filter(d=>d.required&&!c.documents?.[d.id]).length} mandatory outstanding</div></div>
+    <div class="tile"><div class="k">Relationship age</div><div class="v">${Math.max(0,daysBetween(c.createdAt,today()))}<span style="font-size:14px;color:var(--ink-3)"> days</span></div><div class="d">Opened ${fmtDate(c.createdAt)}</div></div>
+  </div>
+
+  <section class="card">
+    <div class="tabs" role="tablist">
+      ${tabs.map(([k,l])=>`<button role="tab" aria-selected="${clientTab===k}" data-act="client-tab" data-tab="${k}" data-testid="tab-${k}">${esc(l)}</button>`).join("")}
+    </div>
+    <div class="card-body">${tabBody}</div>
+  </section>`;
+}
+
+function suitabilityFlag(c){
+  if(!c.riskCategory || !c.objective) return "";
+  const floor = OBJECTIVE_RISK_FLOOR[c.objective];
+  if(!floor) return "";
+  const gap = bandIndex(c.riskCategory) - bandIndex(floor);
+  if(gap >= 2) return `<div class="banner b-warn" style="margin-top:12px" data-testid="suitability-mismatch"><div><b>Suitability mismatch</b>The questionnaire places this client in the ${esc(c.riskCategory)} band, but the stated objective (${esc(c.objective)}) implies ${esc(floor)}. A documented rationale is required before the mandate is activated.</div></div>`;
+  if(gap <= -2) return `<div class="banner b-warn" style="margin-top:12px" data-testid="suitability-mismatch"><div><b>Suitability mismatch</b>The stated objective (${esc(c.objective)}) is more aggressive than the ${esc(c.riskCategory)} risk capacity indicated by the questionnaire.</div></div>`;
+  return `<div class="banner b-ok" style="margin-top:12px" data-testid="suitability-ok"><div><b>Objective consistent with risk capacity</b>No suitability exception raised.</div></div>`;
+}
+
+function feeTable(amount, ccy){
+  const {fee, lines} = annualFee(amount);
+  if(!Number(amount)) return `<p class="legend">Enter an initial funding amount to calculate the indicative fee.</p>`;
+  return `<div class="table-wrap"><table data-testid="fee-table"><thead><tr><th>Tier</th><th class="right">Amount</th><th class="right">Rate</th><th class="right">Fee</th></tr></thead><tbody>
+    ${lines.map(l=>`<tr><td>Tranche @ ${l.bps} bps</td><td class="right mono">${money(l.slice,ccy)}</td><td class="right mono">${l.bps} bps</td><td class="right mono">${money(l.slice*l.bps/10000,ccy)}</td></tr>`).join("")}
+    <tr><td colspan="3" style="font-weight:600">Total indicative annual fee</td><td class="right mono" style="font-weight:600" data-testid="fee-total">${money(fee,ccy)}</td></tr>
+  </tbody></table></div>
+  <p class="legend" style="margin-top:8px">Effective rate ${(fee/Number(amount)*10000).toFixed(1)} bps. Excludes custody, transaction and third-party fund charges.</p>`;
+}
+
+/* ============================================================
+   ONBOARDING WIZARD
+   ============================================================ */
+const STEPS = [
+  {id:"prospect",  title:"Prospect details"},
+  {id:"kyc",       title:"KYC & AML"},
+  {id:"risk",      title:"Risk & suitability"},
+  {id:"documents", title:"Documents"},
+  {id:"mandate",   title:"Accounts & mandate"},
+  {id:"review",    title:"Review & submit"}
+];
+let wiz = {step:0, errors:{}, screening:"idle"};
+
+function ensureDraft(){
+  if(!state.draft){ state.draft = blankClient(); state.draft.adviser = ADVISERS[0]; }
+  return state.draft;
+}
+
+function viewWizard(){
+  const d = ensureDraft();
+  const step = STEPS[wiz.step];
+  return `
+  <div class="page-head">
+    <div style="flex:1;min-width:260px">
+      <h1>New client onboarding</h1>
+      <p>Six stages from first contact to an activated mandate. Nothing is submitted to compliance until every mandatory item is complete.</p>
+    </div>
+    <button class="btn" data-act="discard-draft" data-testid="discard-draft">Discard draft</button>
+  </div>
+
+  <div class="stepper" style="margin-bottom:18px" data-testid="wizard-stepper">
+    ${STEPS.map((s,i)=>`<button data-act="goto-step" data-step="${i}" ${i===wiz.step?'aria-current="step"':""} data-done="${i<wiz.step?"yes":"no"}" data-testid="step-${s.id}">
+      <span class="n">Step ${i+1}</span><span class="t">${esc(s.title)}</span></button>`).join("")}
+  </div>
+
+  <section class="card" data-testid="wizard-card">
+    <div class="card-head"><h2 style="flex:1">${esc(step.title)}</h2><span class="legend">Step ${wiz.step+1} of ${STEPS.length}</span></div>
+    <div class="card-body">${stepBody(d)}</div>
+    <div class="card-foot">
+      <button class="btn" data-act="wiz-back" data-testid="wizard-back" ${wiz.step===0?"disabled":""}>Back</button>
+      <span class="spacer"></span>
+      ${wiz.step < STEPS.length-1
+        ? `<button class="btn btn-primary" data-act="wiz-next" data-testid="wizard-next">Continue</button>`
+        : `<button class="btn btn-primary" data-act="wiz-submit" data-testid="wizard-submit">Submit for compliance approval</button>`}
+    </div>
+  </section>`;
+}
+
+function errFor(k){ return wiz.errors[k] ? `<span class="err" data-testid="error-${k}">${esc(wiz.errors[k])}</span>` : ""; }
+function bad(k){ return wiz.errors[k] ? " bad" : ""; }
+function opts(list, sel, placeholder){
+  return `${placeholder?`<option value="">${esc(placeholder)}</option>`:""}${list.map(o=>{
+    const v = typeof o === "string" ? o : o.value, l = typeof o === "string" ? o : o.label;
+    return `<option value="${esc(v)}"${v===sel?" selected":""}>${esc(l)}</option>`;
+  }).join("")}`;
+}
+
+function stepBody(d){
+  switch(STEPS[wiz.step].id){
+
+  case "prospect": return `
+    <div class="field" style="margin-bottom:16px">
+      <label>Client classification</label>
+      <div class="radio-set" data-testid="client-type">
+        ${["Individual","Joint","Trust","Corporate"].map(t=>`
+          <label><input type="radio" name="clientType" value="${t}" data-field="clientType" ${d.clientType===t?"checked":""} data-testid="type-${slug(t)}"> ${t}</label>`).join("")}
+      </div>
+      <span class="hint">Trusts and corporates require beneficial ownership details.</span>
+    </div>
+
+    ${["Trust","Corporate"].includes(d.clientType) ? `
+      <div class="grid g2" style="margin-bottom:14px">
+        <div class="field${bad("entityName")}"><label for="w-entity">Registered entity name *</label>
+          <input type="text" id="w-entity" data-field="entityName" data-testid="input-entityName" value="${esc(d.entityName)}" placeholder="e.g. Marlowe Ridge Holdings Pte Ltd">${errFor("entityName")}</div>
+        ${d.clientType==="Corporate" ? `
+          <div class="field${bad("registrationNo")}"><label for="w-reg">Company registration number *</label>
+            <input type="text" id="w-reg" data-field="registrationNo" data-testid="input-registrationNo" value="${esc(d.registrationNo)}" placeholder="e.g. 09871234">${errFor("registrationNo")}</div>
+          <div class="field"><label for="w-lei">Legal entity identifier (LEI)</label>
+            <input type="text" id="w-lei" data-field="lei" data-testid="input-lei" value="${esc(d.lei)}" placeholder="20 characters">
+            <span class="hint">Required before any MiFID-reportable transaction.</span></div>
+        ` : `
+          <div class="field${bad("trustee")}"><label for="w-trustee">Trustee *</label>
+            <input type="text" id="w-trustee" data-field="trustee" data-testid="input-trustee" value="${esc(d.trustee)}">${errFor("trustee")}</div>
+          <div class="field"><label for="w-settlor">Settlor</label>
+            <input type="text" id="w-settlor" data-field="settlor" data-testid="input-settlor" value="${esc(d.settlor)}"></div>
+        `}
+      </div>` : `
+      <div class="grid g2" style="margin-bottom:14px">
+        <div class="field${bad("firstName")}"><label for="w-first">First name *</label>
+          <input type="text" id="w-first" data-field="firstName" data-testid="input-firstName" value="${esc(d.firstName)}">${errFor("firstName")}</div>
+        <div class="field${bad("lastName")}"><label for="w-last">Last name *</label>
+          <input type="text" id="w-last" data-field="lastName" data-testid="input-lastName" value="${esc(d.lastName)}">${errFor("lastName")}</div>
+        <div class="field${bad("dob")}"><label for="w-dob">Date of birth *</label>
+          <input type="date" id="w-dob" data-field="dob" data-testid="input-dob" value="${esc(d.dob)}">
+          <span class="hint">Client must be 18 or over.</span>${errFor("dob")}</div>
+      </div>`}
+
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="field${bad("nationality")}"><label for="w-nat">${["Trust","Corporate"].includes(d.clientType)?"Country of incorporation *":"Nationality *"}</label>
+        <select id="w-nat" data-field="nationality" data-testid="input-nationality">${opts(COUNTRIES,d.nationality,"Select…")}</select>${errFor("nationality")}</div>
+      <div class="field${bad("taxResidency")}"><label for="w-tax">Tax residency *</label>
+        <select id="w-tax" data-field="taxResidency" data-testid="input-taxResidency">${opts(COUNTRIES,d.taxResidency,"Select…")}</select>${errFor("taxResidency")}</div>
+      <div class="field${bad("email")}"><label for="w-email">Email *</label>
+        <input type="email" id="w-email" data-field="email" data-testid="input-email" value="${esc(d.email)}" placeholder="name@example.com">${errFor("email")}</div>
+      <div class="field${bad("phone")}"><label for="w-phone">Telephone *</label>
+        <input type="tel" id="w-phone" data-field="phone" data-testid="input-phone" value="${esc(d.phone)}" placeholder="+44 20 7946 0000">${errFor("phone")}</div>
+    </div>
+
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="field${bad("addressLine")}"><label for="w-addr">Address line *</label>
+        <input type="text" id="w-addr" data-field="addressLine" data-testid="input-addressLine" value="${esc(d.addressLine)}">${errFor("addressLine")}</div>
+      <div class="field${bad("city")}"><label for="w-city">City *</label>
+        <input type="text" id="w-city" data-field="city" data-testid="input-city" value="${esc(d.city)}">${errFor("city")}</div>
+      <div class="field"><label for="w-post">Postcode / ZIP</label>
+        <input type="text" id="w-post" data-field="postcode" data-testid="input-postcode" value="${esc(d.postcode)}"></div>
+      <div class="field${bad("country")}"><label for="w-country">Country of residence *</label>
+        <select id="w-country" data-field="country" data-testid="input-country">${opts(COUNTRIES,d.country,"Select…")}</select>${errFor("country")}</div>
+    </div>
+
+    <div class="grid g2">
+      <div class="field${bad("adviser")}"><label for="w-adviser">Relationship manager *</label>
+        <select id="w-adviser" data-field="adviser" data-testid="input-adviser">${opts(ADVISERS,d.adviser,"Unassigned")}</select>${errFor("adviser")}</div>
+      <div class="field"><label for="w-intro">Introduced by</label>
+        <input type="text" id="w-intro" data-field="introducedBy" data-testid="input-introducedBy" value="${esc(d.introducedBy)}" placeholder="Referral source or intermediary">
+      </div>
+    </div>`;
+
+  case "kyc": return `
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="field${bad("idType")}"><label for="w-idtype">Identity document type *</label>
+        <select id="w-idtype" data-field="idType" data-testid="input-idType">${opts(["Passport","National identity card","Driving licence","Certificate of incorporation"],d.idType,"Select…")}</select>${errFor("idType")}</div>
+      <div class="field${bad("idNumber")}"><label for="w-idnum">Document number *</label>
+        <input type="text" id="w-idnum" data-field="idNumber" data-testid="input-idNumber" value="${esc(d.idNumber)}">${errFor("idNumber")}</div>
+      <div class="field${bad("idExpiry")}"><label for="w-idexp">Expiry date *</label>
+        <input type="date" id="w-idexp" data-field="idExpiry" data-testid="input-idExpiry" value="${esc(d.idExpiry)}">
+        <span class="hint">Documents expiring within 3 months are rejected.</span>${errFor("idExpiry")}</div>
+    </div>
+
+    <div class="field${bad("pep")}" style="margin-bottom:14px">
+      <label>Is the client, or a close associate, a politically exposed person? *</label>
+      <div class="radio-set" data-testid="input-pep">
+        <label><input type="radio" name="pep" value="no"  data-field="pep" ${d.pep==="no"?"checked":""} data-testid="pep-no"> No</label>
+        <label><input type="radio" name="pep" value="yes" data-field="pep" ${d.pep==="yes"?"checked":""} data-testid="pep-yes"> Yes</label>
+      </div>${errFor("pep")}
+    </div>
+
+    ${d.pep==="yes" ? `
+      <div class="field${bad("pepDetail")}" style="margin-bottom:14px">
+        <label for="w-pepdetail">Position held, jurisdiction and relationship *</label>
+        <textarea id="w-pepdetail" data-field="pepDetail" data-testid="input-pepDetail" placeholder="e.g. Deputy finance minister, Republic of X, 2019–2024 — client is the spouse.">${esc(d.pepDetail)}</textarea>
+        ${errFor("pepDetail")}
+      </div>
+      <div class="banner b-warn" style="margin-bottom:14px" data-testid="pep-notice"><div><b>Enhanced due diligence triggered</b>PEP relationships require senior management approval and annual review regardless of the screening outcome.</div></div>
+    ` : ""}
+
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="field${bad("sourceOfWealth")}"><label for="w-sow">Source of wealth *</label>
+        <select id="w-sow" data-field="sourceOfWealth" data-testid="input-sourceOfWealth">${opts(["Employment income","Business sale or disposal","Inheritance","Investment returns","Property sale","Professional practice","Other"],d.sourceOfWealth,"Select…")}</select>${errFor("sourceOfWealth")}</div>
+      <div class="field${bad("sourceOfFunds")}"><label for="w-sof">Source of funds for this mandate *</label>
+        <select id="w-sof" data-field="sourceOfFunds" data-testid="input-sourceOfFunds">${opts(["Transfer from another institution","Bank deposit","Sale proceeds","In-specie securities transfer","Trust distribution"],d.sourceOfFunds,"Select…")}</select>${errFor("sourceOfFunds")}</div>
+      <div class="field${bad("expectedInflow")}"><label for="w-inflow">Expected annual inflow *</label>
+        <input type="number" id="w-inflow" data-field="expectedInflow" data-testid="input-expectedInflow" value="${esc(d.expectedInflow)}" min="0" step="10000" placeholder="250000">${errFor("expectedInflow")}</div>
+    </div>
+
+    <div class="sep"></div>
+    <h3 style="margin-bottom:8px">Sanctions, PEP and adverse media screening</h3>
+    <p class="legend" style="margin-bottom:12px">Screens the record against the UK HMT and OFAC consolidated lists, a PEP register and an adverse media index. Screening must be run before the record can progress.</p>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn btn-accent" data-act="run-screening" data-testid="run-screening" ${wiz.screening==="running"?"disabled":""}>
+        ${wiz.screening==="running"?`<span class="spin"></span> Screening…`:"Run screening"}</button>
+      ${d.screening?`<span class="legend">Last run ${fmtDT(d.screening.at)}</span>`:`<span class="legend">Not yet run</span>`}
+    </div>
+    ${wiz.screening==="running" ? `<div class="banner b-info" data-testid="screening-pending"><div><b>Screening in progress</b>Four lists are being queried. This typically completes in a few seconds.</div></div>` : ""}
+    ${d.screening && wiz.screening!=="running" ? `
+      <div class="banner b-${d.screening.severity==="ok"?"ok":d.screening.severity==="warn"?"warn":"risk"}" data-testid="screening-outcome">
+        <div><b>${esc(d.screening.result)}</b>${esc(d.screening.detail)}</div></div>
+      ${d.screening.severity==="risk" ? `
+        <div class="field check" style="margin-top:12px">
+          <input type="checkbox" id="w-override" data-field="screeningOverride" ${d.screeningOverride?"checked":""} data-testid="input-screeningOverride">
+          <label for="w-override">I have adjudicated this match as a false positive and recorded the rationale below. *</label>
+        </div>
+        <div class="field${bad("overrideReason")}" style="margin-top:10px">
+          <label for="w-overridereason">Adjudication rationale *</label>
+          <textarea id="w-overridereason" data-field="overrideReason" data-testid="input-overrideReason" placeholder="Date of birth and nationality differ from the listed individual…">${esc(d.overrideReason||"")}</textarea>
+          ${errFor("overrideReason")}
+        </div>` : ""}
+    ` : ""}
+    ${errFor("screening")}`;
+
+  case "risk": {
+    const answered = Object.keys(d.answers||{}).length;
+    const score = Object.values(d.answers||{}).reduce((a,b)=>a+Number(b),0);
+    const provisional = answered===RISK_QUESTIONS.length ? riskBand(score) : null;
+    return `
+    <p class="legend" style="margin-bottom:14px">All eight questions must be answered. The resulting score maps to one of four risk bands and determines which model portfolios may be recommended.</p>
+    <div data-testid="risk-questionnaire">
+      ${RISK_QUESTIONS.map((q,qi)=>`
+        <div class="field${bad(q.id)}" style="margin-bottom:16px">
+          <label>${qi+1}. ${esc(q.text)} *</label>
+          <div class="radio-set" data-testid="rq-${q.id}">
+            ${q.opts.map((o,oi)=>`<label><input type="radio" name="${q.id}" value="${oi+1}" data-answer="${q.id}" ${String(d.answers?.[q.id])===String(oi+1)?"checked":""} data-testid="${q.id}-opt${oi+1}"> ${esc(o)}</label>`).join("")}
+          </div>${errFor(q.id)}
+        </div>`).join("")}
+    </div>
+
+    <div class="card" style="background:var(--surface-2);box-shadow:none;margin-bottom:16px">
+      <div class="card-body">
+        <div class="row" style="justify-content:space-between">
+          <div><div class="k legend">Questionnaire score</div>
+            <div class="mono" style="font-size:22px;font-weight:600" data-testid="risk-score">${answered?score:"—"} <span style="font-size:13px;color:var(--ink-3)">/ 32</span></div></div>
+          <div style="text-align:right"><div class="k legend">Indicated band</div>
+            <div style="font-size:18px;font-weight:600" data-testid="risk-band">${provisional?esc(provisional):`${answered} of ${RISK_QUESTIONS.length} answered`}</div></div>
+        </div>
+        <div class="scorebar" style="margin-top:12px"><span style="width:${Math.round((answered?score:0)/32*100)}%"></span></div>
+        <div class="legend" style="margin-top:6px">Conservative ≤13 · Balanced ≤20 · Growth ≤26 · Aggressive 27+</div>
+      </div>
+    </div>
+
+    <div class="grid g2">
+      <div class="field${bad("objective")}"><label for="w-obj">Stated investment objective *</label>
+        <select id="w-obj" data-field="objective" data-testid="input-objective">${opts(Object.keys(OBJECTIVE_RISK_FLOOR),d.objective,"Select…")}</select>${errFor("objective")}</div>
+      <div class="field${bad("horizon")}"><label for="w-hor">Time horizon *</label>
+        <select id="w-hor" data-field="horizon" data-testid="input-horizon">${opts(["Under 3 years","3–5 years","5–10 years","Over 10 years"],d.horizon,"Select…")}</select>${errFor("horizon")}</div>
+      <div class="field${bad("liquidity")}"><label for="w-liq">Liquidity requirement *</label>
+        <select id="w-liq" data-field="liquidity" data-testid="input-liquidity">${opts(["Immediate access to all assets","Up to 10% within one month","Up to 25% within one quarter","No near-term requirement"],d.liquidity,"Select…")}</select>${errFor("liquidity")}</div>
+      <div class="field"><label for="w-esg">ESG preference</label>
+        <select id="w-esg" data-field="esg" data-testid="input-esg">${opts(["No preference","Exclusions only","Article 8 — promotes ESG characteristics","Article 9 — sustainable objective"],d.esg,"")}</select></div>
+    </div>
+    ${provisional && d.objective ? suitabilityFlag({...d, riskCategory:provisional}) : ""}`;
+  }
+
+  case "documents": return `
+    <p class="legend" style="margin-bottom:16px">Three documents are mandatory. A tax residency form becomes mandatory where tax residency differs from country of residence. Accepted formats: PDF, JPG, PNG — up to 10 MB.</p>
+    <div data-testid="upload-list">
+      ${REQUIRED_DOCS.map(doc=>{
+        const f = d.documents?.[doc.id];
+        const mandatory = doc.required || (doc.id==="doc-tax" && d.taxResidency && d.country && d.taxResidency!==d.country);
+        return `
+        <div class="doc-row" data-testid="upload-${doc.id}">
+          <div>
+            <div class="nm">${esc(doc.name)} ${mandatory?`<span class="tag" style="border-color:var(--risk);color:var(--risk)">mandatory</span>`:`<span class="tag">optional</span>`}</div>
+            <div class="mt">${f?`${esc(f.name)} · ${Math.round(f.size/1024)} KB`:esc(doc.note)}</div>
+            ${wiz.errors[doc.id]?`<span class="err" data-testid="error-${doc.id}">${esc(wiz.errors[doc.id])}</span>`:""}
+          </div>
+          <div class="row">
+            ${f ? `<span class="pill p-ok">Received</span><button class="btn btn-sm" data-act="remove-doc" data-doc="${doc.id}" data-testid="remove-${doc.id}">Remove</button>`
+                : `<label class="btn btn-sm" for="file-${doc.id}">Choose file</label>
+                   <input type="file" id="file-${doc.id}" data-upload="${doc.id}" data-testid="file-${doc.id}" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+                   <button class="btn btn-sm" data-act="sample-doc" data-doc="${doc.id}" data-testid="sample-${doc.id}">Attach sample</button>`}
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+    ${errFor("documents")}`;
+
+  case "mandate": return `
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="field${bad("mandate")}"><label for="w-mandate">Service model *</label>
+        <select id="w-mandate" data-field="mandate" data-testid="input-mandate">${opts(["Discretionary","Advisory","Execution-only"],d.mandate,"Select…")}</select>
+        <span class="hint">Execution-only mandates bypass suitability but require an appropriateness warning.</span>${errFor("mandate")}</div>
+      <div class="field"><label for="w-ccy">Base currency</label>
+        <select id="w-ccy" data-field="currency" data-testid="input-currency">${opts(CURRENCIES,d.currency,"")}</select></div>
+      <div class="field${bad("fundingAmount")}"><label for="w-fund">Initial funding amount *</label>
+        <input type="number" id="w-fund" data-field="fundingAmount" data-testid="input-fundingAmount" value="${esc(d.fundingAmount)}" min="0" step="50000" placeholder="1000000">
+        <span class="hint">Minimum mandate size is 250,000.</span>${errFor("fundingAmount")}</div>
+      <div class="field${bad("custodian")}"><label for="w-cust">Custodian *</label>
+        <select id="w-cust" data-field="custodian" data-testid="input-custodian">${opts(CUSTODIANS,d.custodian,"Select…")}</select>${errFor("custodian")}</div>
+    </div>
+
+    <div class="field${bad("modelPortfolio")}" style="margin-bottom:8px">
+      <label for="w-mp">Model portfolio *</label>
+      <select id="w-mp" data-field="modelPortfolio" data-testid="input-modelPortfolio">
+        ${opts(MODEL_PORTFOLIOS.map(m=>({value:m.id,label:`${m.name} — ${m.risk} (${m.equity}% equity)`})), d.modelPortfolio, "Select…")}
+      </select>${errFor("modelPortfolio")}
+      ${mpMismatch(d)}
+    </div>
+
+    <div class="sep"></div>
+    <div class="row" style="margin-bottom:10px">
+      <h3 style="flex:1">Authorised signatories</h3>
+      <button class="btn btn-sm" data-act="add-signatory" data-testid="add-signatory">Add signatory</button>
+    </div>
+    ${(d.signatories||[]).length ? `<div class="table-wrap"><table data-testid="signatory-table">
+      <thead><tr><th>Name</th><th>Capacity</th><th>Authority</th><th class="right"></th></tr></thead>
+      <tbody>${d.signatories.map((s,i)=>`<tr data-testid="signatory-row-${i}">
+        <td><input type="text" data-sig="${i}" data-sigfield="name" value="${esc(s.name)}" data-testid="signatory-name-${i}" aria-label="Signatory ${i+1} name"></td>
+        <td><select data-sig="${i}" data-sigfield="capacity" data-testid="signatory-capacity-${i}" aria-label="Signatory ${i+1} capacity">${opts(["Joint holder","Director","Trustee","Power of attorney","Authorised representative"],s.capacity,"Select…")}</select></td>
+        <td><select data-sig="${i}" data-sigfield="authority" data-testid="signatory-authority-${i}" aria-label="Signatory ${i+1} authority">${opts(["Sole","Joint with any other","Joint with all"],s.authority,"Select…")}</select></td>
+        <td class="right"><button class="btn btn-sm btn-danger" data-act="remove-signatory" data-idx="${i}" data-testid="remove-signatory-${i}">Remove</button></td>
+      </tr>`).join("")}</tbody></table></div>`
+      : `<p class="legend">None recorded. ${d.clientType==="Joint"?"A joint account requires at least one additional signatory.":"Optional for a sole individual mandate."}</p>`}
+    ${errFor("signatories")}
+
+    <div class="sep"></div>
+    <h3 style="margin-bottom:10px">Indicative annual fee</h3>
+    ${feeTable(d.fundingAmount, d.currency)}`;
+
+  case "review": {
+    const checks = completeness(d);
+    const outstanding = checks.filter(c=>!c.ok);
+    const score = Object.values(d.answers||{}).reduce((a,b)=>a+Number(b),0);
+    const band = Object.keys(d.answers||{}).length===RISK_QUESTIONS.length ? riskBand(score) : "";
+    return `
+    ${outstanding.length
+      ? `<div class="banner b-warn" style="margin-bottom:16px" data-testid="review-incomplete"><div><b>${outstanding.length} item${outstanding.length===1?"":"s"} outstanding</b>The record cannot be submitted until every mandatory item is complete.</div></div>`
+      : `<div class="banner b-ok" style="margin-bottom:16px" data-testid="review-complete"><div><b>Ready for submission</b>All mandatory items are complete. Submitting routes the record to the compliance queue for four-eyes approval.</div></div>`}
+
+    <h3 style="margin-bottom:10px">Completeness checklist</h3>
+    <div class="table-wrap" style="margin-bottom:18px">
+      <table data-testid="checklist">
+        <thead><tr><th>Requirement</th><th>Status</th><th>Detail</th></tr></thead>
+        <tbody>${checks.map(c=>`<tr data-testid="check-${slug(c.label)}">
+          <td style="font-weight:600">${esc(c.label)}</td>
+          <td>${c.ok?`<span class="pill p-ok">Complete</span>`:`<span class="pill p-risk">Outstanding</span>`}</td>
+          <td class="legend">${esc(c.detail)}</td></tr>`).join("")}</tbody>
+      </table>
+    </div>
+
+    <div class="grid g2">
+      <div>
+        <h3 style="margin-bottom:10px">Prospect</h3>
+        <dl class="kv" data-testid="review-prospect">
+          <dt>Name</dt><dd>${esc(clientName(d))}</dd>
+          <dt>Classification</dt><dd>${esc(d.clientType)}</dd>
+          <dt>Nationality</dt><dd>${esc(d.nationality||"—")}</dd>
+          <dt>Tax residency</dt><dd>${esc(d.taxResidency||"—")}</dd>
+          <dt>Email</dt><dd>${esc(d.email||"—")}</dd>
+          <dt>Relationship manager</dt><dd>${esc(d.adviser||"—")}</dd>
+        </dl>
+      </div>
+      <div>
+        <h3 style="margin-bottom:10px">KYC & suitability</h3>
+        <dl class="kv" data-testid="review-kyc">
+          <dt>Screening</dt><dd>${d.screening?esc(d.screening.result):"Not run"}</dd>
+          <dt>PEP</dt><dd>${d.pep==="yes"?"Declared":d.pep==="no"?"None":"—"}</dd>
+          <dt>Risk band</dt><dd>${esc(band||"Not profiled")}${band?` <span class="legend">score ${score}/32</span>`:""}</dd>
+          <dt>Objective</dt><dd>${esc(d.objective||"—")}</dd>
+          <dt>Documents</dt><dd>${Object.values(d.documents||{}).filter(Boolean).length} of ${REQUIRED_DOCS.length} received</dd>
+        </dl>
+      </div>
+      <div>
+        <h3 style="margin-bottom:10px">Mandate</h3>
+        <dl class="kv" data-testid="review-mandate">
+          <dt>Service</dt><dd>${esc(d.mandate||"—")}</dd>
+          <dt>Model portfolio</dt><dd>${esc(MODEL_PORTFOLIOS.find(m=>m.id===d.modelPortfolio)?.name||"—")}</dd>
+          <dt>Initial funding</dt><dd class="mono">${money(d.fundingAmount,d.currency)}</dd>
+          <dt>Custodian</dt><dd>${esc(d.custodian||"—")}</dd>
+          <dt>Indicative fee</dt><dd class="mono">${money(annualFee(d.fundingAmount).fee, d.currency)} p.a.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3 style="margin-bottom:10px">Declaration</h3>
+        <div class="field check" style="margin-bottom:10px">
+          <input type="checkbox" id="w-declare" data-field="declaration" ${d.declaration?"checked":""} data-testid="input-declaration">
+          <label for="w-declare">I confirm the information recorded has been verified against original or certified documents and that the recommended mandate is suitable for this client. *</label>
+        </div>
+        ${errFor("declaration")}
+        ${suitabilityFlag({...d, riskCategory:band})}
+      </div>
+    </div>`;
+  }
+  }
+}
+
+function mpMismatch(d){
+  const score = Object.values(d.answers||{}).reduce((a,b)=>a+Number(b),0);
+  if(Object.keys(d.answers||{}).length !== RISK_QUESTIONS.length || !d.modelPortfolio) return "";
+  const band = riskBand(score);
+  const mp = MODEL_PORTFOLIOS.find(m=>m.id===d.modelPortfolio);
+  if(!mp) return "";
+  const gap = bandIndex(mp.risk) - bandIndex(band);
+  if(gap === 0) return `<span class="hint" data-testid="mp-aligned">Aligned with the client's ${esc(band)} risk band.</span>`;
+  return `<div class="banner b-warn" style="margin-top:10px" data-testid="mp-mismatch"><div><b>Portfolio outside risk band</b>${esc(mp.name)} is a ${esc(mp.risk)} strategy; the client profiles as ${esc(band)}. Compliance will require a documented exception.</div></div>`;
+}
+
+function completeness(d){
+  const mandatoryDocs = REQUIRED_DOCS.filter(doc => doc.required || (doc.id==="doc-tax" && d.taxResidency && d.country && d.taxResidency!==d.country));
+  const missingDocs = mandatoryDocs.filter(doc=>!d.documents?.[doc.id]);
+  const answered = Object.keys(d.answers||{}).length;
+  const screeningOk = !!d.screening && (d.screening.severity!=="risk" || (d.screeningOverride && (d.overrideReason||"").trim().length>=20));
+  return [
+    {label:"Prospect details", ok: !!(prospectValid(d)), detail:"Identity, contact and residency particulars"},
+    {label:"KYC and AML", ok: !!(d.idType && d.idNumber && d.idExpiry && d.pep && d.sourceOfWealth && d.sourceOfFunds), detail:"Identification and source of wealth"},
+    {label:"Screening", ok: screeningOk, detail: d.screening ? (d.screening.severity==="risk" ? "Potential match requires an adjudication rationale of at least 20 characters" : d.screening.result) : "Not yet run"},
+    {label:"Risk questionnaire", ok: answered===RISK_QUESTIONS.length && !!d.objective && !!d.horizon && !!d.liquidity, detail:`${answered} of ${RISK_QUESTIONS.length} questions answered`},
+    {label:"Mandatory documents", ok: missingDocs.length===0, detail: missingDocs.length?`Outstanding: ${missingDocs.map(x=>x.name).join(", ")}`:"All received"},
+    {label:"Mandate and accounts", ok: !!(d.mandate && d.custodian && d.modelPortfolio && Number(d.fundingAmount)>=250000), detail:"Service model, custodian, portfolio and funding of at least 250,000"},
+    {label:"Adviser declaration", ok: !!d.declaration, detail:"Signed off by the relationship manager"}
+  ];
+}
+function prospectValid(d){
+  const base = d.nationality && d.taxResidency && d.email && d.phone && d.addressLine && d.city && d.country && d.adviser;
+  if(["Trust","Corporate"].includes(d.clientType)) return base && d.entityName && (d.clientType==="Corporate" ? d.registrationNo : d.trustee);
+  return base && d.firstName && d.lastName && d.dob;
+}
+
+/* ---------------- wizard validation ---------------- */
+function validateStep(){
+  const d = ensureDraft(); const e = {};
+  const req = (k,msg)=>{ if(!String(d[k]??"").trim()) e[k]=msg; };
+  switch(STEPS[wiz.step].id){
+    case "prospect":
+      if(["Trust","Corporate"].includes(d.clientType)){
+        req("entityName","Registered entity name is required.");
+        if(d.clientType==="Corporate") req("registrationNo","Company registration number is required.");
+        else req("trustee","Trustee name is required.");
+      }else{
+        req("firstName","First name is required.");
+        req("lastName","Last name is required.");
+        req("dob","Date of birth is required.");
+        if(d.dob){
+          const age = (today() - new Date(d.dob))/(365.25*86400000);
+          if(age < 18) e.dob = "Client must be 18 or over to hold a mandate.";
+          if(age > 120) e.dob = "Enter a valid date of birth.";
+        }
+      }
+      req("nationality","Select a country.");
+      req("taxResidency","Tax residency is required.");
+      req("email","Email is required.");
+      if(d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) e.email = "Enter a valid email address, e.g. name@example.com.";
+      req("phone","Telephone is required.");
+      if(d.phone && d.phone.replace(/\D/g,"").length < 8) e.phone = "Enter a telephone number with at least 8 digits.";
+      req("addressLine","Address line is required.");
+      req("city","City is required.");
+      req("country","Country of residence is required.");
+      req("adviser","Assign a relationship manager.");
+      break;
+    case "kyc":
+      req("idType","Select a document type.");
+      req("idNumber","Document number is required.");
+      req("idExpiry","Expiry date is required.");
+      if(d.idExpiry){
+        const days = daysBetween(today(), d.idExpiry);
+        if(days < 0) e.idExpiry = "This document has expired.";
+        else if(days < 90) e.idExpiry = "Document expires within 3 months — obtain a renewed copy.";
+      }
+      if(!d.pep) e.pep = "A PEP declaration is required.";
+      if(d.pep==="yes" && !String(d.pepDetail||"").trim()) e.pepDetail = "Describe the position, jurisdiction and relationship.";
+      req("sourceOfWealth","Select a source of wealth.");
+      req("sourceOfFunds","Select a source of funds.");
+      if(!String(d.expectedInflow??"").trim()) e.expectedInflow = "Expected annual inflow is required.";
+      else if(Number(d.expectedInflow) < 0) e.expectedInflow = "Enter a positive amount.";
+      if(!d.screening) e.screening = "Run sanctions and PEP screening before continuing.";
+      else if(d.screening.severity==="risk"){
+        if(!d.screeningOverride) e.overrideReason = "A potential match must be adjudicated before continuing.";
+        else if(String(d.overrideReason||"").trim().length < 20) e.overrideReason = "Provide an adjudication rationale of at least 20 characters.";
+      }
+      break;
+    case "risk":
+      for(const q of RISK_QUESTIONS) if(!d.answers?.[q.id]) e[q.id] = "Select an answer.";
+      req("objective","Select an investment objective.");
+      req("horizon","Select a time horizon.");
+      req("liquidity","Select a liquidity requirement.");
+      break;
+    case "documents": {
+      const mandatory = REQUIRED_DOCS.filter(doc => doc.required || (doc.id==="doc-tax" && d.taxResidency && d.country && d.taxResidency!==d.country));
+      for(const doc of mandatory) if(!d.documents?.[doc.id]) e[doc.id] = `${doc.name} is mandatory.`;
+      break;
+    }
+    case "mandate":
+      req("mandate","Select a service model.");
+      req("custodian","Select a custodian.");
+      req("modelPortfolio","Select a model portfolio.");
+      if(!String(d.fundingAmount??"").trim()) e.fundingAmount = "Initial funding amount is required.";
+      else if(Number(d.fundingAmount) < 250000) e.fundingAmount = "Minimum mandate size is 250,000 in the base currency.";
+      if(d.clientType==="Joint" && !(d.signatories||[]).some(s=>s.name && s.capacity)) e.signatories = "A joint mandate requires at least one additional signatory with a capacity.";
+      (d.signatories||[]).forEach((s,i)=>{ if(!s.name || !s.capacity) e.signatories = `Signatory ${i+1} needs a name and a capacity.`; });
+      break;
+    case "review":
+      if(!d.declaration) e.declaration = "You must confirm the declaration before submitting.";
+      if(completeness(d).some(c=>!c.ok)) e.declaration = e.declaration || "Resolve the outstanding checklist items before submitting.";
+      break;
+  }
+  wiz.errors = e;
+  return Object.keys(e).length === 0;
+}
+
+function submitDraft(){
+  const d = ensureDraft();
+  if(!validateStep()){ render(); toast("Submission blocked — see the highlighted items."); return; }
+  const score = Object.values(d.answers).reduce((a,b)=>a+Number(b),0);
+  d.id = "CW-" + state.nextId++;
+  d.riskScore = score;
+  d.riskCategory = riskBand(score);
+  d.stage = "Awaiting approval";
+  d.submittedBy = actor().name;
+  d.submittedAt = new Date().toISOString();
+  d.aum = 0;
+  audit(d, `Onboarding record submitted for compliance approval. Screening outcome: ${d.screening.result}.`);
+  state.clients.push(d);
+  state.draft = null;
+  wiz = {step:0, errors:{}, screening:"idle"};
+  save();
+  toast(`${clientName(d)} submitted as ${d.id} — now with compliance.`);
+  go(`#/clients/${d.id}`);
+}
+
+function approveClient(id){
+  const c = state.clients.find(x=>x.id===id); if(!c) return;
+  if(c.submittedBy === actor().name){ toast("Four-eyes control: the submitting user cannot approve the same record."); return; }
+  modal("Approve onboarding", `
+    <p>Approving <b>${esc(clientName(c))}</b> (<span class="mono">${c.id}</span>) activates the ${esc(c.mandate||"")} mandate and sets a periodic KYC review 12 months out.</p>
+    ${c.screening?.severity!=="ok" ? `<div class="banner b-warn" style="margin-top:12px"><div><b>${esc(c.screening.result)}</b>Confirm the adjudication rationale has been reviewed and retained.</div></div>`:""}
+    <div class="field" style="margin-top:14px"><label for="m-note">Approval note</label>
+      <textarea id="m-note" data-testid="approve-note" placeholder="Optional note retained on the audit trail"></textarea></div>`,
+    `<button class="btn btn-accent" data-act="approve-confirm" data-id="${id}" data-testid="approve-confirm">Confirm approval</button>
+     <button class="btn" data-act="modal-close">Cancel</button>`);
+}
+function approveConfirm(id){
+  const c = state.clients.find(x=>x.id===id); if(!c) return;
+  const note = ($("#m-note")?.value || "").trim();
+  const d0 = today();
+  c.stage = "Active";
+  c.approvedBy = actor().name;
+  c.kycCompletedOn = d0.toISOString().slice(0,10);
+  const due = new Date(d0); due.setFullYear(due.getFullYear()+1);
+  c.kycReviewDue = due.toISOString().slice(0,10);
+  c.aum = Number(c.fundingAmount||0);
+  audit(c, `Onboarding approved; mandate activated.${note?` Note: ${note}`:""}`);
+  save(); closeModal();
+  toast(`${c.id} approved — mandate active.`);
+  render();
+}
+function rejectClient(id){
+  const c = state.clients.find(x=>x.id===id); if(!c) return;
+  modal("Reject onboarding", `
+    <p>Rejecting <b>${esc(clientName(c))}</b> (<span class="mono">${c.id}</span>) closes the record. A reason is retained for regulatory reporting.</p>
+    <div class="field" style="margin-top:14px"><label for="m-reason">Reason for rejection *</label>
+      <textarea id="m-reason" data-testid="reject-reason" placeholder="e.g. Sanctions match adjudicated as a true positive."></textarea>
+      <span class="hint">At least 15 characters.</span>
+      <span class="err" id="m-reason-err" hidden data-testid="reject-reason-error">A reason of at least 15 characters is required.</span></div>`,
+    `<button class="btn btn-danger" data-act="reject-confirm" data-id="${id}" data-testid="reject-confirm">Confirm rejection</button>
+     <button class="btn" data-act="modal-close">Cancel</button>`);
+}
+function rejectConfirm(id){
+  const c = state.clients.find(x=>x.id===id); if(!c) return;
+  const r = ($("#m-reason")?.value||"").trim();
+  if(r.length < 15){ const el = $("#m-reason-err"); if(el) el.hidden = false; return; }
+  c.stage = "Rejected"; c.rejectReason = r; c.approvedBy = null;
+  audit(c, `Onboarding rejected — ${r}`);
+  save(); closeModal();
+  toast(`${c.id} rejected.`);
+  render();
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  const hash = currentRoute();
+  renderNav(); renderActor();
+  $("#build-id").textContent = BUILD;
+  let html = "", crumb = "";
+  if(hash.startsWith("#/clients/")){
+    const id = decodeURIComponent(hash.split("/")[2] || "");
+    html = viewClient(id); crumb = `Client management / Clients / ${id}`;
+  }else{
+    switch(hash){
+      case "#/clients":        html = viewClients();   crumb = "Client management / Clients"; break;
+      case "#/onboarding":     html = viewPipeline();  crumb = "Client management / Onboarding pipeline"; break;
+      case "#/onboarding/new": html = viewWizard();    crumb = "Client management / Onboarding / New client"; break;
+      case "#/compliance":     html = viewCompliance();crumb = "Client management / Compliance queue"; break;
+      default:                 html = viewDashboard(); crumb = "Overview / Dashboard";
+    }
+  }
+  $("#view").innerHTML = html;
+  $("#crumb").textContent = crumb;
+  document.title = crumb.split(" / ").pop() + " · Cavendish Private Wealth";
+}
+
+/* ---------------- events ---------------- */
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("[data-act]");
+  if(!t) return;
+  const act = t.dataset.act, d = state.draft;
+  switch(act){
+    case "modal-close": closeModal(); return;
+    case "open-client": go(`#/clients/${t.dataset.id}`); return;
+    case "client-tab": clientTab = t.dataset.tab; render(); return;
+    case "sort": {
+      const k = t.dataset.key;
+      if(listUI.sort===k) listUI.dir *= -1; else { listUI.sort = k; listUI.dir = 1; }
+      render(); return;
+    }
+    case "page": listUI.page = Number(t.dataset.to); render(); return;
+    case "clear-filters": listUI = {...listUI, q:"", stage:"", risk:"", adviser:"", page:1}; render(); return;
+    case "goto-step": {
+      const target = Number(t.dataset.step);
+      if(target <= wiz.step){ wiz.step = target; wiz.errors = {}; render(); }
+      else if(validateStep()){ wiz.step = target; render(); }
+      else { render(); toast("Complete the highlighted fields first."); }
+      return;
+    }
+    case "wiz-back": wiz.step = Math.max(0, wiz.step-1); wiz.errors = {}; render(); return;
+    case "wiz-next":
+      if(validateStep()){ wiz.step = Math.min(STEPS.length-1, wiz.step+1); save(); render(); }
+      else { render(); toast("Some required information is missing or invalid."); }
+      return;
+    case "wiz-submit": submitDraft(); return;
+    case "discard-draft":
+      state.draft = null; wiz = {step:0, errors:{}, screening:"idle"}; save();
+      toast("Draft discarded."); go("#/onboarding"); return;
+    case "resume-draft": {
+      const c = state.clients.find(x=>x.id===t.dataset.id);
+      if(c){ state.draft = c; wiz = {step:0, errors:{}, screening:"idle"}; go("#/onboarding/new"); }
+      return;
+    }
+    case "run-screening": {
+      wiz.screening = "running"; render();
+      setTimeout(()=>{
+        const dd = ensureDraft();
+        const v = screeningVerdict(dd);
+        dd.screening = {...v, at:new Date().toISOString()};
+        dd.screeningOverride = false; dd.overrideReason = "";
+        wiz.screening = "done"; save(); render();
+        toast(`Screening complete — ${v.result}.`);
+      }, 1800);
+      return;
+    }
+    case "sample-doc": {
+      const dd = ensureDraft();
+      dd.documents[t.dataset.doc] = {name:`${t.dataset.doc}-sample.pdf`, size:196608, at:new Date().toISOString()};
+      delete wiz.errors[t.dataset.doc]; save(); render(); return;
+    }
+    case "remove-doc": {
+      const dd = ensureDraft(); dd.documents[t.dataset.doc] = null; save(); render(); return;
+    }
+    case "add-signatory": {
+      const dd = ensureDraft();
+      dd.signatories = dd.signatories || [];
+      dd.signatories.push({name:"", capacity:"", authority:"Joint with all"});
+      save(); render(); return;
+    }
+    case "remove-signatory": {
+      const dd = ensureDraft(); dd.signatories.splice(Number(t.dataset.idx),1); save(); render(); return;
+    }
+    case "approve": approveClient(t.dataset.id); return;
+    case "approve-confirm": approveConfirm(t.dataset.id); return;
+    case "reject": rejectClient(t.dataset.id); return;
+    case "reject-confirm": rejectConfirm(t.dataset.id); return;
+  }
+});
+
+document.addEventListener("input", ev => {
+  const el = ev.target;
+  if(el.id === "f-search"){ listUI.q = el.value; listUI.page = 1; renderListOnly(); return; }
+  if(el.dataset.field){
+    const dd = ensureDraft();
+    const k = el.dataset.field;
+    dd[k] = el.type === "checkbox" ? el.checked : el.value;
+    delete wiz.errors[k];
+    // live-updating regions
+    if(["fundingAmount","currency","modelPortfolio","objective","clientType","taxResidency","country","pep","screeningOverride","declaration"].includes(k)) { save(); render(); return; }
+    save(); return;
+  }
+  if(el.dataset.answer){
+    const dd = ensureDraft();
+    dd.answers = dd.answers || {};
+    dd.answers[el.dataset.answer] = Number(el.value);
+    delete wiz.errors[el.dataset.answer];
+    save(); render(); return;
+  }
+  if(el.dataset.sig !== undefined && el.dataset.sigfield){
+    const dd = ensureDraft();
+    dd.signatories[Number(el.dataset.sig)][el.dataset.sigfield] = el.value;
+    delete wiz.errors.signatories; save(); return;
+  }
+  if(el.dataset.upload){
+    const f = el.files && el.files[0];
+    if(f){
+      const dd = ensureDraft();
+      dd.documents[el.dataset.upload] = {name:f.name, size:f.size, at:new Date().toISOString()};
+      delete wiz.errors[el.dataset.upload];
+      save(); render();
+      toast(`${f.name} attached.`);
+    }
+    return;
+  }
+});
+
+document.addEventListener("change", ev => {
+  const el = ev.target;
+  if(["f-stage","f-risk","f-adviser"].includes(el.id)){
+    const map = {"f-stage":"stage","f-risk":"risk","f-adviser":"adviser"};
+    listUI[map[el.id]] = el.value; listUI.page = 1; render(); return;
+  }
+  if(el.id === "actor-select"){ state.actor = el.value; save(); render(); toast(`Acting as ${actor().role}.`); return; }
+});
+
+function renderListOnly(){
+  // keep focus in the search box while filtering
+  const active = document.activeElement;
+  const pos = active && active.selectionStart;
+  render();
+  const box = $("#f-search");
+  if(box){ box.focus(); if(pos!=null) try{ box.setSelectionRange(pos,pos); }catch(e){} }
+}
+
+$("#reset-btn").addEventListener("click", ()=>{
+  modal("Reset demo data", `<p>This restores the 12 seeded client records, clears any draft and returns every stage counter to its original state. Useful before a scripted run.</p>`,
+    `<button class="btn btn-primary" data-act="modal-close" id="confirm-reset" data-testid="reset-confirm">Reset now</button>
+     <button class="btn" data-act="modal-close">Cancel</button>`);
+  setTimeout(()=>{ const b = $("#confirm-reset"); if(b) b.addEventListener("click", resetState); }, 0);
+});
+
+window.addEventListener("hashchange", ()=>{ wiz.errors = {}; clientTab = "overview"; render(); });
+
+/* ---------------- boot ---------------- */
+state = load();
+if(!location.hash) location.hash = "#/dashboard";
+render();
+</script>
+
+</body>
+</html>
