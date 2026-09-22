@@ -833,7 +833,7 @@ function viewCompliance(){
   <div class="page-head">
     <div style="flex:1;min-width:260px"><h1>Compliance queue</h1><p>Four-eyes approval. A record must be approved by a compliance officer other than the adviser who submitted it.</p></div>
   </div>
-  ${canApprove ? "" : `<div class="banner b-info" data-testid="role-notice" style="margin-bottom:16px"><div><b>Read-only for this role</b>You are acting as ${esc(actor().role)}. Switch to the compliance officer in the header to adjudicate these records.</div></div>`}
+  ${canApprove ? "" : `<div class="banner b-info" data-testid="role-notice" style="margin-bottom:16px"><div><b>Read-only for this role</b>You are acting as ${esc(actor().role)}. Sign in as the compliance officer to adjudicate these records.</div></div>`}
   <section class="card">
     <div class="card-head"><h3 style="flex:1">Pending adjudication</h3><span class="pill p-warn">${queue.length} open</span></div>
     <div class="table-wrap">
