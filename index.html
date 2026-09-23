@@ -396,7 +396,7 @@ td.right,th.right{text-align:right}
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.6";
+const BUILD = "2026.09.7";
 const STORE_KEY = "cavendish.cmo.v1";
 
 /* ---------------- reference data ---------------- */
@@ -1331,7 +1331,7 @@ function stepBody(d){
     <div class="field${bad("modelPortfolio")}" style="margin-bottom:8px">
       <label for="w-mp">Model portfolio *</label>
       <select id="w-mp" data-field="modelPortfolio" data-testid="input-modelPortfolio">
-        ${opts(MODEL_PORTFOLIOS.map(m=>({value:m.id,label:`${m.name} — ${m.risk} (${m.equity}% equity)`})), d.modelPortfolio, "Select…")}
+        ${opts(MODEL_PORTFOLIOS.map(m=>({value:m.id,label:`${m.name} - ${m.risk} (${m.equity}% equity)`})), d.modelPortfolio, "Select…")}
       </select>${errFor("modelPortfolio")}
       ${mpMismatch(d)}
     </div>
