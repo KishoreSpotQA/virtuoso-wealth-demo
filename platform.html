@@ -426,7 +426,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.9";
+const BUILD = "2026.09.10";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -590,7 +590,7 @@ function blankClient(){
 let state = null;
 
 function defaultState(){
-  return { clients: seedClients(), draft: null, actor:"adviser", nextId: 10053, session:null, attempts:{}, locked:[], quotes: seedQuotes(), draftQuote: null, nextQuoteId: 40021, nextPolicyId: 90014, cases: seedCases(), draftCase: null, nextCaseId: 70008, nextPaymentId: 50004 };
+  return { clients: seedClients(), draft: null, actor:"adviser", nextId: 10053, session:null, attempts:{}, locked:[], quotes: seedQuotes(), draftQuote: null, nextQuoteId: 40021, nextPolicyId: 90014, cases: seedCases(), draftCase: null, nextCaseId: 70009, nextPaymentId: 50004 };
 }
 function save(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){/* private mode */}
@@ -608,7 +608,7 @@ function load(){
       if(!p.nextPolicyId) p.nextPolicyId = 90014;
       if(!Array.isArray(p.cases)) p.cases = seedCases();
       if(!("draftCase" in p)) p.draftCase = null;
-      if(!p.nextCaseId) p.nextCaseId = 70008;
+      if(!p.nextCaseId) p.nextCaseId = 70009;
       if(!p.nextPaymentId) p.nextPaymentId = 50004;
       return p;
     } }
@@ -680,6 +680,7 @@ const PEN_ROUTES = [
   {href:"#/pensions/cases",    label:"Instructions",           group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="Case").length},
   {href:"#/pensions/case/new", label:"New instruction",        group:"Pensions"},
   {href:"#/pensions/advice",   label:"Retirement review",      group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="Referred").length},
+  {href:"#/pensions/authorisations", label:"Payment authorisation", group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="Awaiting authorisation").length},
   {href:"#/pensions/payments", label:"Benefits in payment",    group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="In payment").length}
 ];
 function navRoutes(){
@@ -2171,6 +2172,7 @@ function viewApps(){
   const refs = state.quotes.filter(x=>x.stage==="Referred").length;
   const pOpen = state.cases.filter(x=>x.stage==="Case").length;
   const pRefs = state.cases.filter(x=>x.stage==="Referred").length;
+  const pAuth = state.cases.filter(x=>x.stage==="Awaiting authorisation").length;
   return `
   <div class="launch-wrap" data-testid="app-picker">
     <div class="page-head"><div style="flex:1;min-width:260px">
@@ -2194,7 +2196,7 @@ function viewApps(){
         <div class="ic">RP</div>
         <h3>Pensions — Retirement Income</h3>
         <p>Retirement instructions with the protection checks that govern them: safeguarded benefits, guidance and advice, sustainability of income, and a deterministic decision that accepts, refers or declines.</p>
-        <div class="meta"><span>${pOpen} instructions</span><span>${pRefs} awaiting review</span></div>
+        <div class="meta"><span>${pOpen} instructions</span><span>${pRefs + pAuth} awaiting a decision</span></div>
       </button>
     </div>
   </div>`;
@@ -2894,7 +2896,8 @@ function seedCases(){
     ["PN-70004","Tobias","Renshaw","1972-01-19","Personal pension",84000,"Full encashment","Referred","RP-R06",null],
     ["PN-70005","Aisling","Donnelly","1964-09-08","Group personal pension",310000,"Flexi-access drawdown","In payment","RP-A01","PAY-50003"],
     ["PN-70006","Nikolai","Brandt","1975-05-30","Stakeholder pension",9200,"Flexi-access drawdown","Declined","RP-D03",null],
-    ["PN-70007","Perpetua","Nwosu","1966-12-11","Self-invested personal pension",455000,"Flexi-access drawdown","Case","",null]
+    ["PN-70007","Perpetua","Nwosu","1966-12-11","Self-invested personal pension",455000,"Flexi-access drawdown","Case","",null],
+    ["PN-70008","Gwendolyn","Achterberg","1963-02-27","Personal pension",192000,"Guaranteed annuity","Awaiting authorisation","RP-A01",null]
   ];
   return raw.map(r=>{
     const c = blankCase();
@@ -2915,7 +2918,7 @@ function perr(k){ return pwiz.errors[k] ? `<span class="err" data-testid="perror
 function pbad(k){ return pwiz.errors[k] ? " bad" : ""; }
 function caseName(c){ return `${c.memberFirst||""} ${c.memberLast||""}`.trim() || "(unnamed member)"; }
 function caseStagePill(st){
-  const map = {"In payment":"p-ok","Declined":"p-risk","Referred":"p-warn","Case":"p-mute"};
+  const map = {"In payment":"p-ok","Declined":"p-risk","Referred":"p-warn","Awaiting authorisation":"p-info","Case":"p-mute"};
   return `<span class="pill ${map[st]||"p-mute"}">${esc(st)}</span>`;
 }
 
@@ -3187,13 +3190,13 @@ function submitCase(){
   d.settledIncome = Number((r.annualIncome || r.taxableAmount).toFixed(2));
   d.settledTax = Number(r.tax.total.toFixed(2));
   d.submittedBy = actor().name; d.submittedAt = new Date().toISOString();
-  if(dec.outcome === "ACCEPT"){ d.stage = "In payment"; d.paymentRef = "PAY-" + state.nextPaymentId++; }
+  if(dec.outcome === "ACCEPT"){ d.stage = "Awaiting authorisation"; }
   else if(dec.outcome === "REFER"){ d.stage = "Referred"; }
   else { d.stage = "Declined"; }
   paudit(d, `Retirement instruction submitted. Outcome ${dec.outcome} (${dec.code}).`);
   state.cases.push(d); state.draftCase = null; pwiz = {step:0, errors:{}};
   save();
-  toast(`${d.id} - ${dec.outcome==="ACCEPT" ? "accepted, payment "+d.paymentRef : dec.outcome==="REFER" ? "referred for advice review" : "declined"}.`);
+  toast(`${d.id} - ${dec.outcome==="ACCEPT" ? "accepted, awaiting payment authorisation" : dec.outcome==="REFER" ? "referred for advice review" : "declined"}.`);
   go(`#/pensions/case/${d.id}`);
 }
 
@@ -3218,6 +3221,48 @@ function paApproveConfirm(id){
   c.paymentRef = "PAY-" + state.nextPaymentId++;
   paudit(c, `Referral approved by the retirement review team - ${n}`);
   save(); closeModal(); toast(`${c.id} approved - payment ${c.paymentRef} set up.`); render();
+}
+function paAuthorise(id){
+  const c = state.cases.find(x=>x.id===id); if(!c) return;
+  if(c.submittedBy === actor().name){ toast("Four-eyes control: the submitting user cannot authorise a payment they raised."); return; }
+  modal("Authorise payment", `
+    <p>Authorising <b>${esc(caseName(c))}</b> (<span class="mono">${c.id}</span>) releases benefits into payment. This cannot be reversed.</p>
+    <div class="banner b-ok" style="margin-top:12px"><div><b>${esc(c.reasonCode)}</b>${esc(c.reasonText)}</div></div>
+    <div class="field" style="margin-top:14px"><label for="pz-note">Authorisation note</label>
+      <textarea id="pz-note" data-testid="pa-authorise-note" placeholder="Record what was checked before releasing payment."></textarea>
+      <span class="hint">At least 20 characters.</span>
+      <span class="err" id="pz-note-err" hidden data-testid="pa-authorise-note-error">A note of at least 20 characters is required.</span></div>`,
+    `<button class="btn btn-accent" data-pact="pa-authorise-confirm" data-id="${id}" data-testid="pa-authorise-confirm">Release payment</button>
+     <button class="btn" data-act="modal-close">Cancel</button>`);
+}
+function paAuthoriseConfirm(id){
+  const c = state.cases.find(x=>x.id===id); if(!c) return;
+  const n = (($("#pz-note")||{}).value || "").trim();
+  if(n.length < 20){ const el = $("#pz-note-err"); if(el) el.hidden = false; return; }
+  c.stage = "In payment"; c.decidedBy = actor().name;
+  c.paymentRef = "PAY-" + state.nextPaymentId++;
+  paudit(c, `Payment authorised - ${n}`);
+  save(); closeModal(); toast(`${c.id} authorised - payment ${c.paymentRef} set up.`); render();
+}
+function paReject(id){
+  const c = state.cases.find(x=>x.id===id); if(!c) return;
+  if(c.submittedBy === actor().name){ toast("Four-eyes control: the submitting user cannot authorise a payment they raised."); return; }
+  modal("Reject instruction", `
+    <p>Rejecting <b>${esc(caseName(c))}</b> (<span class="mono">${c.id}</span>) closes the instruction without payment. A reason is retained.</p>
+    <div class="field" style="margin-top:14px"><label for="pz-reason">Reason for rejection *</label>
+      <textarea id="pz-reason" data-testid="pa-reject-reason" placeholder="e.g. Member confirmed the requested lump sum was entered in error."></textarea>
+      <span class="hint">At least 20 characters.</span>
+      <span class="err" id="pz-reason-err" hidden data-testid="pa-reject-reason-error">A reason of at least 20 characters is required.</span></div>`,
+    `<button class="btn btn-danger" data-pact="pa-reject-confirm" data-id="${id}" data-testid="pa-reject-confirm">Confirm rejection</button>
+     <button class="btn" data-act="modal-close">Cancel</button>`);
+}
+function paRejectConfirm(id){
+  const c = state.cases.find(x=>x.id===id); if(!c) return;
+  const r = (($("#pz-reason")||{}).value || "").trim();
+  if(r.length < 20){ const el = $("#pz-reason-err"); if(el) el.hidden = false; return; }
+  c.stage = "Declined"; c.decision = "DECLINE"; c.declineReason = r; c.decidedBy = actor().name;
+  paudit(c, `Instruction rejected at authorisation - ${r}`);
+  save(); closeModal(); toast(`${c.id} rejected.`); render();
 }
 function paDecline(id){
   const c = state.cases.find(x=>x.id===id); if(!c) return;
@@ -3247,7 +3292,8 @@ function viewPensionDash(){
   const paying = state.cases.filter(c=>c.stage==="In payment");
   const declined = state.cases.filter(c=>c.stage==="Declined").length;
   const funds = state.cases.reduce((a,c)=>a+Number(c.potValue||0),0);
-  const stages = ["Case","Referred","In payment","Declined"];
+  const awaiting = state.cases.filter(c=>c.stage==="Awaiting authorisation").length;
+  const stages = ["Case","Referred","Awaiting authorisation","In payment","Declined"];
   return `
   <div class="page-head"><div style="flex:1"><h1>Retirement dashboard</h1>
     <p>Retirement instructions across the book as at ${fmtDate(today())}. Benefits are put into payment only once every protection check is satisfied.</p></div>
@@ -3255,6 +3301,7 @@ function viewPensionDash(){
   <div class="tiles">
     <div class="tile" data-testid="tile-cases"><div class="k">Instructions in progress</div><div class="v">${open}</div><div class="d">Not yet submitted</div></div>
     <div class="tile" data-testid="tile-referrals"><div class="k">Awaiting review</div><div class="v">${refs}</div><div class="d">Referred for a protection check</div></div>
+    <div class="tile" data-testid="tile-authorisations"><div class="k">Awaiting authorisation</div><div class="v">${awaiting}</div><div class="d">Checks passed, payment not released</div></div>
     <div class="tile" data-testid="tile-payment"><div class="k">In payment</div><div class="v">${paying.length}</div><div class="d">Benefits settled</div></div>
     <div class="tile" data-testid="tile-funds"><div class="k">Fund value under instruction</div><div class="v mono">${money(funds)}</div><div class="d">${declined} declined</div></div>
   </div>
@@ -3269,7 +3316,9 @@ function viewPensionDash(){
     <div class="card" data-testid="card-referrals"><div class="card-head"><h2>Awaiting review</h2></div><div class="card-body">
       ${refs ? `<p class="legend">${refs} instruction${refs===1?"":"s"} outside automatic acceptance.</p>
         <button class="btn" data-pact="go-advice" data-testid="open-advice">Open the review queue</button>`
-      : `<p class="legend">Nothing is awaiting review.</p>`}</div></div>
+      : `<p class="legend">Nothing is awaiting review.</p>`}
+      ${awaiting ? `<p class="legend" style="margin-top:12px">${awaiting} instruction${awaiting===1?"":"s"} passed every check and await payment authorisation.</p>
+        <button class="btn" data-pact="go-authorisations" data-testid="open-authorisations">Open the authorisation queue</button>` : ""}</div></div>
   </div>`;
 }
 
@@ -3313,19 +3362,39 @@ function viewAdviceQueue(){
     : `<div class="empty" data-testid="advice-empty">Nothing is awaiting review.</div>`}`;
 }
 
+function viewAuthorisationQueue(){
+  const canAuth = actor().role === "Compliance";
+  const rows = state.cases.filter(c=>c.stage==="Awaiting authorisation");
+  return `<div class="page-head"><div style="flex:1"><h1>Payment authorisation</h1>
+    <p>Instructions that passed every protection check and are waiting for a second user to release payment. Benefits are never authorised by the person who submitted them.</p></div></div>
+    ${canAuth ? "" : `<div class="banner b-info" data-testid="auth-role-notice" style="margin-bottom:16px"><div><b>Read-only for this role</b>You are acting as ${esc(actor().role)}. Sign in as the compliance officer, who holds payment authority in this demo, to release payments.</div></div>`}
+    ${rows.length ? `<div class="table-wrap"><table data-testid="authorisation-table">
+      <thead><tr><th>Reference</th><th>Member</th><th>Option</th><th class="right">Payment</th><th>Submitted by</th><th class="right"></th></tr></thead>
+      <tbody>${rows.map(c=>`<tr data-testid="auth-row-${c.id}">
+        <td class="mono">${esc(c.id)}</td><td>${esc(caseName(c))}</td><td class="legend">${esc(c.retirementOption||"-")}</td>
+        <td class="right mono">${c.settledIncome!=null?money(c.settledIncome):"-"}</td>
+        <td class="legend">${esc(c.submittedBy||"-")}</td>
+        <td class="right"><button class="btn btn-sm" data-pact="open-case" data-id="${c.id}" data-testid="open-${c.id}">Open</button></td>
+      </tr>`).join("")}</tbody></table></div>`
+    : `<div class="empty" data-testid="authorisation-empty">Nothing is awaiting authorisation.</div>`}`;
+}
+
 function viewCaseDetail(id){
   const c = state.cases.find(x=>x.id===id);
   if(!c) return `<div class="empty" data-testid="case-not-found">No instruction found with reference ${esc(id)}.</div>`;
   const canReview = actor().role === "Compliance" && c.stage === "Referred";
+  const canAuth = actor().role === "Compliance" && c.stage === "Awaiting authorisation";
   const r = projectRetirement(c);
   return `
   <div class="row" style="gap:8px;margin-bottom:6px"><a href="#/pensions/cases" class="legend" data-testid="back-to-cases">Back to instructions</a></div>
   <div class="page-head"><div style="flex:1"><h1>${esc(caseName(c))}</h1>
     <p><span class="mono">${esc(c.id)}</span> · ${esc(c.schemeType||"-")} · ${caseStagePill(c.stage)}</p></div>
     <div class="row">${canReview ? `<button class="btn btn-accent" data-pact="pa-approve" data-id="${c.id}" data-testid="pa-approve">Approve instruction</button>
-      <button class="btn btn-danger" data-pact="pa-decline" data-id="${c.id}" data-testid="pa-decline">Decline</button>` : ""}</div></div>
+      <button class="btn btn-danger" data-pact="pa-decline" data-id="${c.id}" data-testid="pa-decline">Decline</button>` : ""}${canAuth ? `<button class="btn btn-accent" data-pact="pa-authorise" data-id="${c.id}" data-testid="pa-authorise">Authorise payment</button>
+      <button class="btn btn-danger" data-pact="pa-reject" data-id="${c.id}" data-testid="pa-reject">Reject</button>` : ""}</div></div>
   ${c.decision ? `<div class="banner ${c.decision==="ACCEPT"?"b-ok":c.decision==="REFER"?"b-warn":"b-risk"}" style="margin-bottom:16px" data-testid="decision-banner">
     <div><b>${esc(c.decision)} (${esc(c.reasonCode)})</b>${esc(c.reasonText)}</div></div>` : ""}
+  ${c.stage === "Awaiting authorisation" ? `<div class="banner b-info" style="margin-bottom:16px" data-testid="authorisation-banner"><div><b>Awaiting payment authorisation</b>The instruction passed every protection check. Benefits are not in payment until a second user authorises them.</div></div>` : ""}
   ${c.paymentRef ? `<div class="banner b-ok" style="margin-bottom:16px" data-testid="payment-banner"><div><b>Benefits in payment</b>Payment reference <span class="mono">${esc(c.paymentRef)}</span>.</div></div>` : ""}
   ${c.declineReason ? `<div class="banner b-risk" style="margin-bottom:16px" data-testid="decline-banner"><div><b>Declined</b>${esc(c.declineReason)}</div></div>` : ""}
   <div class="grid g2">
@@ -3379,6 +3448,7 @@ function pensionsView(hash){
   if(hash.startsWith("#/pensions/case/")){ const id = decodeURIComponent(hash.split("/")[3]||""); return [viewCaseDetail(id), `Pensions / Instructions / ${id}`]; }
   if(hash === "#/pensions/cases")   return [viewCaseList(), "Pensions / Instructions"];
   if(hash === "#/pensions/advice")  return [viewAdviceQueue(), "Pensions / Retirement review queue"];
+  if(hash === "#/pensions/authorisations") return [viewAuthorisationQueue(), "Pensions / Payment authorisation"];
   if(hash === "#/pensions/payments")return [viewBenefitsInPayment(), "Pensions / Benefits in payment"];
   return [viewPensionDash(), "Overview / Retirement dashboard"];
 }
@@ -3468,6 +3538,11 @@ document.addEventListener("click", ev => {
     case "pa-approve-confirm": paApproveConfirm(t.dataset.id); return;
     case "pa-decline": paDecline(t.dataset.id); return;
     case "pa-decline-confirm": paDeclineConfirm(t.dataset.id); return;
+    case "pa-authorise": paAuthorise(t.dataset.id); return;
+    case "pa-authorise-confirm": paAuthoriseConfirm(t.dataset.id); return;
+    case "pa-reject": paReject(t.dataset.id); return;
+    case "pa-reject-confirm": paRejectConfirm(t.dataset.id); return;
+    case "go-authorisations": go("#/pensions/authorisations"); return;
   }
 });
 
