@@ -42,13 +42,17 @@ img{max-width:100%}
   --risk:#a33c33;
   --risk-soft:#f8e6e3;
   --info-soft:#e6ebf5;
+  /* one hue per module, so the launcher and the sidebar say where you are */
+  --mod-wam:#33518a;   --mod-wam-soft:#e5eaf5;   --mod-wam-nav:#8fb0e8;
+  --mod-mi:#1f6b62;    --mod-mi-soft:#dceeeb;    --mod-mi-nav:#6fc9bd;
+  --mod-pen:#74406a;   --mod-pen-soft:#f1e6ef;   --mod-pen-nav:#d49cc8;
   --shadow:0 1px 2px rgba(20,27,38,.06),0 8px 24px -12px rgba(20,27,38,.18);
   --radius:6px;
   --nav-w:236px;
   --nav-line:rgba(255,255,255,.13);
   --nav-hover:rgba(255,255,255,.08);
   --nav-active:rgba(255,255,255,.15);
-  --nav-chip:rgba(255,255,255,.17);
+  --nav-chip:rgba(255,255,255,.28);
   --bw-fg:#5e4110; --bw-bd:#e0c68a;
   --br-fg:#7d2b23; --br-bd:#e6b3ac;
   --bo-fg:#124a38; --bo-bd:#a6d4c3;
@@ -330,6 +334,19 @@ td.right,th.right{text-align:right}
 .launch-card h3{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px}
 .launch-card p{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-bottom:12px}
 .launch-card .meta{font-size:11.5px;color:var(--ink-3);display:flex;gap:14px;flex-wrap:wrap}
+.launch-card[data-app="wam"] .ic{background:var(--mod-wam-soft);color:var(--mod-wam)}
+.launch-card[data-app="insurance"] .ic{background:var(--mod-mi-soft);color:var(--mod-mi)}
+.launch-card[data-app="pensions"] .ic{background:var(--mod-pen-soft);color:var(--mod-pen)}
+.launch-card[data-app="wam"]:hover{border-color:var(--mod-wam)}
+.launch-card[data-app="insurance"]:hover{border-color:var(--mod-mi)}
+.launch-card[data-app="pensions"]:hover{border-color:var(--mod-pen)}
+/* the sidebar carries the same hue, so the module is readable without reading */
+body[data-module="wam"] .brand{box-shadow:inset 0 -3px 0 var(--mod-wam-nav)}
+body[data-module="insurance"] .brand{box-shadow:inset 0 -3px 0 var(--mod-mi-nav)}
+body[data-module="pensions"] .brand{box-shadow:inset 0 -3px 0 var(--mod-pen-nav)}
+body[data-module="wam"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 0 var(--mod-wam-nav)}
+body[data-module="insurance"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 0 var(--mod-mi-nav)}
+body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 0 var(--mod-pen-nav)}
 .prem{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
 .prem .amt{font-size:30px;font-weight:600;letter-spacing:-.02em;color:var(--ink)}
 .prem .per{font-size:12.5px;color:var(--ink-3);margin-left:6px}
@@ -409,7 +426,7 @@ td.right,th.right{text-align:right}
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.7";
+const BUILD = "2026.09.9";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -573,7 +590,7 @@ function blankClient(){
 let state = null;
 
 function defaultState(){
-  return { clients: seedClients(), draft: null, actor:"adviser", nextId: 10053, session:null, attempts:{}, locked:[], quotes: seedQuotes(), draftQuote: null, nextQuoteId: 40021, nextPolicyId: 90014 };
+  return { clients: seedClients(), draft: null, actor:"adviser", nextId: 10053, session:null, attempts:{}, locked:[], quotes: seedQuotes(), draftQuote: null, nextQuoteId: 40021, nextPolicyId: 90014, cases: seedCases(), draftCase: null, nextCaseId: 70008, nextPaymentId: 50004 };
 }
 function save(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){/* private mode */}
@@ -589,6 +606,10 @@ function load(){
       if(!("draftQuote" in p)) p.draftQuote = null;
       if(!p.nextQuoteId) p.nextQuoteId = 40021;
       if(!p.nextPolicyId) p.nextPolicyId = 90014;
+      if(!Array.isArray(p.cases)) p.cases = seedCases();
+      if(!("draftCase" in p)) p.draftCase = null;
+      if(!p.nextCaseId) p.nextCaseId = 70008;
+      if(!p.nextPaymentId) p.nextPaymentId = 50004;
       return p;
     } }
   }catch(e){/* ignore */}
@@ -600,8 +621,9 @@ function resetState(){
   state.session = keep;
   if(keep) state.actor = keep.actorId;
   save();
-  toast("Demo data reset — seeded clients and quotes restored.");
-  go(currentRoute().startsWith("#/insurance") ? "#/insurance" : "#/dashboard");
+  toast("Demo data reset — seeded clients, quotes and retirement instructions restored.");
+  const cur = currentRoute();
+  go(cur.startsWith("#/insurance") ? "#/insurance" : cur.startsWith("#/pensions") ? "#/pensions" : "#/dashboard");
 }
 function actor(){ return ACTORS.find(a=>a.id===state.actor) || ACTORS[0]; }
 function audit(client, text){
@@ -653,10 +675,18 @@ const INS_ROUTES = [
   {href:"#/insurance/referrals",  label:"Underwriting referrals", group:"Motor insurance", count:()=>state.quotes.filter(q=>q.stage==="Referred").length},
   {href:"#/insurance/policies",   label:"Policies",               group:"Motor insurance", count:()=>state.quotes.filter(q=>q.stage==="Policy issued").length}
 ];
+const PEN_ROUTES = [
+  {href:"#/pensions",          label:"Dashboard",              group:"Overview"},
+  {href:"#/pensions/cases",    label:"Instructions",           group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="Case").length},
+  {href:"#/pensions/case/new", label:"New instruction",        group:"Pensions"},
+  {href:"#/pensions/advice",   label:"Retirement review",      group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="Referred").length},
+  {href:"#/pensions/payments", label:"Benefits in payment",    group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="In payment").length}
+];
 function navRoutes(){
   const cur = currentRoute();
   if(cur === "#/apps") return [APP_SWITCH];
   if(cur.startsWith("#/insurance")) return [APP_SWITCH].concat(INS_ROUTES);
+  if(cur.startsWith("#/pensions")) return [APP_SWITCH].concat(PEN_ROUTES);
   return [APP_SWITCH].concat(ROUTES);
 }
 function renderNav(){
@@ -667,6 +697,7 @@ function renderNav(){
     const active = cur === r.href
       || (r.href==="#/clients" && cur.startsWith("#/clients/"))
       || (r.href==="#/insurance/quotes" && cur.startsWith("#/insurance/quote/") && cur!=="#/insurance/quote/new")
+      || (r.href==="#/pensions/cases" && cur.startsWith("#/pensions/case/") && cur!=="#/pensions/case/new")
       ? ' aria-current="page"' : "";
     const n = r.count ? `<span class="count">${r.count()}</span>` : "";
     html += r.disabled
@@ -1720,6 +1751,9 @@ function render(){
   if(lw) lw.hidden = true;
   if(sh) sh.hidden = false;
   const hash = currentRoute();
+  document.body.dataset.module = hash.startsWith("#/insurance") ? "insurance"
+    : hash.startsWith("#/pensions") ? "pensions"
+    : hash === "#/apps" ? "" : "wam";
   renderNav(); renderActor();
   $("#build-id").textContent = BUILD;
   let html = "", crumb = "";
@@ -1727,6 +1761,8 @@ function render(){
     html = viewApps(); crumb = "Applications";
   }else if(hash.startsWith("#/insurance")){
     const v = insuranceView(hash); html = v[0]; crumb = v[1];
+  }else if(hash.startsWith("#/pensions")){
+    const v = pensionsView(hash); html = v[0]; crumb = v[1];
   }else if(hash.startsWith("#/clients/")){
     const id = decodeURIComponent(hash.split("/")[2] || "");
     html = viewClient(id); crumb = `Client management / Clients / ${id}`;
@@ -2133,11 +2169,13 @@ function viewApps(){
   const inFlight = state.clients.filter(c=>!["Active","Rejected"].includes(c.stage)).length;
   const open = state.quotes.filter(x=>x.stage==="Quote"||x.stage==="Application").length;
   const refs = state.quotes.filter(x=>x.stage==="Referred").length;
+  const pOpen = state.cases.filter(x=>x.stage==="Case").length;
+  const pRefs = state.cases.filter(x=>x.stage==="Referred").length;
   return `
   <div class="launch-wrap" data-testid="app-picker">
     <div class="page-head"><div style="flex:1;min-width:260px">
       <h1>Choose an application</h1>
-      <p>Signed in as ${esc(actor().name)}. Both applications share this sign-in, these users and the same demo data reset.</p>
+      <p>Signed in as ${esc(actor().name)}. All three applications share this sign-in, these users and the same demo data reset.</p>
     </div></div>
     <div class="launch-grid">
       <button class="launch-card" data-qact="open-app" data-app="wam" data-testid="app-wam">
@@ -2151,6 +2189,12 @@ function viewApps(){
         <h3>Motor Insurance — Quote &amp; Apply</h3>
         <p>Personal motor quotation with a factor-based rating engine, application capture, and a deterministic underwriting decision that accepts, refers or declines.</p>
         <div class="meta"><span>${open} open quotes</span><span>${refs} referrals</span></div>
+      </button>
+      <button class="launch-card" data-qact="open-app" data-app="pensions" data-testid="app-pensions">
+        <div class="ic">RP</div>
+        <h3>Pensions — Retirement Income</h3>
+        <p>Retirement instructions with the protection checks that govern them: safeguarded benefits, guidance and advice, sustainability of income, and a deterministic decision that accepts, refers or declines.</p>
+        <div class="meta"><span>${pOpen} instructions</span><span>${pRefs} awaiting review</span></div>
       </button>
     </div>
   </div>`;
@@ -2584,7 +2628,7 @@ document.addEventListener("click", ev => {
   const t = ev.target.closest("[data-qact]"); if(!t) return;
   const act = t.dataset.qact;
   switch(act){
-    case "open-app": go(t.dataset.app === "insurance" ? "#/insurance" : "#/dashboard"); return;
+    case "open-app": go(t.dataset.app === "insurance" ? "#/insurance" : t.dataset.app === "pensions" ? "#/pensions" : "#/dashboard"); return;
     case "new-quote": go("#/insurance/quote/new"); return;
     case "go-referrals": go("#/insurance/referrals"); return;
     case "open-quote": go(`#/insurance/quote/${t.dataset.id}`); return;
@@ -2613,6 +2657,817 @@ document.addEventListener("click", ev => {
     case "uw-approve-confirm": uwApproveConfirm(t.dataset.id); return;
     case "uw-decline": uwDecline(t.dataset.id); return;
     case "uw-decline-confirm": uwDeclineConfirm(t.dataset.id); return;
+  }
+});
+
+
+/* ============================================================
+   PENSIONS — RETIREMENT INCOME & PROTECTION
+   ============================================================ */
+const PENSION_SCHEMES = ["Personal pension","Stakeholder pension","Self-invested personal pension","Group personal pension","Occupational money purchase"];
+const EMPLOYMENT_STATUS = ["Employed","Self-employed","Semi-retired","Retired","Not working"];
+const RETIREMENT_OPTIONS = ["Guaranteed annuity","Flexi-access drawdown","Uncrystallised funds pension lump sum","Full encashment"];
+const ANNUITY_SHAPES = ["Level, single life","Level, joint life 50 per cent","Escalating 3 per cent, single life","Escalating 3 per cent, joint life 50 per cent"];
+const GUARANTEE_PERIODS = ["None","5 years","10 years"];
+const UNDERWRITING_BASIS = ["Standard terms","Enhanced terms - declared medical factors"];
+const GUIDANCE_STATUS = ["Pension Wise guidance taken","Regulated advice taken","Guidance declined - opt out recorded"];
+const SAFEGUARDED_BENEFITS = ["None","Guaranteed annuity rate","Guaranteed minimum pension","Section 9(2B) rights"];
+const RESIDENCE_STATUS = ["United Kingdom","Republic of Ireland","Other EEA","Rest of world"];
+const PAYMENT_FREQUENCY = ["Monthly","Quarterly","Annually"];
+const GROWTH_ASSUMPTIONS = ["2 per cent - cautious","4 per cent - central","6 per cent - optimistic"];
+
+/* Tax and allowance parameters, fixed for the 2026-27 demo year */
+const NMPA = 55;                       /* normal minimum pension age */
+const LUMP_SUM_ALLOWANCE = 268275;     /* cap on tax-free cash */
+const DRAWDOWN_MINIMUM = 10000;        /* minimum fund to establish drawdown */
+const SAFEGUARDED_ADVICE_THRESHOLD = 30000;
+const LARGE_CASE_THRESHOLD = 500000;
+const ENCASHMENT_REFERRAL_THRESHOLD = 50000;
+const MPAA_LIMIT = 10000;
+const PERSONAL_ALLOWANCE = 12570;
+const BASIC_RATE_LIMIT = 50270;
+const HIGHER_RATE_LIMIT = 125140;
+const ANNUAL_CHARGE = 0.0075;
+const SUSTAINABILITY_AGE = 85;
+const GAR_RATE = 9.5;
+
+const RP_REASON = {
+  "RP-D01":"Benefits cannot be taken before the normal minimum pension age of 55 without a protected pension age.",
+  "RP-D02":"Safeguarded benefits valued above 30,000 require confirmed regulated advice before they can be given up.",
+  "RP-D03":"A flexi-access drawdown arrangement cannot be established below a fund value of 10,000.",
+  "RP-D04":"The tax-free lump sum requested exceeds the permitted maximum for this arrangement.",
+  "RP-D05":"Flexi-access drawdown is not offered to members resident outside the United Kingdom, Ireland and the EEA.",
+  "RP-R01":"A fund above 500,000 requires a large-case review before benefits are put into payment.",
+  "RP-R02":"A declared vulnerability requires a specialist review before benefits are put into payment.",
+  "RP-R03":"The requested income depletes the fund before age 85 and requires a sustainability review.",
+  "RP-R04":"Guidance has been declined without regulated advice; the member must be referred for a suitability conversation.",
+  "RP-R05":"Protected tax-free cash above 25 per cent must be verified against the scheme records.",
+  "RP-R06":"A full encashment above 50,000 requires a tax-consequence review before payment.",
+  "RP-R07":"A guaranteed annuity rate is available and is being given up by the option chosen.",
+  "RP-R08":"A member under 60 taking full access to the fund requires a review of long-term provision.",
+  "RP-R09":"The money purchase annual allowance is already triggered while contributions continue.",
+  "RP-R10":"A member resident outside the United Kingdom requires overseas payment checks.",
+  "RP-A01":"Accepted on standard terms."
+};
+
+function memberAge(dob){ return dob ? Math.floor((today() - new Date(dob))/(365.25*86400000)) : null; }
+function paudit(c, text){ (c.audit = c.audit || []).push({at:new Date().toISOString(), by:actor().name, text}); }
+const money2 = n => (n==null||n==="") ? "-" : new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP",minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n));
+
+/* Income tax on a taxable amount stacked on top of other taxable income */
+function incomeTax(taxable, otherIncome){
+  const other = Number(otherIncome||0), amt = Number(taxable||0);
+  if(amt <= 0) return {total:0, bands:[]};
+  const bandAt = x => x <= PERSONAL_ALLOWANCE ? 0 : x <= BASIC_RATE_LIMIT ? 0.20 : x <= HIGHER_RATE_LIMIT ? 0.40 : 0.45;
+  const bandName = r => r===0 ? "Personal allowance" : r===0.20 ? "Basic rate 20 per cent" : r===0.40 ? "Higher rate 40 per cent" : "Additional rate 45 per cent";
+  const lines = {}; let total = 0;
+  for(let i=0; i<amt; i++){
+    const r = bandAt(other + i + 1);
+    total += r;
+    lines[r] = (lines[r]||0) + 1;
+  }
+  const bands = Object.keys(lines).map(r=>({rate:Number(r), name:bandName(Number(r)), amount:lines[r], tax:lines[r]*Number(r)}))
+    .filter(b=>b.amount>0).sort((a,b)=>a.rate-b.rate);
+  return {total:Number(total.toFixed(2)), bands};
+}
+
+/* Market annuity rate as a percentage of the purchase price */
+function annuityRate(p){
+  const age = memberAge(p.memberDob);
+  if(age == null) return 0;
+  const base = age < 60 ? 4.20 : age < 65 ? 4.85 : age < 70 ? 5.65 : age < 75 ? 6.60 : 7.80;
+  let r = base;
+  if(String(p.annuityShape||"").indexOf("joint life") > -1) r *= 0.88;
+  if(String(p.annuityShape||"").indexOf("Escalating") === 0) r *= 0.72;
+  if(p.guaranteePeriod === "5 years") r *= 0.98;
+  if(p.guaranteePeriod === "10 years") r *= 0.95;
+  if(String(p.underwritingBasis||"").indexOf("Enhanced") === 0) r *= 1.18;
+  return Number(r.toFixed(3));
+}
+
+function maxTaxFreeCash(p){
+  const pot = Number(p.potValue||0);
+  const pct = p.protectedCashPct ? Number(p.protectedCashPct) : 25;
+  const byPct = pot * (pct/100);
+  return Number(Math.min(byPct, LUMP_SUM_ALLOWANCE).toFixed(2));
+}
+
+function growthRate(p){
+  return String(p.growthAssumption||"").indexOf("2 per cent") === 0 ? 0.02
+       : String(p.growthAssumption||"").indexOf("6 per cent") === 0 ? 0.06 : 0.04;
+}
+
+/* Year-by-year drawdown projection: returns the age the fund is exhausted, or null */
+function drawdownProjection(p){
+  const age = memberAge(p.memberDob);
+  let fund = Number(p.potValue||0) - Number(p.taxFreeCash||0);
+  let income = Number(p.drawdownIncome||0);
+  const net = growthRate(p) - ANNUAL_CHARGE;
+  const esc = p.incomeIndexed === "yes" ? 0.025 : 0;
+  const rows = [];
+  if(age == null || fund <= 0 || income <= 0) return {rows, depletionAge:null, lastsTo:null};
+  let a = age;
+  for(let y = 0; y < 50; y++){
+    const open = fund;
+    fund = (fund - income) * (1 + net);
+    rows.push({age:a, open:Number(open.toFixed(2)), income:Number(income.toFixed(2)), close:Number(Math.max(0,fund).toFixed(2))});
+    if(fund <= 0) return {rows, depletionAge:a + 1, lastsTo:a};
+    income = income * (1 + esc);
+    a += 1;
+  }
+  return {rows, depletionAge:null, lastsTo:a};
+}
+
+/* The full settlement calculation for whichever option is chosen */
+function projectRetirement(p){
+  const pot = Number(p.potValue||0);
+  const tfc = Number(p.taxFreeCash||0);
+  const residual = Math.max(0, pot - tfc);
+  const other = Number(p.otherIncome||0);
+  const opt = p.retirementOption;
+  const out = {option:opt, pot, taxFreeCash:tfc, residual, maxTaxFreeCash:maxTaxFreeCash(p),
+               annualIncome:0, taxableAmount:0, tax:{total:0,bands:[]}, netAmount:0,
+               rate:0, garApplied:false, depletionAge:null, lines:[]};
+
+  if(opt === "Guaranteed annuity"){
+    const market = annuityRate(p);
+    const gar = p.safeguardedBenefits === "Guaranteed annuity rate" ? GAR_RATE : 0;
+    out.rate = Math.max(market, gar);
+    out.garApplied = gar > market;
+    out.marketRate = market;
+    out.annualIncome = Number((residual * out.rate / 100).toFixed(2));
+    out.taxableAmount = out.annualIncome;
+    out.lines = [
+      {label:"Fund applied to the annuity", value:residual},
+      {label:"Annuity rate applied", value:out.rate, pct:true},
+      {label:"Gross annual income", value:out.annualIncome}
+    ];
+  }else if(opt === "Flexi-access drawdown"){
+    out.annualIncome = Number(p.drawdownIncome||0);
+    out.taxableAmount = out.annualIncome;
+    const proj = drawdownProjection(p);
+    out.depletionAge = proj.depletionAge;
+    out.projection = proj;
+    out.lines = [
+      {label:"Fund designated to drawdown", value:residual},
+      {label:"Requested annual income", value:out.annualIncome},
+      {label:"Growth assumption net of charges", value:Number(((growthRate(p)-ANNUAL_CHARGE)*100).toFixed(2)), pct:true}
+    ];
+  }else if(opt === "Uncrystallised funds pension lump sum"){
+    const w = Number(p.ufplsAmount||0);
+    out.annualIncome = 0;
+    out.taxFreeElement = Number((w * 0.25).toFixed(2));
+    out.taxableAmount = Number((w * 0.75).toFixed(2));
+    out.withdrawal = w;
+    out.lines = [
+      {label:"Lump sum requested", value:w},
+      {label:"Tax-free element at 25 per cent", value:out.taxFreeElement},
+      {label:"Taxable element at 75 per cent", value:out.taxableAmount}
+    ];
+  }else if(opt === "Full encashment"){
+    out.taxableAmount = residual;
+    out.lines = [
+      {label:"Fund value", value:pot},
+      {label:"Tax-free lump sum", value:tfc},
+      {label:"Taxable balance", value:residual}
+    ];
+  }
+  out.tax = incomeTax(out.taxableAmount, other);
+  out.netAmount = Number((out.taxableAmount - out.tax.total).toFixed(2));
+  return out;
+}
+
+/* Fifteen rules, first match wins */
+function adjudicate(p){
+  const age = memberAge(p.memberDob);
+  const pot = Number(p.potValue||0);
+  const opt = p.retirementOption;
+  const safeguarded = p.safeguardedBenefits && p.safeguardedBenefits !== "None";
+  const advised = p.guidanceStatus === "Regulated advice taken";
+  const r = projectRetirement(p);
+  const out = (o,c) => ({outcome:o, code:c, text:RP_REASON[c]});
+
+  if(age !== null && age < NMPA && p.protectedPensionAge !== "yes")            return out("DECLINE","RP-D01");
+  if(safeguarded && pot > SAFEGUARDED_ADVICE_THRESHOLD && !advised)            return out("DECLINE","RP-D02");
+  if(opt === "Flexi-access drawdown" && pot < DRAWDOWN_MINIMUM)                return out("DECLINE","RP-D03");
+  if(Number(p.taxFreeCash||0) > maxTaxFreeCash(p) + 0.005)                     return out("DECLINE","RP-D04");
+  if(opt === "Flexi-access drawdown" && p.residence === "Rest of world")       return out("DECLINE","RP-D05");
+
+  if(pot > LARGE_CASE_THRESHOLD)                                              return out("REFER","RP-R01");
+  if(p.vulnerability === "yes")                                               return out("REFER","RP-R02");
+  if(opt === "Flexi-access drawdown" && r.depletionAge !== null && r.depletionAge < SUSTAINABILITY_AGE)
+                                                                              return out("REFER","RP-R03");
+  if(p.guidanceStatus === "Guidance declined - opt out recorded")              return out("REFER","RP-R04");
+  if(p.protectedCashPct && Number(p.protectedCashPct) > 25)                    return out("REFER","RP-R05");
+  if(opt === "Full encashment" && pot > ENCASHMENT_REFERRAL_THRESHOLD)         return out("REFER","RP-R06");
+  if(p.safeguardedBenefits === "Guaranteed annuity rate" && opt !== "Guaranteed annuity")
+                                                                              return out("REFER","RP-R07");
+  if(age !== null && age < 60 && (opt === "Full encashment" || opt === "Uncrystallised funds pension lump sum"))
+                                                                              return out("REFER","RP-R08");
+  if(p.mpaaTriggered === "yes" && ["Employed","Self-employed"].includes(p.employmentStatus))
+                                                                              return out("REFER","RP-R09");
+  if(p.residence && p.residence !== "United Kingdom")                          return out("REFER","RP-R10");
+  return out("ACCEPT","RP-A01");
+}
+
+/* ---------------- pensions state ---------------- */
+function blankCase(){
+  return {
+    id:null, memberFirst:"", memberLast:"", memberDob:"", memberRef:"", schemeType:"", planNumber:"",
+    potValue:"", employmentStatus:"", residence:"", otherIncome:"",
+    safeguardedBenefits:"", protectedPensionAge:"", protectedCashPct:"", guidanceStatus:"",
+    scamWarning:false, vulnerability:"", vulnerabilityDetail:"", mpaaTriggered:"",
+    retirementOption:"", taxFreeCash:"", annuityShape:"", guaranteePeriod:"", underwritingBasis:"",
+    drawdownIncome:"", paymentFrequency:"", incomeIndexed:"", ufplsAmount:"",
+    firstPaymentDate:"", growthAssumption:"",
+    declarationUnderstood:false, declarationIrreversible:false,
+    decision:null, reasonCode:"", reasonText:"", settledIncome:null, settledTax:null,
+    stage:"Case", submittedBy:null, submittedAt:null, decidedBy:null, declineReason:"", paymentRef:null,
+    createdAt:new Date().toISOString(), audit:[]
+  };
+}
+function seedCases(){
+  const raw = [
+    ["PN-70001","Rosalind","Fairweather","1961-03-14","Personal pension",240000,"Guaranteed annuity","In payment","RP-A01","PAY-50001"],
+    ["PN-70002","Desmond","Achebe-Clark","1968-11-02","Self-invested personal pension",620000,"Flexi-access drawdown","Referred","RP-R01",null],
+    ["PN-70003","Marianne","Okoro","1959-07-25","Occupational money purchase",148000,"Guaranteed annuity","In payment","RP-A01","PAY-50002"],
+    ["PN-70004","Tobias","Renshaw","1972-01-19","Personal pension",84000,"Full encashment","Referred","RP-R06",null],
+    ["PN-70005","Aisling","Donnelly","1964-09-08","Group personal pension",310000,"Flexi-access drawdown","In payment","RP-A01","PAY-50003"],
+    ["PN-70006","Nikolai","Brandt","1975-05-30","Stakeholder pension",9200,"Flexi-access drawdown","Declined","RP-D03",null],
+    ["PN-70007","Perpetua","Nwosu","1966-12-11","Self-invested personal pension",455000,"Flexi-access drawdown","Case","",null]
+  ];
+  return raw.map(r=>{
+    const c = blankCase();
+    c.id = r[0]; c.memberFirst = r[1]; c.memberLast = r[2]; c.memberDob = r[3];
+    c.schemeType = r[4]; c.potValue = r[5]; c.retirementOption = r[6]; c.stage = r[7];
+    c.reasonCode = r[8]; c.reasonText = RP_REASON[r[8]] || ""; c.paymentRef = r[9];
+    c.decision = r[7] === "Declined" ? "DECLINE" : r[7] === "Referred" ? "REFER" : r[7] === "In payment" ? "ACCEPT" : null;
+    c.taxFreeCash = Math.round(r[5] * 0.25);
+    c.residence = "United Kingdom";
+    c.submittedBy = "Lena Fairbrook - Relationship Manager";
+    c.audit = [{at:"2026-09-12T09:30:00Z", by:"System", text:"Record migrated from the legacy retirement platform."}];
+    return c;
+  });
+}
+let pwiz = {step:0, errors:{}};
+function ensureCaseDraft(){ if(!state.draftCase) state.draftCase = blankCase(); return state.draftCase; }
+function perr(k){ return pwiz.errors[k] ? `<span class="err" data-testid="perror-${k}">${esc(pwiz.errors[k])}</span>` : ""; }
+function pbad(k){ return pwiz.errors[k] ? " bad" : ""; }
+function caseName(c){ return `${c.memberFirst||""} ${c.memberLast||""}`.trim() || "(unnamed member)"; }
+function caseStagePill(st){
+  const map = {"In payment":"p-ok","Declined":"p-risk","Referred":"p-warn","Case":"p-mute"};
+  return `<span class="pill ${map[st]||"p-mute"}">${esc(st)}</span>`;
+}
+
+const PCAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>';
+function pnum(k,label,d,o){ o=o||{};
+  return `<div class="field${pbad(k)}"><label for="p-${k}">${esc(label)}${o.opt?"":" *"}</label>
+    <input type="number" id="p-${k}" data-pfield="${k}" data-testid="input-${k}" value="${esc(d[k])}"${o.min!=null?` min="${o.min}"`:""}${o.max!=null?` max="${o.max}"`:""}${o.step?` step="${o.step}"`:""}${o.ph?` placeholder="${o.ph}"`:""}>
+    ${o.hint?`<span class="hint">${esc(o.hint)}</span>`:""}${perr(k)}</div>`; }
+function ptext(k,label,d,o){ o=o||{};
+  const control = o.type === "date"
+    ? `<div class="datefield">
+      <input type="text" id="p-${k}" data-pfield="${k}" data-datefmt="1" data-testid="input-${k}" value="${esc(isoToUK(d[k]))}" placeholder="dd-mm-yyyy" inputmode="numeric" maxlength="10" autocomplete="off">
+      <button type="button" class="btn btn-sm datebtn" data-act="open-cal" data-testid="calendar-${k}" aria-label="Open calendar for ${esc(label)}">${PCAL}</button>
+      <input type="date" class="cal-hidden" data-pdatefor="${k}" value="${esc(d[k])}" tabindex="-1" aria-hidden="true">
+    </div>`
+    : `<input type="text" id="p-${k}" data-pfield="${k}" data-testid="input-${k}" value="${esc(d[k])}"${o.ph?` placeholder="${o.ph}"`:""}>`;
+  return `<div class="field${pbad(k)}"><label for="p-${k}">${esc(label)}${o.opt?"":" *"}</label>
+    ${control}
+    ${o.hint?`<span class="hint">${esc(o.hint)}</span>`:""}${perr(k)}</div>`; }
+function psel(k,label,list,d,o){ o=o||{};
+  return `<div class="field${pbad(k)}"><label for="p-${k}">${esc(label)}${o.opt?"":" *"}</label>
+    <select id="p-${k}" data-pfield="${k}" data-testid="input-${k}">${opts(list,d[k],o.ph||"Select...")}</select>
+    ${o.hint?`<span class="hint">${esc(o.hint)}</span>`:""}${perr(k)}</div>`; }
+function pradio(k,label,d,hint){
+  return `<div class="field${pbad(k)}"><label>${esc(label)} *</label>
+    <div class="radio-set" data-testid="input-${k}">
+      <label><input type="radio" name="${k}" value="no" data-pfield="${k}" ${d[k]==="no"?"checked":""} data-testid="${k}-no"> No</label>
+      <label><input type="radio" name="${k}" value="yes" data-pfield="${k}" ${d[k]==="yes"?"checked":""} data-testid="${k}-yes"> Yes</label>
+    </div>${hint?`<span class="hint">${esc(hint)}</span>`:""}${perr(k)}</div>`; }
+
+const PSTEPS = [
+  {id:"member",     title:"Member & fund"},
+  {id:"safeguards", title:"Protection & safeguards"},
+  {id:"option",     title:"Retirement option"},
+  {id:"modelling",  title:"Income modelling"},
+  {id:"review",     title:"Review & submit"}
+];
+
+function pStepBody(d){
+  switch(PSTEPS[pwiz.step].id){
+  case "member": return `
+    <div class="grid g2" style="margin-bottom:14px">
+      ${ptext("memberFirst","First name",d)}
+      ${ptext("memberLast","Last name",d)}
+      ${ptext("memberDob","Date of birth",d,{type:"date",hint:"Benefits cannot normally be taken before age 55."})}
+      ${ptext("memberRef","Member reference",d,{ph:"CVP-004821"})}
+    </div>
+    <div class="grid g2" style="margin-bottom:14px">
+      ${psel("schemeType","Scheme type",PENSION_SCHEMES,d)}
+      ${ptext("planNumber","Plan number",d,{ph:"PP-88213"})}
+      ${pnum("potValue","Current fund value (GBP)",d,{min:0,step:1000,ph:"240000",hint:"Funds above 500,000 are reviewed as a large case."})}
+      ${psel("employmentStatus","Employment status",EMPLOYMENT_STATUS,d)}
+    </div>
+    <div class="grid g2">
+      ${psel("residence","Country of residence",RESIDENCE_STATUS,d)}
+      ${pnum("otherIncome","Other taxable income this year (GBP)",d,{min:0,step:500,ph:"14000",hint:"Used to band the tax on any taxable payment."})}
+    </div>`;
+
+  case "safeguards": return `
+    <p class="legend" style="margin-bottom:14px">These checks decide whether benefits can be put into payment at all, and whether the member must be referred before they are.</p>
+    <div class="grid g2" style="margin-bottom:14px">
+      ${psel("safeguardedBenefits","Safeguarded benefits held",SAFEGUARDED_BENEFITS,d,{hint:"Above 30,000 these can only be given up on regulated advice."})}
+      ${psel("guidanceStatus","Guidance or advice status",GUIDANCE_STATUS,d)}
+    </div>
+    ${pradio("protectedPensionAge","Does the member hold a protected pension age?",d,"A protected pension age permits access before 55.")}
+    <div class="grid g2" style="margin-top:14px;margin-bottom:14px">
+      ${pnum("protectedCashPct","Protected tax-free cash entitlement (per cent)",d,{opt:true,min:0,max:100,step:1,ph:"25",hint:"Leave blank for the standard 25 per cent. Above 25 is verified against scheme records."})}
+    </div>
+    ${pradio("mpaaTriggered","Has the money purchase annual allowance already been triggered?",d,"Relevant where the member is still contributing.")}
+    <div style="margin-top:14px">${pradio("vulnerability","Has a vulnerability been declared or identified?",d)}</div>
+    ${d.vulnerability==="yes"?`<div class="field${pbad("vulnerabilityDetail")}" style="margin-top:10px" data-testid="vulnerability-panel">
+      <label for="p-vulnerabilityDetail">Nature of the support required *</label>
+      <textarea id="p-vulnerabilityDetail" data-pfield="vulnerabilityDetail" data-testid="input-vulnerabilityDetail" placeholder="Describe the adjustment or support the member has asked for.">${esc(d.vulnerabilityDetail||"")}</textarea>
+      ${perr("vulnerabilityDetail")}</div>`:""}
+    <div class="sep"></div>
+    <div class="field check${pbad("scamWarning")}">
+      <input type="checkbox" id="p-scam" data-pfield="scamWarning" ${d.scamWarning?"checked":""} data-testid="input-scamWarning">
+      <label for="p-scam">The ScamSmart warning has been given and the member has confirmed they understand it. *</label></div>
+    ${perr("scamWarning")}`;
+
+  case "option": {
+    const maxCash = maxTaxFreeCash(d);
+    return `
+    <div class="grid g2" style="margin-bottom:14px">
+      ${psel("retirementOption","How benefits are to be taken",RETIREMENT_OPTIONS,d)}
+      ${pnum("taxFreeCash","Tax-free lump sum requested (GBP)",d,{min:0,step:500,ph:"60000",hint:`Maximum for this fund is ${money(maxCash)}.`})}
+    </div>
+    ${d.retirementOption==="Guaranteed annuity"?`
+      <div class="grid g2" data-testid="annuity-panel">
+        ${psel("annuityShape","Annuity shape",ANNUITY_SHAPES,d)}
+        ${psel("guaranteePeriod","Guarantee period",GUARANTEE_PERIODS,d)}
+        ${psel("underwritingBasis","Underwriting basis",UNDERWRITING_BASIS,d)}
+      </div>`:""}
+    ${d.retirementOption==="Flexi-access drawdown"?`
+      <div class="grid g2" data-testid="drawdown-panel">
+        ${pnum("drawdownIncome","Initial annual income (GBP)",d,{min:0,step:500,ph:"18000",hint:"Income that exhausts the fund before age 85 is referred."})}
+        ${psel("paymentFrequency","Payment frequency",PAYMENT_FREQUENCY,d)}
+      </div>
+      <div style="margin-top:14px">${pradio("incomeIndexed","Should the income increase by 2.5 per cent each year?",d)}</div>`:""}
+    ${d.retirementOption==="Uncrystallised funds pension lump sum"?`
+      <div class="grid g2" data-testid="ufpls-panel">
+        ${pnum("ufplsAmount","Lump sum requested (GBP)",d,{min:0,step:500,ph:"30000",hint:"25 per cent is paid tax free; the balance is taxed as income."})}
+      </div>`:""}
+    ${d.retirementOption==="Full encashment"?`
+      <div class="banner b-warn" style="margin-top:4px" data-testid="encashment-notice"><div><b>Full encashment closes the plan</b>The balance after the tax-free lump sum is taxed as income in this year and no further benefits remain.</div></div>`:""}`;
+  }
+
+  case "modelling": {
+    const r = projectRetirement(d);
+    return `
+    <div class="grid g2" style="margin-bottom:16px">
+      ${ptext("firstPaymentDate","Intended first payment date",d,{type:"date",hint:"Between today and 90 days ahead."})}
+      ${psel("growthAssumption","Investment growth assumption",GROWTH_ASSUMPTIONS,d)}
+    </div>
+    <div class="prem" style="margin-bottom:16px" data-testid="settlement-summary">
+      <div class="k legend">${d.retirementOption==="Guaranteed annuity"?"Gross annual income (GBP)":d.retirementOption==="Flexi-access drawdown"?"Requested annual income (GBP)":"Taxable payment (GBP)"}</div>
+      <div><span class="amt mono" data-testid="income-headline">${money(d.retirementOption==="Guaranteed annuity"||d.retirementOption==="Flexi-access drawdown"?r.annualIncome:r.taxableAmount)}</span><span class="per">before income tax</span></div>
+    </div>
+    <div id="settlement-live" data-testid="settlement-live">${settlementTable(d, r)}</div>`;
+  }
+
+  case "review": {
+    const r = projectRetirement(d);
+    const dec = adjudicate(d);
+    return `
+    <div class="banner ${dec.outcome==="ACCEPT"?"b-ok":dec.outcome==="REFER"?"b-warn":"b-risk"}" style="margin-bottom:16px" data-testid="case-decision">
+      <div><b>Indicative outcome: ${esc(dec.outcome)} (${esc(dec.code)})</b>${esc(dec.text)} The decision is confirmed on submission.</div></div>
+    <div class="grid g2">
+      <div><h3 style="margin-bottom:10px">Member</h3><dl class="kv" data-testid="review-member">
+        <dt>Name</dt><dd>${esc(caseName(d))}</dd>
+        <dt>Age</dt><dd>${memberAge(d.memberDob) ?? "-"}</dd>
+        <dt>Scheme</dt><dd>${esc(d.schemeType||"-")}</dd>
+        <dt>Fund value</dt><dd class="mono">${d.potValue?money(d.potValue):"-"}</dd>
+        <dt>Residence</dt><dd>${esc(d.residence||"-")}</dd></dl></div>
+      <div><h3 style="margin-bottom:10px">Protection</h3><dl class="kv" data-testid="review-protection">
+        <dt>Safeguarded</dt><dd>${esc(d.safeguardedBenefits||"-")}</dd>
+        <dt>Guidance</dt><dd>${esc(d.guidanceStatus||"-")}</dd>
+        <dt>Protected age</dt><dd>${d.protectedPensionAge==="yes"?"Yes":"No"}</dd>
+        <dt>Protected cash</dt><dd>${d.protectedCashPct?esc(String(d.protectedCashPct))+" per cent":"Standard 25 per cent"}</dd>
+        <dt>Vulnerability</dt><dd>${d.vulnerability==="yes"?"Declared":"None declared"}</dd></dl></div>
+      <div><h3 style="margin-bottom:10px">Settlement</h3><dl class="kv" data-testid="review-settlement">
+        <dt>Option</dt><dd>${esc(d.retirementOption||"-")}</dd>
+        <dt>Tax-free cash</dt><dd class="mono">${d.taxFreeCash?money(d.taxFreeCash):"-"}</dd>
+        <dt>Taxable amount</dt><dd class="mono">${money(r.taxableAmount)}</dd>
+        <dt>Income tax</dt><dd class="mono">${money2(r.tax.total)}</dd>
+        <dt>First payment</dt><dd>${fmtDate(d.firstPaymentDate)}</dd></dl></div>
+    </div>
+    <div class="sep"></div>
+    <div class="field check${pbad("declarationUnderstood")}" style="margin-bottom:10px">
+      <input type="checkbox" id="p-dec1" data-pfield="declarationUnderstood" ${d.declarationUnderstood?"checked":""} data-testid="input-declarationUnderstood">
+      <label for="p-dec1">The member has been told how this option is taxed and what it leaves for later life. *</label></div>
+    ${perr("declarationUnderstood")}
+    <div class="field check${pbad("declarationIrreversible")}" style="margin-bottom:10px">
+      <input type="checkbox" id="p-dec2" data-pfield="declarationIrreversible" ${d.declarationIrreversible?"checked":""} data-testid="input-declarationIrreversible">
+      <label for="p-dec2">The member understands that benefits once put into payment cannot be reversed. *</label></div>
+    ${perr("declarationIrreversible")}`;
+  }
+  }
+}
+
+function settlementTable(d, r){
+  const rows = (r.lines||[]).map(l=>`<tr><td>${esc(l.label)}</td><td class="right mono">${l.pct?l.value.toFixed(3)+" per cent":money(l.value)}</td></tr>`).join("");
+  const bands = r.tax.bands.map(b=>`<tr><td class="legend">${esc(b.name)}</td><td class="right mono legend">${money(b.amount)} taxed ${money2(b.tax)}</td></tr>`).join("");
+  const dep = r.depletionAge !== null && r.depletionAge !== undefined
+    ? `<tr><td>Fund exhausted at age</td><td class="right mono" data-testid="depletion-age">${r.depletionAge}</td></tr>`
+    : (d.retirementOption==="Flexi-access drawdown" ? `<tr><td>Fund exhausted at age</td><td class="right mono" data-testid="depletion-age">Not within 50 years</td></tr>` : "");
+  return `<div class="table-wrap"><table data-testid="settlement-table"><tbody>
+    ${rows}
+    ${r.garApplied?`<tr><td class="legend">Guaranteed annuity rate applied in place of the market rate of ${r.marketRate.toFixed(3)} per cent</td><td class="right mono legend">${GAR_RATE.toFixed(3)} per cent</td></tr>`:""}
+    ${dep}
+    <tr><td style="font-weight:600">Taxable amount</td><td class="right mono" style="font-weight:600">${money(r.taxableAmount)}</td></tr>
+    ${bands}
+    <tr><td>Income tax</td><td class="right mono" data-testid="tax-total">${money2(r.tax.total)}</td></tr>
+    <tr><td style="font-weight:600">Net of tax</td><td class="right mono" style="font-weight:600" data-testid="net-total">${money2(r.netAmount)}</td></tr>
+  </tbody></table></div>`;
+}
+
+function validateCaseStep(){
+  const d = ensureCaseDraft(); const e = {};
+  const req = (k,msg)=>{ if(!String(d[k]??"").trim()) e[k]=msg; };
+  switch(PSTEPS[pwiz.step].id){
+    case "member":
+      req("memberFirst","First name is required.");
+      req("memberLast","Last name is required.");
+      req("memberDob","Date of birth is required.");
+      if(d.memberDob){
+        const a = memberAge(d.memberDob);
+        if(a === null || isNaN(a)) e.memberDob = "Enter a valid date of birth.";
+        else if(a < 18) e.memberDob = "The member must be at least 18 years old.";
+        else if(a > 100) e.memberDob = "Enter a valid date of birth.";
+      }
+      req("memberRef","Member reference is required.");
+      req("schemeType","Select a scheme type.");
+      req("planNumber","Plan number is required.");
+      if(!String(d.potValue??"").trim()) e.potValue = "Current fund value is required.";
+      else if(Number(d.potValue) <= 0) e.potValue = "Enter a fund value greater than zero.";
+      req("employmentStatus","Select an employment status.");
+      req("residence","Select a country of residence.");
+      if(!String(d.otherIncome??"").trim()) e.otherIncome = "Enter other taxable income, or zero.";
+      else if(Number(d.otherIncome) < 0) e.otherIncome = "Other taxable income cannot be negative.";
+      break;
+    case "safeguards":
+      req("safeguardedBenefits","Select the safeguarded benefits held, or None.");
+      req("guidanceStatus","Select the guidance or advice status.");
+      if(!d.protectedPensionAge) e.protectedPensionAge = "Answer the protected pension age question.";
+      if(String(d.protectedCashPct??"").trim() !== ""){
+        const p = Number(d.protectedCashPct);
+        if(isNaN(p) || p < 0 || p > 100) e.protectedCashPct = "Enter a percentage between 0 and 100.";
+      }
+      if(!d.mpaaTriggered) e.mpaaTriggered = "Answer the money purchase annual allowance question.";
+      if(!d.vulnerability) e.vulnerability = "Answer the vulnerability question.";
+      if(d.vulnerability === "yes" && String(d.vulnerabilityDetail||"").trim().length < 20)
+        e.vulnerabilityDetail = "Describe the support required in at least 20 characters.";
+      if(!d.scamWarning) e.scamWarning = "Confirm the ScamSmart warning has been given.";
+      break;
+    case "option":
+      req("retirementOption","Select how benefits are to be taken.");
+      if(!String(d.taxFreeCash??"").trim()) e.taxFreeCash = "Tax-free lump sum is required; enter zero if none is taken.";
+      else if(Number(d.taxFreeCash) < 0) e.taxFreeCash = "The tax-free lump sum cannot be negative.";
+      else if(Number(d.taxFreeCash) > Number(d.potValue||0)) e.taxFreeCash = "The tax-free lump sum cannot exceed the fund value.";
+      if(d.retirementOption === "Guaranteed annuity"){
+        req("annuityShape","Select an annuity shape.");
+        req("guaranteePeriod","Select a guarantee period.");
+        req("underwritingBasis","Select an underwriting basis.");
+      }
+      if(d.retirementOption === "Flexi-access drawdown"){
+        if(!String(d.drawdownIncome??"").trim()) e.drawdownIncome = "Initial annual income is required.";
+        else if(Number(d.drawdownIncome) <= 0) e.drawdownIncome = "Enter an annual income greater than zero.";
+        req("paymentFrequency","Select a payment frequency.");
+        if(!d.incomeIndexed) e.incomeIndexed = "Answer the income escalation question.";
+      }
+      if(d.retirementOption === "Uncrystallised funds pension lump sum"){
+        const resid = Number(d.potValue||0) - Number(d.taxFreeCash||0);
+        if(!String(d.ufplsAmount??"").trim()) e.ufplsAmount = "Lump sum requested is required.";
+        else if(Number(d.ufplsAmount) <= 0) e.ufplsAmount = "Enter a lump sum greater than zero.";
+        else if(Number(d.ufplsAmount) > resid) e.ufplsAmount = "The lump sum cannot exceed the fund remaining after the tax-free cash.";
+      }
+      break;
+    case "modelling":
+      req("firstPaymentDate","Intended first payment date is required.");
+      if(d.firstPaymentDate){
+        const days = daysBetween(today(), d.firstPaymentDate);
+        if(days < 0) e.firstPaymentDate = "The first payment cannot be dated in the past.";
+        else if(days > 90) e.firstPaymentDate = "The first payment must fall within the next 90 days.";
+      }
+      req("growthAssumption","Select an investment growth assumption.");
+      break;
+    case "review": {
+      const keep = pwiz.step;
+      for(let i=0;i<PSTEPS.length-1;i++){ pwiz.step = i; if(!validateCaseStep()){ pwiz.step = keep; return false; } }
+      pwiz.step = keep; pwiz.errors = {};
+      const r = {};
+      if(!d.declarationUnderstood) r.declarationUnderstood = "Confirm the tax and long-term provision have been explained.";
+      if(!d.declarationIrreversible) r.declarationIrreversible = "Confirm the member understands this cannot be reversed.";
+      pwiz.errors = r;
+      return Object.keys(r).length === 0;
+    }
+  }
+  pwiz.errors = e;
+  return Object.keys(e).length === 0;
+}
+
+function submitCase(){
+  const d = ensureCaseDraft();
+  if(!validateCaseStep()){ render(); toast("Submission blocked - complete the earlier steps."); return; }
+  const dec = adjudicate(d), r = projectRetirement(d);
+  d.id = "PN-" + state.nextCaseId++;
+  d.decision = dec.outcome; d.reasonCode = dec.code; d.reasonText = dec.text;
+  d.settledIncome = Number((r.annualIncome || r.taxableAmount).toFixed(2));
+  d.settledTax = Number(r.tax.total.toFixed(2));
+  d.submittedBy = actor().name; d.submittedAt = new Date().toISOString();
+  if(dec.outcome === "ACCEPT"){ d.stage = "In payment"; d.paymentRef = "PAY-" + state.nextPaymentId++; }
+  else if(dec.outcome === "REFER"){ d.stage = "Referred"; }
+  else { d.stage = "Declined"; }
+  paudit(d, `Retirement instruction submitted. Outcome ${dec.outcome} (${dec.code}).`);
+  state.cases.push(d); state.draftCase = null; pwiz = {step:0, errors:{}};
+  save();
+  toast(`${d.id} - ${dec.outcome==="ACCEPT" ? "accepted, payment "+d.paymentRef : dec.outcome==="REFER" ? "referred for advice review" : "declined"}.`);
+  go(`#/pensions/case/${d.id}`);
+}
+
+function paApprove(id){
+  const c = state.cases.find(x=>x.id===id); if(!c) return;
+  if(c.submittedBy === actor().name){ toast("Four-eyes control: the submitting user cannot decide a referral they raised."); return; }
+  modal("Approve retirement instruction", `
+    <p>Approving <b>${esc(caseName(c))}</b> (<span class="mono">${c.id}</span>) puts benefits into payment on the terms recorded.</p>
+    <div class="banner b-warn" style="margin-top:12px"><div><b>${esc(c.reasonCode)}</b>${esc(c.reasonText)}</div></div>
+    <div class="field" style="margin-top:14px"><label for="pa-note">Reviewer note</label>
+      <textarea id="pa-note" data-testid="pa-approve-note" placeholder="Record what was checked and why the referral is cleared."></textarea>
+      <span class="hint">At least 20 characters.</span>
+      <span class="err" id="pa-note-err" hidden data-testid="pa-approve-note-error">A note of at least 20 characters is required.</span></div>`,
+    `<button class="btn btn-accent" data-pact="pa-approve-confirm" data-id="${id}" data-testid="pa-approve-confirm">Put into payment</button>
+     <button class="btn" data-act="modal-close">Cancel</button>`);
+}
+function paApproveConfirm(id){
+  const c = state.cases.find(x=>x.id===id); if(!c) return;
+  const n = (($("#pa-note")||{}).value || "").trim();
+  if(n.length < 20){ const el = $("#pa-note-err"); if(el) el.hidden = false; return; }
+  c.stage = "In payment"; c.decision = "ACCEPT"; c.decidedBy = actor().name;
+  c.paymentRef = "PAY-" + state.nextPaymentId++;
+  paudit(c, `Referral approved by the retirement review team - ${n}`);
+  save(); closeModal(); toast(`${c.id} approved - payment ${c.paymentRef} set up.`); render();
+}
+function paDecline(id){
+  const c = state.cases.find(x=>x.id===id); if(!c) return;
+  if(c.submittedBy === actor().name){ toast("Four-eyes control: the submitting user cannot decide a referral they raised."); return; }
+  modal("Decline retirement instruction", `
+    <p>Declining <b>${esc(caseName(c))}</b> (<span class="mono">${c.id}</span>) closes the instruction. A reason is retained.</p>
+    <div class="field" style="margin-top:14px"><label for="pa-reason">Reason for decline *</label>
+      <textarea id="pa-reason" data-testid="pa-decline-reason" placeholder="e.g. Income requested is not sustainable and the member declined to revise it."></textarea>
+      <span class="hint">At least 20 characters.</span>
+      <span class="err" id="pa-reason-err" hidden data-testid="pa-decline-reason-error">A reason of at least 20 characters is required.</span></div>`,
+    `<button class="btn btn-danger" data-pact="pa-decline-confirm" data-id="${id}" data-testid="pa-decline-confirm">Confirm decline</button>
+     <button class="btn" data-act="modal-close">Cancel</button>`);
+}
+function paDeclineConfirm(id){
+  const c = state.cases.find(x=>x.id===id); if(!c) return;
+  const r = (($("#pa-reason")||{}).value || "").trim();
+  if(r.length < 20){ const el = $("#pa-reason-err"); if(el) el.hidden = false; return; }
+  c.stage = "Declined"; c.decision = "DECLINE"; c.declineReason = r; c.decidedBy = actor().name;
+  paudit(c, `Referral declined by the retirement review team - ${r}`);
+  save(); closeModal(); toast(`${c.id} declined.`); render();
+}
+
+/* ---------------- pensions views ---------------- */
+function viewPensionDash(){
+  const open = state.cases.filter(c=>c.stage==="Case").length;
+  const refs = state.cases.filter(c=>c.stage==="Referred").length;
+  const paying = state.cases.filter(c=>c.stage==="In payment");
+  const declined = state.cases.filter(c=>c.stage==="Declined").length;
+  const funds = state.cases.reduce((a,c)=>a+Number(c.potValue||0),0);
+  const stages = ["Case","Referred","In payment","Declined"];
+  return `
+  <div class="page-head"><div style="flex:1"><h1>Retirement dashboard</h1>
+    <p>Retirement instructions across the book as at ${fmtDate(today())}. Benefits are put into payment only once every protection check is satisfied.</p></div>
+    <button class="btn btn-primary" data-pact="new-case" data-testid="dash-new-case">New retirement instruction</button></div>
+  <div class="tiles">
+    <div class="tile" data-testid="tile-cases"><div class="k">Instructions in progress</div><div class="v">${open}</div><div class="d">Not yet submitted</div></div>
+    <div class="tile" data-testid="tile-referrals"><div class="k">Awaiting review</div><div class="v">${refs}</div><div class="d">Referred for a protection check</div></div>
+    <div class="tile" data-testid="tile-payment"><div class="k">In payment</div><div class="v">${paying.length}</div><div class="d">Benefits settled</div></div>
+    <div class="tile" data-testid="tile-funds"><div class="k">Fund value under instruction</div><div class="v mono">${money(funds)}</div><div class="d">${declined} declined</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card" data-testid="card-funnel"><div class="card-head"><h2>Instructions by stage</h2></div><div class="card-body">
+      <div class="funnel">${stages.map(s=>{
+        const n = state.cases.filter(c=>c.stage===s).length;
+        const pct = state.cases.length ? Math.round(n/state.cases.length*100) : 0;
+        return `<div class="funnel-row" data-testid="penfunnel-${slug(s)}"><span class="legend" style="min-width:120px">${esc(s)}</span>
+          <div class="funnel-bar"><span style="width:${pct}%"></span></div><span class="mono">${n}</span></div>`;
+      }).join("")}</div></div></div>
+    <div class="card" data-testid="card-referrals"><div class="card-head"><h2>Awaiting review</h2></div><div class="card-body">
+      ${refs ? `<p class="legend">${refs} instruction${refs===1?"":"s"} outside automatic acceptance.</p>
+        <button class="btn" data-pact="go-advice" data-testid="open-advice">Open the review queue</button>`
+      : `<p class="legend">Nothing is awaiting review.</p>`}</div></div>
+  </div>`;
+}
+
+function viewCaseList(){
+  return `<div class="page-head"><div style="flex:1"><h1>Retirement instructions</h1>
+    <p>Every instruction captured against a member's plan, whatever stage it has reached.</p></div>
+    <button class="btn btn-primary" data-pact="new-case" data-testid="cases-new">New retirement instruction</button></div>
+    ${caseTable(state.cases, "case-table")}`;
+}
+function viewBenefitsInPayment(){
+  const rows = state.cases.filter(c=>c.stage==="In payment");
+  return `<div class="page-head"><div style="flex:1"><h1>Benefits in payment</h1>
+    <p>Instructions settled and put into payment.</p></div></div>${caseTable(rows, "payment-table")}`;
+}
+function caseTable(rows, testid){
+  if(!rows.length) return `<div class="empty" data-testid="${testid}-empty">No instructions to show.</div>`;
+  return `<div class="table-wrap"><table data-testid="${testid}">
+    <thead><tr><th>Reference</th><th>Member</th><th>Scheme</th><th class="right">Fund</th><th>Option</th><th>Stage</th><th>Outcome</th><th class="right"></th></tr></thead>
+    <tbody>${rows.map(c=>`<tr data-testid="case-row-${c.id}">
+      <td class="mono">${esc(c.id)}</td><td>${esc(caseName(c))}</td><td class="legend">${esc(c.schemeType||"-")}</td>
+      <td class="right mono">${c.potValue?money(c.potValue):"-"}</td><td class="legend">${esc(c.retirementOption||"-")}</td>
+      <td>${caseStagePill(c.stage)}</td><td class="mono legend">${esc(c.reasonCode||"-")}</td>
+      <td class="right"><button class="btn btn-sm" data-pact="open-case" data-id="${c.id}" data-testid="open-${c.id}">Open</button></td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+
+function viewAdviceQueue(){
+  const canReview = actor().role === "Compliance";
+  const rows = state.cases.filter(c=>c.stage==="Referred");
+  return `<div class="page-head"><div style="flex:1"><h1>Retirement review queue</h1>
+    <p>Instructions held for a protection check. A referral is decided by a reviewer, never by the person who submitted it.</p></div></div>
+    ${canReview ? "" : `<div class="banner b-info" data-testid="pa-role-notice" style="margin-bottom:16px"><div><b>Read-only for this role</b>You are acting as ${esc(actor().role)}. Sign in as the compliance officer, who holds retirement review authority in this demo, to decide referrals.</div></div>`}
+    ${rows.length ? `<div class="table-wrap"><table data-testid="advice-table">
+      <thead><tr><th>Reference</th><th>Member</th><th>Reason</th><th>Submitted by</th><th class="right"></th></tr></thead>
+      <tbody>${rows.map(c=>`<tr data-testid="advice-row-${c.id}">
+        <td class="mono">${esc(c.id)}</td><td>${esc(caseName(c))}</td>
+        <td class="legend"><b class="mono">${esc(c.reasonCode)}</b> ${esc(c.reasonText)}</td>
+        <td class="legend">${esc(c.submittedBy||"-")}</td>
+        <td class="right"><button class="btn btn-sm" data-pact="open-case" data-id="${c.id}" data-testid="open-${c.id}">Open</button></td>
+      </tr>`).join("")}</tbody></table></div>`
+    : `<div class="empty" data-testid="advice-empty">Nothing is awaiting review.</div>`}`;
+}
+
+function viewCaseDetail(id){
+  const c = state.cases.find(x=>x.id===id);
+  if(!c) return `<div class="empty" data-testid="case-not-found">No instruction found with reference ${esc(id)}.</div>`;
+  const canReview = actor().role === "Compliance" && c.stage === "Referred";
+  const r = projectRetirement(c);
+  return `
+  <div class="row" style="gap:8px;margin-bottom:6px"><a href="#/pensions/cases" class="legend" data-testid="back-to-cases">Back to instructions</a></div>
+  <div class="page-head"><div style="flex:1"><h1>${esc(caseName(c))}</h1>
+    <p><span class="mono">${esc(c.id)}</span> · ${esc(c.schemeType||"-")} · ${caseStagePill(c.stage)}</p></div>
+    <div class="row">${canReview ? `<button class="btn btn-accent" data-pact="pa-approve" data-id="${c.id}" data-testid="pa-approve">Approve instruction</button>
+      <button class="btn btn-danger" data-pact="pa-decline" data-id="${c.id}" data-testid="pa-decline">Decline</button>` : ""}</div></div>
+  ${c.decision ? `<div class="banner ${c.decision==="ACCEPT"?"b-ok":c.decision==="REFER"?"b-warn":"b-risk"}" style="margin-bottom:16px" data-testid="decision-banner">
+    <div><b>${esc(c.decision)} (${esc(c.reasonCode)})</b>${esc(c.reasonText)}</div></div>` : ""}
+  ${c.paymentRef ? `<div class="banner b-ok" style="margin-bottom:16px" data-testid="payment-banner"><div><b>Benefits in payment</b>Payment reference <span class="mono">${esc(c.paymentRef)}</span>.</div></div>` : ""}
+  ${c.declineReason ? `<div class="banner b-risk" style="margin-bottom:16px" data-testid="decline-banner"><div><b>Declined</b>${esc(c.declineReason)}</div></div>` : ""}
+  <div class="grid g2">
+    <div class="card"><div class="card-head"><h2>Member</h2></div><div class="card-body">
+      <dl class="kv" data-testid="case-member">
+        <dt>Age</dt><dd>${memberAge(c.memberDob) ?? "-"}</dd>
+        <dt>Date of birth</dt><dd>${fmtDate(c.memberDob)}</dd>
+        <dt>Fund value</dt><dd class="mono">${c.potValue?money(c.potValue):"-"}</dd>
+        <dt>Residence</dt><dd>${esc(c.residence||"-")}</dd>
+        <dt>Submitted by</dt><dd class="legend">${esc(c.submittedBy||"-")}</dd></dl></div></div>
+    <div class="card"><div class="card-head"><h2>Settlement</h2></div><div class="card-body">
+      <dl class="kv" data-testid="case-settlement">
+        <dt>Option</dt><dd>${esc(c.retirementOption||"-")}</dd>
+        <dt>Tax-free cash</dt><dd class="mono">${c.taxFreeCash?money(c.taxFreeCash):"-"}</dd>
+        <dt>Income or payment</dt><dd class="mono">${c.settledIncome!=null?money(c.settledIncome):money(r.annualIncome||r.taxableAmount)}</dd>
+        <dt>Income tax</dt><dd class="mono">${c.settledTax!=null?money2(c.settledTax):money2(r.tax.total)}</dd>
+        <dt>Decided by</dt><dd class="legend">${esc(c.decidedBy||"Automatic decision")}</dd></dl></div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><div class="card-head"><h2>Audit trail</h2></div><div class="card-body">
+    <div class="table-wrap"><table data-testid="case-audit"><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead>
+      <tbody>${(c.audit||[]).map(a=>`<tr><td class="legend mono">${fmtDT(a.at)}</td><td class="legend">${esc(a.by)}</td><td>${esc(a.text)}</td></tr>`).join("")}</tbody>
+    </table></div></div></div>`;
+}
+
+function viewCaseWizard(){
+  const d = ensureCaseDraft();
+  const st = PSTEPS[pwiz.step];
+  return `
+  <div class="page-head"><div style="flex:1"><h1>New retirement instruction</h1>
+    <p>Five steps from the member's fund to benefits in payment. Nothing is settled until every protection check is satisfied.</p></div>
+    <button class="btn" data-pact="discard-case" data-testid="discard-case">Discard instruction</button></div>
+  <div class="stepper" data-testid="case-stepper">
+    ${PSTEPS.map((x,i)=>`<button data-pact="pgoto" data-step="${i}" ${i===pwiz.step?'aria-current="step"':""} data-done="${i<pwiz.step?"yes":"no"}" data-testid="pstep-${x.id}">
+      <span class="n">${i+1}</span><span>${esc(x.title)}</span></button>`).join("")}
+  </div>
+  <div class="card" data-testid="case-card">
+    <div class="card-head"><h2 style="flex:1">${esc(st.title)}</h2><span class="legend">Step ${pwiz.step+1} of ${PSTEPS.length}</span></div>
+    <div class="card-body">${pStepBody(d)}</div>
+    <div class="card-foot">
+      <button class="btn" data-pact="pback" data-testid="case-back" ${pwiz.step===0?"disabled":""}>Back</button>
+      <div style="flex:1"></div>
+      ${pwiz.step < PSTEPS.length-1
+        ? `<button class="btn btn-primary" data-pact="pnext" data-testid="case-next">Continue</button>`
+        : `<button class="btn btn-accent" data-pact="psubmit" data-testid="case-submit">Submit instruction</button>`}
+    </div>
+  </div>`;
+}
+
+function pensionsView(hash){
+  if(hash === "#/pensions/case/new") return [viewCaseWizard(), "Pensions / Instructions / New instruction"];
+  if(hash.startsWith("#/pensions/case/")){ const id = decodeURIComponent(hash.split("/")[3]||""); return [viewCaseDetail(id), `Pensions / Instructions / ${id}`]; }
+  if(hash === "#/pensions/cases")   return [viewCaseList(), "Pensions / Instructions"];
+  if(hash === "#/pensions/advice")  return [viewAdviceQueue(), "Pensions / Retirement review queue"];
+  if(hash === "#/pensions/payments")return [viewBenefitsInPayment(), "Pensions / Benefits in payment"];
+  return [viewPensionDash(), "Overview / Retirement dashboard"];
+}
+
+/* ---------------- pensions events ---------------- */
+const P_LIVE_FIELDS = ["retirementOption","safeguardedBenefits","vulnerability","protectedPensionAge","mpaaTriggered","incomeIndexed","annuityShape","guaranteePeriod","underwritingBasis","paymentFrequency","growthAssumption","declarationUnderstood","declarationIrreversible","scamWarning"];
+const P_PARTIAL_FIELDS = ["potValue","taxFreeCash","drawdownIncome","ufplsAmount","otherIncome","protectedCashPct","memberDob"];
+let _lastPRender = { el:null, t:0 };
+
+function pFieldWrite(el){
+  if(!el || !el.dataset) return false;
+  if(el.dataset.pdatefor){
+    const d = ensureCaseDraft(), dk = el.dataset.pdatefor;
+    d[dk] = el.value; delete pwiz.errors[dk];
+    const txt = document.querySelector('[data-pfield="' + dk + '"][data-datefmt]');
+    if(txt) txt.value = isoToUK(el.value);
+    save(); return "partial";
+  }
+  if(el.dataset.pfield){
+    const d = ensureCaseDraft(), k = el.dataset.pfield;
+    if(el.dataset.datefmt){
+      const iso = ukToISO(el.value);
+      d[k] = iso === null ? el.value : iso;
+    }else{
+      d[k] = el.type === "checkbox" ? el.checked : el.value;
+    }
+    delete pwiz.errors[k];
+    save();
+    if(P_PARTIAL_FIELDS.includes(k)) return "partial";
+    return P_LIVE_FIELDS.includes(k) ? "render" : true;
+  }
+  return false;
+}
+function refreshSettlementLive(){
+  const node = document.getElementById("settlement-live");
+  if(!node) return;
+  const d = ensureCaseDraft();
+  node.innerHTML = settlementTable(d, projectRetirement(d));
+  const head = document.querySelector('[data-testid="income-headline"]');
+  if(head){
+    const r = projectRetirement(d);
+    head.textContent = money(d.retirementOption==="Guaranteed annuity"||d.retirementOption==="Flexi-access drawdown" ? r.annualIncome : r.taxableAmount);
+  }
+}
+function handlePFieldEvent(el){
+  const res = pFieldWrite(el);
+  if(!res) return false;
+  if(res === "partial"){ try{ refreshSettlementLive(); }catch(e){} return true; }
+  if(res === "render"){
+    const now = Date.now();
+    if(_lastPRender.el === el && (now - _lastPRender.t) < 60) return true;
+    _lastPRender = { el:el, t:now };
+    render();
+  }
+  return true;
+}
+document.addEventListener("input",  ev => { handlePFieldEvent(ev.target); });
+document.addEventListener("change", ev => { handlePFieldEvent(ev.target); });
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("[data-pact]"); if(!t) return;
+  switch(t.dataset.pact){
+    case "new-case": go("#/pensions/case/new"); return;
+    case "go-advice": go("#/pensions/advice"); return;
+    case "open-case": go(`#/pensions/case/${t.dataset.id}`); return;
+    case "pback": pwiz.step = Math.max(0, pwiz.step-1); pwiz.errors = {}; render(); return;
+    case "pnext":
+      if(validateCaseStep()){ pwiz.step = Math.min(PSTEPS.length-1, pwiz.step+1); save(); render(); }
+      else { render(); toast("Some required information is missing or invalid."); }
+      return;
+    case "pgoto": {
+      const target = Number(t.dataset.step);
+      if(target <= pwiz.step){ pwiz.step = target; pwiz.errors = {}; render(); }
+      else if(validateCaseStep()){ pwiz.step = target; render(); }
+      else { render(); toast("Complete the highlighted fields first."); }
+      return;
+    }
+    case "psubmit": submitCase(); return;
+    case "discard-case":
+      modal("Discard instruction", `<p>This clears the retirement instruction in progress. It cannot be recovered.</p>`,
+        `<button class="btn btn-danger" data-pact="discard-case-confirm" data-testid="discard-case-confirm">Discard</button>
+         <button class="btn" data-act="modal-close">Cancel</button>`);
+      return;
+    case "discard-case-confirm":
+      state.draftCase = null; pwiz = {step:0, errors:{}}; save(); closeModal();
+      toast("Instruction discarded."); go("#/pensions"); return;
+    case "pa-approve": paApprove(t.dataset.id); return;
+    case "pa-approve-confirm": paApproveConfirm(t.dataset.id); return;
+    case "pa-decline": paDecline(t.dataset.id); return;
+    case "pa-decline-confirm": paDeclineConfirm(t.dataset.id); return;
   }
 });
 
