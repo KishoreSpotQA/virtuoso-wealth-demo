@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Cavendish Private Wealth - client management and onboarding demo application.">
+<meta name="description" content="Cavendish Financial Services - wealth, motor insurance and pensions client operations demo application.">
 <style>
 :root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{margin:0}
@@ -17,7 +17,7 @@ img{max-width:100%}
 .datefield .datebtn svg{width:16px;height:16px;display:block}
 .datefield input[type="date"].cal-hidden{position:absolute;right:0;bottom:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none}
 </style>
-<title>Cavendish Private Wealth</title>
+<title>Cavendish Financial Services</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
@@ -350,15 +350,19 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
 .prem{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
 .prem .amt{font-size:30px;font-weight:600;letter-spacing:-.02em;color:var(--ink)}
 .prem .per{font-size:12.5px;color:var(--ink-3);margin-left:6px}
+
+.demo-note{font-size:10.5px;line-height:1.5;opacity:.72;margin-top:10px}
+.demo-note b{font-weight:600}
+.sidefoot .demo-note{margin-top:8px;opacity:.55}
 </style>
 
 </head>
 <body>
 <div class="login-wrap" id="login-wrap" data-testid="login-view" hidden>
   <div class="login-card">
-    <div class="login-brand">
+    <div class="login-brand" data-testid="login-brand">
       <span class="mark">Cavendish</span>
-      <span class="sub">Private Wealth · Client Ops</span>
+      <span class="sub">Financial Services · Client Ops</span>
     </div>
     <h1>Sign in</h1>
     <p class="intro">Use your Cavendish network credentials. Access is recorded against your user for audit purposes.</p>
@@ -383,6 +387,10 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
       <span class="mono">yuki.mori</span> — Client Operations<br>
       Password for all three: <span class="mono">Cavendish#2026</span>
       <div class="login-env">Environment UAT · Build <span class="mono" id="login-build">—</span> · <button type="button" id="login-reset-btn" data-testid="login-reset">Reset demo data</button></div>
+      <div class="demo-note" data-testid="demo-disclosure">
+        <b>Demonstration application.</b> Cavendish Financial Services is fictional and all data is synthetic.<br>
+        Built by Virtuoso QA.
+      </div>
     </div>
   </div>
 </div>
@@ -391,12 +399,13 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
   <aside class="sidebar">
     <div class="brand">
       <span class="mark">Cavendish</span>
-      <span class="sub">Private Wealth · Client Ops</span>
+      <span class="sub" id="brand-sub" data-testid="brand-sub">Financial Services · Client Ops</span>
     </div>
     <nav class="nav" id="nav" data-testid="main-nav"></nav>
     <div class="sidefoot">
       <div>Environment: <span class="mono">UAT</span></div>
       <div style="margin-top:3px">Build <span class="mono" id="build-id">—</span></div>
+      <div class="demo-note" data-testid="sidebar-disclosure">Demo · synthetic data</div>
     </div>
   </aside>
 
@@ -426,7 +435,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.12";
+const BUILD = "2026.09.14";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -1700,7 +1709,7 @@ function renderLogin(){
   if(bn) bn.innerHTML = loginUI.banner
     ? `<div class="banner b-risk" style="margin-bottom:16px" data-testid="${loginUI.banner.id}"><div>${esc(loginUI.banner.text)}</div></div>`
     : "";
-  document.title = "Sign in \u00b7 Cavendish Private Wealth";
+  document.title = "Sign in \u00b7 Cavendish Financial Services";
 }
 
 function attemptLogin(){
@@ -1758,9 +1767,15 @@ function render(){
   if(lw) lw.hidden = true;
   if(sh) sh.hidden = false;
   const hash = currentRoute();
-  document.body.dataset.module = hash.startsWith("#/insurance") ? "insurance"
+  const mod = hash.startsWith("#/insurance") ? "insurance"
     : hash.startsWith("#/pensions") ? "pensions"
     : hash === "#/apps" ? "" : "wam";
+  document.body.dataset.module = mod;
+  /* the sidebar names the business you are actually in, not the group */
+  const BRAND_SUB = { wam:"Private Wealth · Client Ops", insurance:"Motor Insurance · Client Ops",
+                      pensions:"Retirement · Client Ops", "":"Financial Services · Client Ops" };
+  const bsub = $("#brand-sub");
+  if(bsub) bsub.textContent = BRAND_SUB[mod];
   renderNav(); renderActor();
   $("#build-id").textContent = BUILD;
   let html = "", crumb = "";
@@ -1784,7 +1799,7 @@ function render(){
   }
   $("#view").innerHTML = html;
   $("#crumb").textContent = crumb;
-  document.title = crumb.split(" / ").pop() + " · Cavendish Private Wealth";
+  document.title = crumb.split(" / ").pop() + " · Cavendish Financial Services";
 }
 
 /* ---------------- events ---------------- */
