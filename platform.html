@@ -457,7 +457,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.18";
+const BUILD = "2026.09.19";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -621,7 +621,7 @@ function blankClient(){
 let state = null;
 
 function defaultState(){
-  return { clients: seedClients(), draft: null, actor:"adviser", nextId: 10053, session:null, attempts:{}, locked:[], quotes: seedQuotes(), draftQuote: null, nextQuoteId: 40021, nextPolicyId: 90014, cases: seedCases(), draftCase: null, nextCaseId: 70009, nextPaymentId: 50004 };
+  return { clients: seedClients(), draft: null, actor:"adviser", nextId: 10053, session:null, attempts:{}, locked:[], quotes: seedQuotes(), draftQuote: null, nextQuoteId: 40021, nextPolicyId: 90014, cases: seedCases(), draftCase: null, nextCaseId: 70009, nextPaymentId: 50004, members: seedMembers(), finds: [], findDraft: null, nextFindId: 90001 };
 }
 function save(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){/* private mode */}
@@ -641,6 +641,10 @@ function load(){
       if(!("draftCase" in p)) p.draftCase = null;
       if(!p.nextCaseId) p.nextCaseId = 70009;
       if(!p.nextPaymentId) p.nextPaymentId = 50004;
+      if(!Array.isArray(p.members)) p.members = seedMembers();
+      if(!Array.isArray(p.finds)) p.finds = [];
+      if(!("findDraft" in p)) p.findDraft = null;
+      if(!p.nextFindId) p.nextFindId = 90001;
       return p;
     } }
   }catch(e){/* ignore */}
@@ -712,7 +716,11 @@ const PEN_ROUTES = [
   {href:"#/pensions/case/new", label:"New instruction",        group:"Pensions"},
   {href:"#/pensions/advice",   label:"Retirement review",      group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="Referred").length},
   {href:"#/pensions/authorisations", label:"Payment authorisation", group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="Awaiting authorisation").length},
-  {href:"#/pensions/payments", label:"Benefits in payment",    group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="In payment").length}
+  {href:"#/pensions/payments", label:"Benefits in payment",    group:"Pensions", count:()=>state.cases.filter(c=>c.stage==="In payment").length},
+  {href:"#/pensions/finds",      label:"Find requests",          group:"Dashboards", count:()=>(state.finds||[]).length},
+  {href:"#/pensions/find/new",   label:"New find request",       group:"Dashboards"},
+  {href:"#/pensions/resolution", label:"Possible match resolution", group:"Dashboards", count:()=>(state.finds||[]).filter(f=>f.stage==="Awaiting resolution").length},
+  {href:"#/pensions/members",    label:"Member register",        group:"Dashboards"}
 ];
 function navRoutes(){
   const cur = currentRoute();
@@ -730,6 +738,7 @@ function renderNav(){
       || (r.href==="#/clients" && cur.startsWith("#/clients/"))
       || (r.href==="#/insurance/quotes" && cur.startsWith("#/insurance/quote/") && cur!=="#/insurance/quote/new")
       || (r.href==="#/pensions/cases" && cur.startsWith("#/pensions/case/") && cur!=="#/pensions/case/new")
+      || (r.href==="#/pensions/finds" && cur.startsWith("#/pensions/find/") && cur!=="#/pensions/find/new")
       ? ' aria-current="page"' : "";
     const n = r.count ? `<span class="count">${r.count()}</span>` : "";
     html += r.disabled
@@ -3492,6 +3501,11 @@ function pensionsView(hash){
   if(hash === "#/pensions/cases")   return [viewCaseList(), "Pensions / Instructions"];
   if(hash === "#/pensions/advice")  return [viewAdviceQueue(), "Pensions / Retirement review queue"];
   if(hash === "#/pensions/authorisations") return [viewAuthorisationQueue(), "Pensions / Payment authorisation"];
+  if(hash === "#/pensions/find/new")  return [viewFindNew(), "Dashboards / Find requests / New request"];
+  if(hash.startsWith("#/pensions/find/")){ const id = decodeURIComponent(hash.split("/")[3]||""); return [viewFindDetail(id), `Dashboards / Find requests / ${id}`]; }
+  if(hash === "#/pensions/finds")     return [viewFindList(), "Dashboards / Find requests"];
+  if(hash === "#/pensions/resolution")return [viewResolutionQueue(), "Dashboards / Possible match resolution"];
+  if(hash === "#/pensions/members")   return [viewMemberRegister(), "Dashboards / Member register"];
   if(hash === "#/pensions/payments")return [viewBenefitsInPayment(), "Pensions / Benefits in payment"];
   return [viewPensionDash(), "Overview / Retirement dashboard"];
 }
@@ -3586,6 +3600,355 @@ document.addEventListener("click", ev => {
     case "pa-reject": paReject(t.dataset.id); return;
     case "pa-reject-confirm": paRejectConfirm(t.dataset.id); return;
     case "go-authorisations": go("#/pensions/authorisations"); return;
+  }
+});
+
+
+/* ============================================================
+   PENSIONS — DASHBOARDS MEMBER MATCHING
+   ============================================================ */
+const MM_REASON = {
+  "MM-M01":"Match made. Surname, date of birth and National Insurance number all agree.",
+  "MM-M02":"Match made. Surname and date of birth agree and the address agrees; no National Insurance number was supplied.",
+  "MM-P01":"Possible match. The National Insurance number and date of birth agree but the surname does not; a recorded previous surname was not supplied.",
+  "MM-P02":"Possible match. The surname and date of birth agree but the National Insurance number does not.",
+  "MM-P03":"Possible match. The surname and National Insurance number agree but the date of birth does not.",
+  "MM-P04":"Possible match. Surname and date of birth agree but neither the National Insurance number nor the address could be confirmed.",
+  "MM-N01":"No match. No member record agrees on enough identifiers to be considered.",
+  "MM-N02":"No match. More than one member record agrees equally; the request cannot be resolved to a single member."
+};
+
+/* Deliberate near-misses so the rules bite. Each record carries a previous
+   surname where one applies, because a changed name is the commonest reason a
+   citizen fails to find a pension they own. */
+function seedMembers(){
+  const raw = [
+    ["MB-80001","Rosalind","Fairweather","",          "1966-04-18","QQ123456C","12 Harbour Lane, Bristol","BS1 4TR","PN-70001"],
+    ["MB-80002","Marianne","Okoro","Adeyemi",         "1959-07-25","QQ234567D","4 Sefton Park Road, Liverpool","L8 3SD","PN-70003"],
+    ["MB-80003","Aisling","Donnelly","",              "1964-09-08","QQ345678A","77 Malone Road, Belfast","BT9 6SN","PN-70005"],
+    ["MB-80004","Tobias","Renshaw","",                "1972-01-19","QQ456789B","2 Cathedral Close, Exeter","EX1 1EZ","PN-70004"],
+    ["MB-80005","Perpetua","Nwosu","",                "1966-12-11","QQ567890C","18 Kelvinside Gardens, Glasgow","G20 6BE","PN-70007"],
+    ["MB-80006","Gwendolyn","Achterberg","Vandermeer","1963-02-27","QQ678901D","5 Tenby Walk, Cardiff","CF11 9LJ","PN-70008"],
+    ["MB-80007","Desmond","Achebe-Clark","",          "1968-11-02","QQ789012A","31 Jesmond Dene Road, Newcastle","NE2 2EY","PN-70002"],
+    ["MB-80008","Nikolai","Brandt","",                "1975-05-30","QQ890123B","9 Trumpington Street, Cambridge","CB2 1QA","PN-70006"],
+    /* two members who share a surname and a date of birth - the ambiguity case */
+    ["MB-80009","Eleanor","Whitfield","",             "1970-03-15","QQ901234C","14 Bootham Terrace, York","YO30 7DH",null],
+    ["MB-80010","Edward","Whitfield","",              "1970-03-15","QQ012345D","14 Bootham Terrace, York","YO30 7DH",null],
+    /* a member with no NI number recorded, so the address route is the only way in */
+    ["MB-80011","Sinead","O'Halloran","",             "1961-08-22","",          "6 Shandon Street, Cork","T12 X2FR",null],
+    ["MB-80012","Callum","Whitcombe","",              "1957-06-04","QQ135791E","40 Grassmarket, Edinburgh","EH1 2JU",null]
+  ];
+  return raw.map(r=>({
+    id:r[0], firstName:r[1], surname:r[2], previousSurname:r[3], dob:r[4],
+    nino:r[5], address:r[6], postcode:r[7], caseRef:r[8]
+  }));
+}
+
+/* Normalisation: matching must not fail on punctuation, case or spacing.
+   A hyphenated or apostrophised surname is the same surname. */
+const mmName = s => String(s||"").toLowerCase().replace(/[^a-z]/g,"");
+const mmNino = s => String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+const mmPost = s => String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+
+function memberAgreement(m, q){
+  const surnameNow  = mmName(q.surname) && mmName(q.surname) === mmName(m.surname);
+  const surnamePrev = mmName(q.surname) && mmName(m.previousSurname) && mmName(q.surname) === mmName(m.previousSurname);
+  const surnameGiven= mmName(q.previousSurname) && mmName(q.previousSurname) === mmName(m.surname);
+  return {
+    surname: !!(surnameNow || surnamePrev || surnameGiven),
+    surnameVia: surnameNow ? "current" : surnamePrev ? "scheme previous surname" : surnameGiven ? "supplied previous surname" : "",
+    dob: !!(q.dob && q.dob === m.dob),
+    nino: !!(mmNino(q.nino) && mmNino(m.nino) && mmNino(q.nino) === mmNino(m.nino)),
+    ninoSupplied: !!mmNino(q.nino),
+    ninoHeld: !!mmNino(m.nino),
+    postcode: !!(mmPost(q.postcode) && mmPost(m.postcode) && mmPost(q.postcode) === mmPost(m.postcode)),
+    firstName: !!(mmName(q.firstName) && mmName(q.firstName) === mmName(m.firstName))
+  };
+}
+
+/* Score only to rank candidates; the outcome itself is decided by rule. */
+function agreementScore(a){
+  return (a.surname?4:0) + (a.dob?4:0) + (a.nino?5:0) + (a.postcode?2:0) + (a.firstName?1:0);
+}
+
+/* Eight rules, first match wins. Evaluated against the best candidate. */
+function matchMember(q){
+  const out = (o,c,m,a) => ({outcome:o, code:c, text:MM_REASON[c], member:m||null, agreement:a||null});
+  const register = state.members || [];
+  const scored = register.map(m=>{ const a = memberAgreement(m,q); return {m, a, s:agreementScore(a)}; })
+                         .filter(x => x.a.surname || x.a.nino)
+                         .sort((x,y)=> y.s - x.s);
+  if(!scored.length) return out("NO MATCH","MM-N01");
+
+  const top = scored[0];
+  const tied = scored.filter(x => x.s === top.s);
+  const a = top.a, m = top.m;
+
+  /* an equal-scoring pair on the identifiers that matter cannot be resolved */
+  if(tied.length > 1 && tied.every(x => x.a.surname && x.a.dob) && !a.nino)
+    return out("NO MATCH","MM-N02", null, a);
+
+  if(a.surname && a.dob && a.nino)                       return out("MATCH","MM-M01", m, a);
+  if(a.surname && a.dob && a.postcode && !a.ninoSupplied)return out("MATCH","MM-M02", m, a);
+  if(a.nino && a.dob && !a.surname)                      return out("POSSIBLE","MM-P01", m, a);
+  if(a.surname && a.dob && a.ninoSupplied && !a.nino)    return out("POSSIBLE","MM-P02", m, a);
+  if(a.surname && a.nino && !a.dob)                      return out("POSSIBLE","MM-P03", m, a);
+  if(a.surname && a.dob)                                 return out("POSSIBLE","MM-P04", m, a);
+  return out("NO MATCH","MM-N01", null, a);
+}
+
+/* ---------------- member matching state ---------------- */
+let fwiz = { errors:{}, result:null };
+function blankFind(){
+  return { firstName:"", surname:"", previousSurname:"", dob:"", nino:"", postcode:"",
+           dashboard:"", requestedAt:null };
+}
+function ensureFindDraft(){ if(!state.findDraft) state.findDraft = blankFind(); return state.findDraft; }
+const DASHBOARD_SOURCES = ["MoneyHelper pensions dashboard","Bramwell Wealth dashboard","Northgate Money dashboard"];
+
+function ferr(k){ return fwiz.errors[k] ? `<span class="err" data-testid="ferror-${k}">${esc(fwiz.errors[k])}</span>` : ""; }
+function fbad(k){ return fwiz.errors[k] ? " bad" : ""; }
+function ftext(k,label,d,o){ o=o||{};
+  const control = o.type === "date"
+    ? `<div class="datefield">
+      <input type="text" id="f-${k}" data-ffield="${k}" data-datefmt="1" data-testid="input-${k}" value="${esc(isoToUK(d[k]))}" placeholder="dd-mm-yyyy" inputmode="numeric" maxlength="10" autocomplete="off">
+      <button type="button" class="btn btn-sm datebtn" data-act="open-cal" data-testid="calendar-${k}" aria-label="Open calendar for ${esc(label)}">${PCAL}</button>
+      <input type="date" class="cal-hidden" data-fdatefor="${k}" value="${esc(d[k])}" tabindex="-1" aria-hidden="true">
+    </div>`
+    : `<input type="text" id="f-${k}" data-ffield="${k}" data-testid="input-${k}" value="${esc(d[k])}"${o.ph?` placeholder="${o.ph}"`:""}>`;
+  return `<div class="field${fbad(k)}"><label for="f-${k}">${esc(label)}${o.opt?"":" *"}</label>
+    ${control}${o.hint?`<span class="hint">${esc(o.hint)}</span>`:""}${ferr(k)}</div>`; }
+function fsel(k,label,list,d,o){ o=o||{};
+  return `<div class="field${fbad(k)}"><label for="f-${k}">${esc(label)}${o.opt?"":" *"}</label>
+    <select id="f-${k}" data-ffield="${k}" data-testid="input-${k}">${opts(list,d[k],o.ph||"Select...")}</select>
+    ${o.hint?`<span class="hint">${esc(o.hint)}</span>`:""}${ferr(k)}</div>`; }
+
+function validateFind(){
+  const d = ensureFindDraft(); const e = {};
+  if(!String(d.surname||"").trim()) e.surname = "Surname is required on a find request.";
+  if(!String(d.dob||"").trim()) e.dob = "Date of birth is required on a find request.";
+  else {
+    const a = memberAge(d.dob);
+    if(a === null || isNaN(a)) e.dob = "Enter a valid date of birth.";
+    else if(a < 16) e.dob = "A find request cannot be made for someone under 16.";
+    else if(a > 110) e.dob = "Enter a valid date of birth.";
+  }
+  if(String(d.nino||"").trim() && !/^[A-Za-z]{2}[0-9]{6}[A-Za-z]?$/.test(String(d.nino).replace(/\s/g,"")))
+    e.nino = "Enter a National Insurance number in the format QQ123456C, or leave it blank.";
+  if(!String(d.dashboard||"").trim()) e.dashboard = "Select the dashboard the request came from.";
+  fwiz.errors = e;
+  return Object.keys(e).length === 0;
+}
+
+function runFind(){
+  const d = ensureFindDraft();
+  if(!validateFind()){ render(); toast("The find request is incomplete."); return; }
+  const r = matchMember(d);
+  const rec = {
+    id: "FR-" + state.nextFindId++,
+    request: Object.assign({}, d),
+    outcome: r.outcome, code: r.code, text: r.text,
+    memberId: r.member ? r.member.id : null,
+    agreement: r.agreement,
+    stage: r.outcome === "POSSIBLE" ? "Awaiting resolution" : r.outcome === "MATCH" ? "View data returned" : "Closed - no match",
+    receivedAt: new Date().toISOString(),
+    resolvedBy: null, resolution: "", resolutionNote: "",
+    audit: [{at:new Date().toISOString(), by:"Pension Finder Service", text:`Find request received from ${d.dashboard}. Outcome ${r.outcome} (${r.code}).`}]
+  };
+  state.finds.unshift(rec);
+  state.findDraft = null;
+  fwiz = { errors:{}, result:rec.id };
+  save();
+  toast(`${rec.id} - ${r.outcome === "MATCH" ? "match made, view data returned" : r.outcome === "POSSIBLE" ? "possible match, held for resolution" : "no match"}.`);
+  go(`#/pensions/find/${rec.id}`);
+}
+
+function resolveMatch(id){
+  const f = state.finds.find(x=>x.id===id); if(!f) return;
+  const m = (state.members||[]).find(x=>x.id===f.memberId);
+  modal("Resolve possible match", `
+    <p>Confirming releases this member's pension information to the citizen who made the request. Rejecting closes the request with nothing returned.</p>
+    <div class="banner b-warn" style="margin-top:12px"><div><b>${esc(f.code)}</b>${esc(f.text)}</div></div>
+    ${m?`<dl class="kv" style="margin-top:14px" data-testid="resolve-comparison">
+      <dt>Request</dt><dd>${esc(f.request.firstName||"-")} ${esc(f.request.surname)} · ${fmtDate(f.request.dob)} · ${esc(f.request.nino||"no NI number")} · ${esc(f.request.postcode||"no postcode")}</dd>
+      <dt>Member</dt><dd>${esc(m.firstName)} ${esc(m.surname)}${m.previousSurname?` (previously ${esc(m.previousSurname)})`:""} · ${fmtDate(m.dob)} · ${esc(m.nino||"none held")} · ${esc(m.postcode)}</dd></dl>`:""}
+    <div class="field" style="margin-top:14px"><label for="mm-note">Resolution note *</label>
+      <textarea id="mm-note" data-testid="resolve-note" placeholder="Record what was checked and how the identity was confirmed."></textarea>
+      <span class="hint">At least 20 characters.</span>
+      <span class="err" id="mm-note-err" hidden data-testid="resolve-note-error">A note of at least 20 characters is required.</span></div>`,
+    `<button class="btn btn-accent" data-fact="resolve-confirm" data-id="${id}" data-testid="resolve-confirm">Confirm as this member</button>
+     <button class="btn btn-danger" data-fact="resolve-reject" data-id="${id}" data-testid="resolve-reject">Reject</button>
+     <button class="btn" data-act="modal-close">Cancel</button>`);
+}
+function resolveApply(id, confirmIt){
+  const f = state.finds.find(x=>x.id===id); if(!f) return;
+  const n = (($("#mm-note")||{}).value || "").trim();
+  if(n.length < 20){ const el = $("#mm-note-err"); if(el) el.hidden = false; return; }
+  f.resolvedBy = actor().name; f.resolutionNote = n;
+  if(confirmIt){ f.resolution = "Confirmed"; f.stage = "View data returned"; f.outcome = "MATCH";
+    f.audit.push({at:new Date().toISOString(), by:actor().name, text:`Possible match confirmed as ${f.memberId}. View data released - ${n}`}); }
+  else { f.resolution = "Rejected"; f.stage = "Closed - not the member"; f.outcome = "NO MATCH";
+    f.audit.push({at:new Date().toISOString(), by:actor().name, text:`Possible match rejected - ${n}`}); }
+  save(); closeModal();
+  toast(`${f.id} ${confirmIt?"confirmed - view data released":"rejected - nothing returned"}.`);
+  render();
+}
+
+/* ---------------- member matching views ---------------- */
+function agreementRow(label, ok, detail){
+  return `<tr><td>${esc(label)}</td><td class="right">${ok
+    ? `<span class="pill p-ok">Agrees</span>`
+    : `<span class="pill p-mute">Does not agree</span>`}${detail?` <span class="legend">${esc(detail)}</span>`:""}</td></tr>`;
+}
+
+function viewFindNew(){
+  const d = ensureFindDraft();
+  return `
+  <div class="page-head"><div style="flex:1"><h1>New find request</h1>
+    <p>Simulates a find request arriving from a pensions dashboard. The scheme's matching rules decide whether a member record can be returned, held for resolution, or nothing returned at all.</p></div></div>
+  <div class="card" data-testid="find-card">
+    <div class="card-head"><h2 style="flex:1">Citizen details supplied by the dashboard</h2></div>
+    <div class="card-body">
+      <div class="grid g2" style="margin-bottom:14px">
+        ${ftext("firstName","First name",d,{opt:true,ph:"Rosalind"})}
+        ${ftext("surname","Surname",d,{ph:"Fairweather"})}
+        ${ftext("previousSurname","Previous surname",d,{opt:true,ph:"Leave blank if none",hint:"A changed surname is the commonest reason a citizen fails to find a pension."})}
+        ${ftext("dob","Date of birth",d,{type:"date"})}
+      </div>
+      <div class="grid g2" style="margin-bottom:14px">
+        ${ftext("nino","National Insurance number",d,{opt:true,ph:"QQ123456C",hint:"Optional on a find request. Without it the address must agree instead."})}
+        ${ftext("postcode","Postcode",d,{opt:true,ph:"BS1 4TR"})}
+        ${fsel("dashboard","Dashboard making the request",DASHBOARD_SOURCES,d)}
+      </div>
+      <div class="banner b-info" data-testid="find-notice"><div><b>Two-sided risk</b>Matching too loosely discloses one person's pension to another. Matching too tightly means a citizen never finds a pension they own.</div></div>
+    </div>
+    <div class="card-foot">
+      <button class="btn" data-fact="find-clear" data-testid="find-clear">Clear</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-accent" data-fact="find-run" data-testid="find-run">Run the find request</button>
+    </div>
+  </div>`;
+}
+
+function viewFindDetail(id){
+  const f = state.finds.find(x=>x.id===id);
+  if(!f) return `<div class="empty" data-testid="find-not-found">No find request found with reference ${esc(id)}.</div>`;
+  const m = (state.members||[]).find(x=>x.id===f.memberId);
+  const a = f.agreement;
+  const canResolve = actor().role === "Compliance" && f.stage === "Awaiting resolution";
+  const tone = f.outcome === "MATCH" ? "b-ok" : f.outcome === "POSSIBLE" ? "b-warn" : "b-risk";
+  return `
+  <div class="row" style="gap:8px;margin-bottom:6px"><a href="#/pensions/finds" class="legend" data-testid="back-to-finds">Back to find requests</a></div>
+  <div class="page-head"><div style="flex:1"><h1>${esc(f.request.firstName||"")} ${esc(f.request.surname)}</h1>
+    <p><span class="mono">${esc(f.id)}</span> · ${esc(f.request.dashboard)} · ${esc(f.stage)}</p></div>
+    <div class="row">${canResolve?`<button class="btn btn-accent" data-fact="resolve" data-id="${f.id}" data-testid="resolve-open">Resolve this match</button>`:""}</div></div>
+  <div class="banner ${tone}" style="margin-bottom:16px" data-testid="find-outcome">
+    <div><b>${esc(f.outcome)} (${esc(f.code)})</b>${esc(f.text)}</div></div>
+  ${f.stage === "Awaiting resolution" && !canResolve ? `<div class="banner b-info" style="margin-bottom:16px" data-testid="resolve-role-notice"><div><b>Read-only for this role</b>You are acting as ${esc(actor().role)}. Sign in as the compliance officer to resolve a possible match.</div></div>`:""}
+  <div class="grid g2">
+    <div class="card"><div class="card-head"><h2>Identifier agreement</h2></div><div class="card-body">
+      <div class="table-wrap"><table data-testid="agreement-table"><tbody>
+        ${a?agreementRow("Surname", a.surname, a.surnameVia?`via ${a.surnameVia}`:""):""}
+        ${a?agreementRow("Date of birth", a.dob):""}
+        ${a?agreementRow("National Insurance number", a.nino, !a.ninoSupplied?"none supplied":(!a.ninoHeld?"none held by the scheme":"")):""}
+        ${a?agreementRow("Postcode", a.postcode):""}
+        ${a?agreementRow("First name", a.firstName):""}
+        ${!a?`<tr><td colspan="2" class="legend">No candidate record was close enough to compare.</td></tr>`:""}
+      </tbody></table></div></div></div>
+    <div class="card"><div class="card-head"><h2>${m?"Candidate member record":"No candidate"}</h2></div><div class="card-body">
+      ${m?`<dl class="kv" data-testid="candidate-member">
+        <dt>Reference</dt><dd class="mono">${esc(m.id)}</dd>
+        <dt>Name</dt><dd>${esc(m.firstName)} ${esc(m.surname)}${m.previousSurname?` <span class="legend">(previously ${esc(m.previousSurname)})</span>`:""}</dd>
+        <dt>Date of birth</dt><dd>${fmtDate(m.dob)}</dd>
+        <dt>NI number</dt><dd class="mono">${esc(m.nino||"none held")}</dd>
+        <dt>Address</dt><dd>${esc(m.address)}, ${esc(m.postcode)}</dd>
+        ${m.caseRef?`<dt>Retirement case</dt><dd class="mono">${esc(m.caseRef)}</dd>`:""}</dl>`
+      :`<p class="legend">Nothing was returned to the dashboard.</p>`}
+      ${f.resolution?`<div class="banner ${f.resolution==="Confirmed"?"b-ok":"b-risk"}" style="margin-top:14px" data-testid="resolution-banner">
+        <div><b>${esc(f.resolution)} by ${esc(f.resolvedBy||"-")}</b>${esc(f.resolutionNote)}</div></div>`:""}
+    </div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><div class="card-head"><h2>Audit trail</h2></div><div class="card-body">
+    <div class="table-wrap"><table data-testid="find-audit"><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead>
+      <tbody>${f.audit.map(x=>`<tr><td class="legend mono">${fmtDT(x.at)}</td><td class="legend">${esc(x.by)}</td><td>${esc(x.text)}</td></tr>`).join("")}</tbody>
+    </table></div></div></div>`;
+}
+
+function findTable(rows, testid){
+  if(!rows.length) return `<div class="empty" data-testid="${testid}-empty">No find requests to show.</div>`;
+  return `<div class="table-wrap"><table data-testid="${testid}">
+    <thead><tr><th>Reference</th><th>Citizen</th><th>Dashboard</th><th>Outcome</th><th>Stage</th><th class="right"></th></tr></thead>
+    <tbody>${rows.map(f=>`<tr data-testid="find-row-${f.id}">
+      <td class="mono">${esc(f.id)}</td>
+      <td>${esc((f.request.firstName||"")+" "+f.request.surname).trim()}</td>
+      <td class="legend">${esc(f.request.dashboard)}</td>
+      <td><span class="pill ${f.outcome==="MATCH"?"p-ok":f.outcome==="POSSIBLE"?"p-warn":"p-risk"}">${esc(f.outcome)}</span> <span class="mono legend">${esc(f.code)}</span></td>
+      <td class="legend">${esc(f.stage)}</td>
+      <td class="right"><button class="btn btn-sm" data-fact="open-find" data-id="${f.id}" data-testid="open-${f.id}">Open</button></td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+
+function viewFindList(){
+  return `<div class="page-head"><div style="flex:1"><h1>Find requests</h1>
+    <p>Every request received from a dashboard, and what the matching rules decided.</p></div>
+    <button class="btn btn-primary" data-fact="new-find" data-testid="finds-new">New find request</button></div>
+    ${findTable(state.finds||[], "find-table")}`;
+}
+
+function viewResolutionQueue(){
+  const canResolve = actor().role === "Compliance";
+  const rows = (state.finds||[]).filter(f=>f.stage==="Awaiting resolution");
+  return `<div class="page-head"><div style="flex:1"><h1>Possible match resolution</h1>
+    <p>Requests the rules could not settle. A person decides whether this is the member, because releasing the wrong record discloses one citizen's pension to another.</p></div></div>
+    ${canResolve?"":`<div class="banner b-info" data-testid="resolve-queue-role-notice" style="margin-bottom:16px"><div><b>Read-only for this role</b>You are acting as ${esc(actor().role)}. Sign in as the compliance officer to resolve a possible match.</div></div>`}
+    ${findTable(rows, "resolution-table")}`;
+}
+
+function viewMemberRegister(){
+  const ms = state.members || [];
+  return `<div class="page-head"><div style="flex:1"><h1>Member register</h1>
+    <p>The scheme records a find request is matched against. ${ms.length} members.</p></div></div>
+    <div class="table-wrap"><table data-testid="member-table">
+      <thead><tr><th>Reference</th><th>Name</th><th>Previous surname</th><th>Date of birth</th><th>NI number</th><th>Postcode</th></tr></thead>
+      <tbody>${ms.map(m=>`<tr data-testid="member-row-${m.id}">
+        <td class="mono">${esc(m.id)}</td><td>${esc(m.firstName)} ${esc(m.surname)}</td>
+        <td class="legend">${esc(m.previousSurname||"-")}</td><td class="mono">${fmtDate(m.dob)}</td>
+        <td class="mono">${esc(m.nino||"none held")}</td><td class="mono">${esc(m.postcode)}</td>
+      </tr>`).join("")}</tbody></table></div>`;
+}
+
+/* ---------------- member matching events ---------------- */
+function fFieldWrite(el){
+  if(!el || !el.dataset) return false;
+  if(el.dataset.fdatefor){
+    const d = ensureFindDraft(), dk = el.dataset.fdatefor;
+    d[dk] = el.value; delete fwiz.errors[dk];
+    const txt = document.querySelector('[data-ffield="' + dk + '"][data-datefmt]');
+    if(txt) txt.value = isoToUK(el.value);
+    save(); return true;
+  }
+  if(el.dataset.ffield){
+    const d = ensureFindDraft(), k = el.dataset.ffield;
+    if(el.dataset.datefmt){ const iso = ukToISO(el.value); d[k] = iso === null ? el.value : iso; }
+    else { d[k] = el.value; }
+    delete fwiz.errors[k];
+    save(); return true;
+  }
+  return false;
+}
+document.addEventListener("input",  ev => { fFieldWrite(ev.target); });
+document.addEventListener("change", ev => { fFieldWrite(ev.target); });
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("[data-fact]"); if(!t) return;
+  switch(t.dataset.fact){
+    case "new-find": state.findDraft = null; fwiz = {errors:{}, result:null}; go("#/pensions/find/new"); return;
+    case "open-find": go(`#/pensions/find/${t.dataset.id}`); return;
+    case "find-run": runFind(); return;
+    case "find-clear": state.findDraft = null; fwiz = {errors:{}, result:null}; save(); render(); return;
+    case "resolve": resolveMatch(t.dataset.id); return;
+    case "resolve-confirm": resolveApply(t.dataset.id, true); return;
+    case "resolve-reject": resolveApply(t.dataset.id, false); return;
+    case "go-resolution": go("#/pensions/resolution"); return;
   }
 });
 
