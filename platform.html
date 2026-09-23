@@ -80,6 +80,10 @@ img{max-width:100%}
     --risk:#e08c81;
     --risk-soft:#381713;
     --info-soft:#1c2740;
+    /* module hues, dark theme: same families, inverted for a dark surface */
+    --mod-wam:#9ab6e8;   --mod-wam-soft:#1b2a47;   --mod-wam-nav:#9ab6e8;
+    --mod-mi:#6fc9bd;    --mod-mi-soft:#123531;    --mod-mi-nav:#6fc9bd;
+    --mod-pen:#d4a0c9;   --mod-pen-soft:#332030;  --mod-pen-nav:#d4a0c9;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.6);
     --nav-line:#2b3644;
     --nav-hover:#232d3b;
@@ -112,6 +116,10 @@ img{max-width:100%}
   --risk:#e08c81;
   --risk-soft:#381713;
   --info-soft:#1c2740;
+  /* module hues, dark theme: same families, inverted for a dark surface */
+  --mod-wam:#9ab6e8;   --mod-wam-soft:#1b2a47;   --mod-wam-nav:#9ab6e8;
+  --mod-mi:#6fc9bd;    --mod-mi-soft:#123531;    --mod-mi-nav:#6fc9bd;
+  --mod-pen:#d4a0c9;   --mod-pen-soft:#332030;   --mod-pen-nav:#d4a0c9;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.6);
   --nav-line:#2b3644;
   --nav-hover:#232d3b;
@@ -435,7 +443,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.14";
+const BUILD = "2026.09.15";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
