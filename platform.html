@@ -426,7 +426,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.11";
+const BUILD = "2026.09.12";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -2119,7 +2119,7 @@ function seedQuotes(){
     q.vehicleGroup = r[5]; q.vehicleValue = r[6]; q.stage = r[7]; q.reasonCode = r[8];
     q.reasonText = UW_REASON[r[8]] || ""; q.premium = r[9]; q.policyRef = r[10];
     q.decision = r[7] === "Declined" ? "DECLINE" : r[7] === "Referred" ? "REFER" : r[7] === "Policy issued" ? "ACCEPT" : null;
-    q.submittedBy = "Lena Fairbrook - Relationship Manager";
+    q.submittedBy = ACTORS.find(a=>a.id==="adviser").name;
     q.audit = [{at:"2026-09-15T10:00:00Z", by:"System", text:"Record migrated from legacy quote engine."}];
     return q;
   });
@@ -2913,7 +2913,7 @@ function seedCases(){
     c.decision = r[7] === "Declined" ? "DECLINE" : r[7] === "Referred" ? "REFER" : r[7] === "In payment" ? "ACCEPT" : null;
     c.taxFreeCash = Math.round(r[5] * 0.25);
     c.residence = "United Kingdom";
-    c.submittedBy = "Lena Fairbrook - Relationship Manager";
+    c.submittedBy = ACTORS.find(a=>a.id==="adviser").name;
     c.audit = [{at:"2026-09-12T09:30:00Z", by:"System", text:"Record migrated from the legacy retirement platform."}];
     return c;
   });
