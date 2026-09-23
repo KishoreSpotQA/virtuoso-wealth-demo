@@ -426,7 +426,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.10";
+const BUILD = "2026.09.11";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -1742,6 +1742,12 @@ function signOut(){
   loginUI = { errors:{}, banner:null };
   const u = $("#login-username"), p = $("#login-password");
   if(u) u.value = ""; if(p) p.value = "";
+  /* Return to the launcher route on the way out, so the next sign-in starts at
+     the application picker rather than dropping straight back into whichever
+     module this user was last in. A deep link followed by a sign-in still
+     resolves to the linked route, because that hash was never a module the
+     user signed out of. */
+  if(location.hash !== "#/apps") location.hash = "#/apps";
   renderLogin();
   toast("Signed out. Your draft has been kept.");
 }
