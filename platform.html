@@ -457,7 +457,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.24";
+const BUILD = "2026.09.26";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -796,6 +796,14 @@ function renderActor(){
   const n = $("#who-name"), r = $("#who-role");
   if(n) n.textContent = a.name;
   if(r) r.textContent = a.role;
+  /* Reset belongs to an application, not to the launcher. On the Applications
+     launcher no application is in scope, so the control is absent rather than
+     ambiguous: it was the one place a reset could clear all three by accident,
+     which is easy to do on a shared machine and easy for a generated journey
+     to do before it has opened the application under test. A full reset of all
+     three remains available on the sign in screen. */
+  const rb = $("#reset-btn");
+  if(rb) rb.hidden = (currentApp() === "all");
 }
 
 /* ============================================================
