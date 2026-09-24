@@ -1,0 +1,3401 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halcyon Retail Group</title>
+<style>
+/* ============================================================
+   Halcyon Retail Group - demo platform
+   Order to cash across three systems.
+   Single file. No network. Fixed clock. Local storage only.
+   ============================================================ */
+
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --surface-2:#f7f9fb; --surface-3:#eef2f7;
+  --ink-1:#0e1726; --ink-2:#3a4657; --ink-3:#58657a;
+  --line:#dbe2ec; --line-2:#c6d0de;
+  --primary:#1f3a8a; --primary-hover:#16296b; --primary-ink:#ffffff;
+  --accent:#e0a63c; --accent-hover:#c98f22; --accent-ink:#231604;
+  --ok:#15683f; --ok-soft:#e4f4ec;
+  --warn:#8a5a00; --warn-soft:#fdf2dc;
+  --risk:#a01c28; --risk-soft:#fbe6e8;
+  --info:#1b5a86; --info-soft:#e3f1f9;
+  --shop:#a21caf; --shop-soft:#fae8ff; --shop-ink:#ffffff;
+  --pop-violet:#7c3aed; --pop-violet-d:#6d28d9;
+  --pop-pink:#db2777;   --pop-pink-d:#be185d;
+  --pop-cyan:#0e7490;   --pop-amber:#c2410c;
+  --pop-ink:#ffffff;
+  --hero-1:#ede9fe; --hero-2:#fce7f3; --hero-3:#cffafe;
+  --glass:rgba(255,255,255,.74); --glass-line:rgba(124,58,237,.18);
+  --erp:#1f4b78; --erp-soft:#e4eef8; --erp-ink:#ffffff;
+  --wms:#1f6b4d; --wms-soft:#e2f3ec; --wms-ink:#ffffff;
+  --focus:#2563eb;
+  --radius:10px; --radius-s:6px;
+  --shadow:0 1px 2px rgba(14,23,38,.06),0 4px 14px rgba(14,23,38,.06);
+  --shadow-lg:0 10px 34px rgba(14,23,38,.14);
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+:root[data-theme="dark"]{
+  --bg:#0b1017; --surface:#131b26; --surface-2:#18212e; --surface-3:#1f2a39;
+  --ink-1:#eef3fa; --ink-2:#c2cddc; --ink-3:#96a3b6;
+  --line:#26303f; --line-2:#33404f;
+  --primary:#6f92e8; --primary-hover:#8aa8f0; --primary-ink:#0b1017;
+  --accent:#e0a63c; --accent-hover:#eeba5b; --accent-ink:#0b1017;
+  --ok:#57c98d; --ok-soft:#10301f;
+  --warn:#e0b25c; --warn-soft:#2e2413;
+  --risk:#ef8a94; --risk-soft:#34151a;
+  --info:#7cc0e8; --info-soft:#122736;
+  --shop:#f0abfc; --shop-soft:#3b0764; --shop-ink:#1b0b2e;
+  --pop-violet:#a78bfa; --pop-violet-d:#c4b5fd;
+  --pop-pink:#f472b6;   --pop-pink-d:#f9a8d4;
+  --pop-cyan:#67e8f9;   --pop-amber:#fbbf24;
+  --pop-ink:#1b0b2e;
+  --hero-1:#241338; --hero-2:#2e1226; --hero-3:#0e2a33;
+  --glass:rgba(19,27,38,.74); --glass-line:rgba(167,139,250,.24);
+  --erp:#89b6e6; --erp-soft:#132434; --erp-ink:#0b1017;
+  --wms:#79cfa8; --wms-soft:#10291f; --wms-ink:#0b1017;
+  --focus:#7aa2ff;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.35);
+  --shadow-lg:0 10px 34px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink-1);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--primary)}
+h1,h2,h3,h4{margin:0 0 .5rem; line-height:1.25; font-weight:650}
+h1{font-size:1.6rem} h2{font-size:1.25rem} h3{font-size:1.05rem} h4{font-size:.95rem}
+p{margin:0 0 .75rem}
+.muted{color:var(--ink-3)}
+.small{font-size:.82rem}
+.mono{font-family:var(--mono); font-size:.86em; letter-spacing:.01em}
+.nowrap{white-space:nowrap}
+.right{text-align:right}
+.center{text-align:center}
+.hidden{display:none !important}
+.stack>*+*{margin-top:.75rem}
+.row{display:flex; gap:.6rem; flex-wrap:wrap; align-items:center}
+.row-end{display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; justify-content:flex-end}
+.spacer{flex:1 1 auto}
+.wrap{max-width:1240px; margin:0 auto; padding:0 20px}
+.wrap-wide{max-width:1560px; margin:0 auto; padding:0 20px}
+
+/* ---------- focus ---------- */
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px; border-radius:4px}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+  padding:.55rem .95rem; border-radius:var(--radius-s); cursor:pointer;
+  border:1px solid var(--line-2); background:var(--surface); color:var(--ink-1);
+  font:inherit; font-weight:600; font-size:.9rem; text-decoration:none;
+  transition:background .12s ease,border-color .12s ease,color .12s ease;
+}
+.btn:hover{border-color:var(--ink-3)}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:.55; cursor:not-allowed}
+.btn-primary{background:var(--primary); border-color:var(--primary); color:var(--primary-ink)}
+.btn-primary:hover{background:var(--primary-hover); border-color:var(--primary-hover); color:var(--primary-ink)}
+.btn-accent{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.btn-accent:hover{background:var(--accent-hover); border-color:var(--accent-hover); color:var(--accent-ink)}
+.btn-ok{background:var(--ok); border-color:var(--ok); color:#ffffff}
+:root[data-theme="dark"] .btn-ok{color:#06170e}
+.btn-ok:hover{filter:brightness(1.08)}
+.btn-danger{background:var(--surface); border-color:var(--line-2); color:var(--risk)}
+.btn-danger:hover{background:var(--risk-soft); border-color:var(--risk); color:var(--risk)}
+.btn-ghost{background:transparent; border-color:transparent; color:var(--ink-2)}
+.btn-ghost:hover{background:var(--surface-3); border-color:transparent; color:var(--ink-1)}
+.btn-sm{padding:.34rem .6rem; font-size:.82rem}
+.btn-lg{padding:.75rem 1.4rem; font-size:1rem}
+.btn-block{width:100%}
+
+/* ---------- forms ---------- */
+.field{display:block; margin-bottom:.9rem}
+.field>label,.lbl{display:block; font-weight:600; font-size:.85rem; margin-bottom:.28rem; color:var(--ink-2)}
+.hint{font-size:.78rem; color:var(--ink-3); margin-top:.24rem}
+input[type=text],input[type=email],input[type=tel],input[type=number],input[type=password],input[type=date],input[type=search],select,textarea{
+  width:100%; padding:.52rem .65rem; font:inherit; font-size:.9rem;
+  border:1px solid var(--line-2); border-radius:var(--radius-s);
+  background:var(--surface); color:var(--ink-1);
+}
+select{appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),linear-gradient(135deg,var(--ink-3) 50%,transparent 50%); background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%; background-size:5px 5px,5px 5px; background-repeat:no-repeat; padding-right:2rem}
+textarea{min-height:84px; resize:vertical}
+input:disabled,select:disabled,textarea:disabled{background:var(--surface-3); color:var(--ink-3)}
+.err-field{border-color:var(--risk) !important}
+.err-msg{color:var(--risk); font-size:.78rem; margin-top:.24rem; font-weight:600}
+.check{display:flex; gap:.5rem; align-items:flex-start; font-size:.88rem; margin-bottom:.5rem}
+.check input{margin-top:.2rem; width:16px; height:16px; flex:0 0 auto}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:0 .9rem}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:0 .9rem}
+.grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:0 .9rem}
+@media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+
+/* ---------- cards / panels ---------- */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow)}
+.card-pad{padding:1.1rem 1.2rem}
+.panel{background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius); padding:.9rem 1rem}
+.sect{margin:1.4rem 0}
+.sect-head{display:flex; align-items:baseline; gap:.6rem; margin-bottom:.6rem}
+.divider{height:1px; background:var(--line); margin:1rem 0; border:0}
+
+/* ---------- badges ---------- */
+.badge{display:inline-flex; align-items:center; gap:.3rem; padding:.16rem .5rem; border-radius:999px; font-size:.74rem; font-weight:700; letter-spacing:.02em; border:1px solid transparent}
+.badge-ok{background:var(--ok-soft); color:var(--ok); border-color:var(--ok)}
+.badge-warn{background:var(--warn-soft); color:var(--warn); border-color:var(--warn)}
+.badge-risk{background:var(--risk-soft); color:var(--risk); border-color:var(--risk)}
+.badge-info{background:var(--info-soft); color:var(--info); border-color:var(--info)}
+.badge-neutral{background:var(--surface-3); color:var(--ink-2); border-color:var(--line-2)}
+
+/* ---------- tables ---------- */
+table.tbl{width:100%; border-collapse:collapse; font-size:.88rem}
+table.tbl th{text-align:left; font-weight:700; font-size:.76rem; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); background:var(--surface-3); padding:.5rem .6rem; border-bottom:1px solid var(--line-2); white-space:nowrap}
+table.tbl td{padding:.52rem .6rem; border-bottom:1px solid var(--line); vertical-align:top}
+table.tbl tbody tr:hover{background:var(--surface-2)}
+table.tbl tfoot td{font-weight:700; border-top:2px solid var(--line-2)}
+.tbl-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius); background:var(--surface)}
+
+/* ---------- banners ---------- */
+.banner{border-radius:var(--radius-s); padding:.7rem .9rem; font-size:.88rem; border:1px solid; margin-bottom:.9rem}
+.banner-ok{background:var(--ok-soft); border-color:var(--ok); color:var(--ok)}
+.banner-warn{background:var(--warn-soft); border-color:var(--warn); color:var(--warn)}
+.banner-risk{background:var(--risk-soft); border-color:var(--risk); color:var(--risk)}
+.banner-info{background:var(--info-soft); border-color:var(--info); color:var(--info)}
+.banner b{font-weight:800}
+
+/* ---------- toast ---------- */
+#toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%); z-index:900; display:flex; flex-direction:column; gap:.5rem; align-items:center; pointer-events:none}
+.toast{background:var(--ink-1); color:var(--bg); padding:.6rem 1rem; border-radius:999px; font-size:.86rem; font-weight:600; box-shadow:var(--shadow-lg); max-width:min(90vw,560px)}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky; top:0; z-index:500; background:var(--surface); border-bottom:1px solid var(--line)}
+.topbar-in{display:flex; align-items:center; gap:.9rem; padding:.6rem 20px; max-width:1560px; margin:0 auto}
+.brandmark{display:flex; align-items:center; gap:.55rem; font-weight:800; letter-spacing:-.01em}
+.brand-dot{width:26px; height:26px; border-radius:7px; display:grid; place-items:center; font-size:.76rem; font-weight:900; color:#fff}
+.sys-name{font-size:.95rem}
+.sys-sub{font-size:.72rem; color:var(--ink-3); font-weight:600; letter-spacing:.06em; text-transform:uppercase}
+.navlinks{display:flex; gap:.15rem; flex-wrap:wrap}
+.navlink{padding:.4rem .7rem; border-radius:var(--radius-s); font-size:.86rem; font-weight:600; color:var(--ink-2); cursor:pointer; border:1px solid transparent; background:transparent}
+.navlink:hover{background:var(--surface-3); color:var(--ink-1)}
+.navlink[aria-current="page"]{background:var(--surface-3); color:var(--ink-1); border-color:var(--line-2)}
+.who{font-size:.8rem; color:var(--ink-2); text-align:right; line-height:1.3}
+.who b{display:block; color:var(--ink-1)}
+
+/* ---------- login ---------- */
+/* The sign in page shares the launcher's brand surface so that the front
+   door reads as one thing. background-color carries the darkest stop so a
+   contrast check measures against what is actually rendered. */
+.login-wrap{
+  min-height:100vh; display:grid; place-items:center; padding:2.4rem 1rem;
+  background-color:#1a1033;
+  background-image:
+    radial-gradient(760px 520px at 12% -14%, rgba(124,58,237,.55) 0%, transparent 58%),
+    radial-gradient(720px 500px at 88% -8%, rgba(190,24,93,.45) 0%, transparent 56%),
+    radial-gradient(820px 580px at 50% 116%, rgba(14,116,144,.5) 0%, transparent 60%),
+    linear-gradient(162deg, #2b0f4a 0%, #1e1b4b 54%, #102b3d 100%);
+  --lx-ink:#f5f0ff; --lx-ink-2:#cfc2ee; --lx-line:#3b2c62;
+}
+.login-card{width:100%; max-width:430px}
+.login-head{text-align:center; margin-bottom:1.3rem}
+.login-logo{
+  width:62px; height:62px; border-radius:18px; display:grid; place-items:center;
+  margin:0 auto .8rem; font-weight:900; font-size:1.25rem; letter-spacing:-.02em;
+  background-color:#4c1d95;
+  background-image:linear-gradient(135deg, #a21caf 0%, #7c3aed 52%, #0e7490 100%);
+  color:#ffffff; box-shadow:0 16px 34px -14px rgba(124,58,237,.9);
+}
+.login-head h1{color:var(--lx-ink); font-size:1.65rem; letter-spacing:-.03em; font-weight:850}
+.login-head .sys-sub{color:var(--lx-ink-2)}
+.login-wrap .btn-primary{
+  background-color:var(--pop-violet);
+  background-image:linear-gradient(135deg, var(--pop-violet) 0%, var(--pop-pink) 100%);
+  border-color:transparent; color:var(--pop-ink);
+  border-radius:999px; box-shadow:0 12px 26px -10px rgba(124,58,237,.8);
+}
+.login-wrap .btn-primary:hover{
+  background-color:var(--pop-violet-d);
+  background-image:linear-gradient(135deg, var(--pop-violet-d) 0%, var(--pop-pink-d) 100%);
+  border-color:transparent; color:var(--pop-ink);
+}
+/* the demo account list is read aloud during a demo, so it gets its own
+   dark panel rather than inheriting the light table styling */
+.login-wrap .accounts{
+  background-color:#231a3e; border:1px solid var(--lx-line); border-radius:var(--radius);
+  padding:.9rem 1rem; margin-top:1rem; color:var(--lx-ink-2); font-size:.82rem;
+}
+.login-wrap .accounts > b{color:var(--lx-ink)}
+.login-wrap .accounts .mono{color:#f0abfc}
+.login-wrap .accounts table.tbl th{
+  background-color:#2e2352; color:var(--lx-ink-2); border-bottom-color:var(--lx-line);
+}
+.login-wrap .accounts table.tbl td{color:var(--lx-ink); border-bottom-color:var(--lx-line)}
+.login-wrap .accounts table.tbl tbody tr:hover{background-color:#2a2049}
+.login-wrap .build{color:var(--lx-ink-2)}
+:root[data-theme="dark"] .login-wrap .card{background:#1c1536; border-color:#332a5a}
+:root[data-theme="dark"] .login-wrap input{background:#141029; border-color:#3b2c62}
+
+/* ---------- launcher ---------- */
+/* The launcher is a fixed brand surface in both colour schemes: a deep
+   aubergine to indigo field with the three systems floating on it.
+   background-color carries the darkest stop so that a contrast check
+   measures against something real rather than falling through to the body. */
+.launchbody{
+  min-height:100vh;
+  background-color:#1a1033;
+  background-image:
+    radial-gradient(880px 560px at 6% -12%, rgba(124,58,237,.55) 0%, transparent 58%),
+    radial-gradient(820px 520px at 94% -8%, rgba(190,24,93,.45) 0%, transparent 56%),
+    radial-gradient(900px 620px at 58% 118%, rgba(14,116,144,.5) 0%, transparent 60%),
+    linear-gradient(162deg, #2b0f4a 0%, #1e1b4b 54%, #102b3d 100%);
+  --lx-ink:#f5f0ff;
+  --lx-ink-2:#cfc2ee;
+  --lx-line:#3b2c62;
+}
+.launchbody .topbar{
+  background-color:#25123f;
+  background-image:linear-gradient(90deg, rgba(124,58,237,.30) 0%, rgba(190,24,93,.18) 55%, rgba(14,116,144,.28) 100%);
+  border-bottom:1px solid var(--lx-line);
+}
+.launchbody .sys-name{color:var(--lx-ink)}
+.launchbody .sys-sub{color:var(--lx-ink-2)}
+.launchbody .who{color:var(--lx-ink-2)}
+.launchbody .who b{color:var(--lx-ink)}
+.launchbody h1{font-size:2.3rem; letter-spacing:-.04em; font-weight:850; color:var(--lx-ink)}
+.launchbody .lede{color:var(--lx-ink-2); font-size:1.02rem; max-width:680px}
+.launchbody .chain-note{
+  background-color:#231a3e; background-image:none;
+  border:1px solid var(--lx-line); border-left:5px solid #c4b5fd;
+  color:var(--lx-ink-2);
+}
+.launchbody .chain-note b{color:var(--lx-ink)}
+.launchbody .chain-note .mono{color:#f0abfc}
+/* the cards stay on the panel surface so they read as objects on the field */
+:root[data-theme="dark"] .launchbody .app-card{background:#1c1536; border-color:#332a5a}
+.apps-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:1rem; margin-top:1.2rem}
+.app-card{display:block; width:100%; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1.2rem; cursor:pointer; box-shadow:var(--shadow); font:inherit; color:var(--ink-1); transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease}
+.app-card:hover{transform:translateY(-3px); box-shadow:0 18px 38px -18px rgba(37,99,235,.5); border-color:var(--primary)}
+.app-chip{display:inline-flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:15px; font-weight:900; font-size:.92rem; margin-bottom:.9rem; letter-spacing:-.02em}
+.app-card{position:relative; overflow:hidden}
+.app-card:before{content:""; position:absolute; inset:0 0 auto 0; height:5px}
+.card-shop:before{background-image:linear-gradient(90deg,#c026d3,#7c3aed)}
+.card-erp:before{background-image:linear-gradient(90deg,#2563eb,#0e7490)}
+.card-wms:before{background-image:linear-gradient(90deg,#059669,#0d9488)}
+.card-shop:hover{border-color:#a21caf; box-shadow:0 18px 38px -18px rgba(162,28,175,.5)}
+.card-erp:hover{border-color:#1f4b78; box-shadow:0 18px 38px -18px rgba(37,99,235,.5)}
+.card-wms:hover{border-color:#1f6b4d; box-shadow:0 18px 38px -18px rgba(5,150,105,.5)}
+.chain-note{border-left:5px solid var(--pop-violet)}
+.chip-shop{background-color:#a21caf; background-image:linear-gradient(135deg,#c026d3,#7c3aed); color:#fff}
+.chip-erp{background-color:#1f4b78; background-image:linear-gradient(135deg,#2563eb,#0e7490); color:#fff}
+.chip-wms{background-color:#1f6b4d; background-image:linear-gradient(135deg,#059669,#0d9488); color:#fff}
+.app-card h3{margin-bottom:.25rem}
+.app-meta{display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.8rem}
+
+/* ============================================================
+   STOREFRONT - glossy, high colour consumer styling
+   ============================================================ */
+.shopbody{
+  background:
+    radial-gradient(880px 540px at 10% -10%, var(--hero-1) 0%, transparent 58%),
+    radial-gradient(820px 500px at 90% -6%, var(--hero-2) 0%, transparent 56%),
+    radial-gradient(760px 460px at 50% 16%, var(--hero-3) 0%, transparent 54%),
+    var(--bg);
+  min-height:100vh;
+}
+
+/* glass top bar */
+.shop-top{
+  position:sticky; top:0; z-index:500;
+  background:var(--glass);
+  backdrop-filter:saturate(180%) blur(16px);
+  -webkit-backdrop-filter:saturate(180%) blur(16px);
+  border-bottom:1px solid var(--glass-line);
+}
+.shop-top-in{display:flex; align-items:center; gap:1rem; padding:.8rem 20px; max-width:1240px; margin:0 auto}
+.shop-brand{font-weight:900; font-size:1.22rem; letter-spacing:-.03em; color:var(--ink-1); cursor:pointer; background:none; border:0; font-family:inherit; padding:0}
+.shop-brand span{color:var(--pop-pink)}
+.shop-nav{display:flex; gap:.15rem}
+.basket-btn{position:relative}
+.basket-count{
+  position:absolute; top:-7px; right:-7px; min-width:20px; height:20px; padding:0 5px;
+  border-radius:999px; background:var(--pop-pink); color:#fff; font-size:.7rem; font-weight:900;
+  display:grid; place-items:center; box-shadow:0 2px 8px -1px rgba(219,39,119,.7);
+}
+:root[data-theme="dark"] .basket-count{color:var(--pop-ink)}
+
+/* storefront buttons are louder than the back office ones */
+.shopbody .btn-primary{
+  background-color:var(--pop-violet); border-color:transparent; color:var(--pop-ink);
+}
+.shopbody .btn-primary:hover{
+  background-color:var(--pop-violet-d); border-color:transparent; color:var(--pop-ink);
+}
+.btn-accent{
+  background-color:var(--pop-violet);
+  background-image:linear-gradient(135deg, var(--pop-violet) 0%, var(--pop-pink) 100%);
+  border-color:transparent; color:var(--pop-ink);
+  box-shadow:0 10px 24px -8px rgba(124,58,237,.65);
+}
+.btn-accent:hover{
+  background-color:var(--pop-violet-d);
+  background-image:linear-gradient(135deg, var(--pop-violet-d) 0%, var(--pop-pink-d) 100%);
+  border-color:transparent; color:var(--pop-ink);
+  box-shadow:0 14px 30px -8px rgba(190,24,93,.7);
+  transform:translateY(-1px);
+}
+.btn-accent.btn-lg{border-radius:999px; letter-spacing:.01em}
+
+/* hero */
+.hero{padding:3.4rem 0 2.6rem; text-align:center; position:relative}
+.hero h1{
+  font-size:3.1rem; letter-spacing:-.045em; margin-bottom:.7rem; line-height:1.03; font-weight:850;
+}
+.hero p{font-size:1.08rem; color:var(--ink-2); max-width:600px; margin:0 auto 1.5rem}
+.hero-pill{
+  display:inline-flex; align-items:center; gap:.4rem; padding:.34rem .95rem; border-radius:999px;
+  background-color:var(--pop-pink); color:#ffffff;
+  font-size:.74rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:1.1rem; border:0; box-shadow:0 8px 20px -8px rgba(219,39,119,.8);
+}
+:root[data-theme="dark"] .hero-pill{color:var(--pop-ink)}
+
+/* promise strip under the hero */
+.promise{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:.6rem;
+  margin:0 0 2rem; padding:0;
+}
+.promise div{
+  background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  padding:.7rem .9rem; font-size:.84rem; font-weight:700; color:var(--ink-2);
+  box-shadow:var(--shadow);
+}
+.promise b{display:block; font-size:.72rem; letter-spacing:.09em; text-transform:uppercase; margin-bottom:.15rem}
+.p1 b{color:var(--pop-violet)} .p2 b{color:var(--pop-pink)} .p3 b{color:var(--pop-cyan)} .p4 b{color:var(--pop-amber)}
+
+/* product grid */
+.prod-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(236px,1fr)); gap:1.2rem; padding-bottom:3rem}
+.prod-card{
+  position:relative; background:var(--surface); border:1px solid var(--line); border-radius:18px;
+  overflow:hidden; box-shadow:var(--shadow); cursor:pointer; text-align:left; padding:0;
+  font:inherit; color:var(--ink-1);
+  transition:transform .16s cubic-bezier(.2,.7,.3,1), box-shadow .16s ease, border-color .16s ease;
+}
+.prod-card:hover{transform:translateY(-5px); box-shadow:0 20px 40px -18px rgba(124,58,237,.55); border-color:var(--pop-violet)}
+.prod-art{aspect-ratio:4/3; display:block; width:100%}
+.prod-body{padding:.9rem 1rem 1.05rem}
+.prod-cat{font-size:.68rem; font-weight:900; letter-spacing:.11em; text-transform:uppercase; color:var(--pop-violet); margin-bottom:.35rem}
+.prod-name{font-weight:750; font-size:1rem; margin-bottom:.35rem; letter-spacing:-.01em}
+.prod-price{font-weight:900; font-size:1.12rem; color:var(--ink-1); letter-spacing:-.02em}
+.tag{
+  position:absolute; top:.7rem; left:.7rem; padding:.2rem .55rem; border-radius:999px;
+  font-size:.66rem; font-weight:900; letter-spacing:.07em; text-transform:uppercase;
+}
+.tag-low{background:var(--pop-amber); color:#fff}
+.tag-out{background:var(--ink-1); color:var(--bg)}
+:root[data-theme="dark"] .tag-low{color:var(--pop-ink)}
+
+/* product detail */
+.pdp{display:grid; grid-template-columns:1fr 1fr; gap:2.6rem; padding:2rem 0 3.4rem}
+@media(max-width:860px){.pdp{grid-template-columns:1fr; gap:1.6rem}}
+.pdp-art{align-self:start; border-radius:22px; overflow:hidden; border:1px solid var(--line); box-shadow:0 24px 50px -24px rgba(124,58,237,.45)}
+.pdp h1{font-size:2.15rem; letter-spacing:-.035em; font-weight:850}
+.price-lg{font-size:1.95rem; font-weight:900; margin:.45rem 0 1rem; letter-spacing:-.03em; color:var(--pop-violet)}
+.qty{display:inline-flex; align-items:stretch; border:1px solid var(--line-2); border-radius:999px; overflow:hidden; background:var(--surface)}
+.qty button{width:40px; border:0; background:transparent; color:var(--pop-violet); font-size:1.15rem; font-weight:900; cursor:pointer}
+.qty button:hover{background:var(--surface-3)}
+.qty input{width:58px; border:0; border-left:1px solid var(--line-2); border-right:1px solid var(--line-2); text-align:center; border-radius:0; font-weight:700}
+.stock-line{font-size:.88rem; font-weight:800; margin:.6rem 0}
+
+/* basket */
+.basket-line{display:grid; grid-template-columns:84px 1fr auto; gap:1rem; padding:1rem 0; border-bottom:1px solid var(--line); align-items:start}
+.basket-art{border-radius:12px; overflow:hidden; border:1px solid var(--line)}
+.totals{display:grid; grid-template-columns:1fr auto; gap:.45rem .8rem; font-size:.93rem}
+.totals .t-lbl{color:var(--ink-2)}
+.totals .t-val{text-align:right; font-variant-numeric:tabular-nums; font-weight:600}
+.totals .t-grand{font-weight:900; font-size:1.25rem; border-top:2px solid var(--line-2); padding-top:.55rem; margin-top:.35rem; letter-spacing:-.02em}
+
+/* checkout */
+.checkout-grid{display:grid; grid-template-columns:1.4fr .9fr; gap:2rem; padding:1.6rem 0 3.4rem; align-items:start}
+@media(max-width:940px){.checkout-grid{grid-template-columns:1fr}}
+.opt-list{display:grid; gap:.6rem}
+.opt{display:flex; gap:.8rem; align-items:flex-start; border:2px solid var(--line-2); border-radius:14px; padding:.8rem .95rem; cursor:pointer; background:var(--surface); transition:border-color .12s ease, background .12s ease}
+.opt:hover{border-color:var(--pop-violet)}
+.opt:has(input:checked){border-color:var(--pop-violet); background:var(--surface-2)}
+.opt input{margin-top:.15rem; width:17px; height:17px; flex:0 0 auto; accent-color:var(--pop-violet)}
+.opt-name{font-weight:800; font-size:.93rem; display:block}
+.opt-desc{font-size:.81rem; color:var(--ink-3); display:block}
+.opt-price{margin-left:auto; font-weight:900; font-size:.95rem; white-space:nowrap; color:var(--pop-violet)}
+.shopbody .check input{accent-color:var(--pop-violet)}
+
+/* confirmation */
+.confirm-hero{text-align:center; padding:3.2rem 0 1.6rem}
+.confirm-tick{
+  width:68px; height:68px; border-radius:50%; display:grid; place-items:center; margin:0 auto 1.1rem;
+  background-color:var(--ok); color:#ffffff; font-size:1.3rem; font-weight:900; letter-spacing:.02em;
+  box-shadow:0 14px 30px -12px rgba(21,104,63,.8); border:0;
+}
+:root[data-theme="dark"] .confirm-tick{color:#06170e}
+.ref-box{display:inline-block; padding:.85rem 1.5rem; border:2px dashed var(--pop-violet); border-radius:16px; background:var(--surface); margin:.9rem 0}
+.ref-box .ref{font-family:var(--mono); font-size:1.35rem; font-weight:900; letter-spacing:.05em; color:var(--pop-violet)}
+
+/* ============================================================
+   ERP - dense enterprise styling
+   ============================================================ */
+.erp-shell{font-size:13px}
+.erp-shell h1{font-size:1.15rem} .erp-shell h2{font-size:1rem} .erp-shell h3{font-size:.9rem}
+.erp-bar{background:var(--erp); color:var(--erp-ink); padding:.3rem 20px; font-size:.76rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; display:flex; gap:1.2rem; align-items:center}
+.erp-fnkeys{display:flex; gap:.3rem; flex-wrap:wrap; padding:.4rem 20px; background:var(--surface-3); border-bottom:1px solid var(--line-2)}
+.fnkey{font-family:var(--mono); font-size:.74rem; font-weight:700; padding:.24rem .5rem; border:1px solid var(--line-2); border-radius:3px; background:var(--surface); color:var(--ink-2); cursor:pointer}
+.fnkey:hover{background:var(--surface-2); color:var(--ink-1); border-color:var(--ink-3)}
+.fnkey:disabled{opacity:.5; cursor:not-allowed}
+.erp-filters{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.5rem .7rem; padding:.7rem .85rem; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-s); margin-bottom:.7rem}
+.erp-filters .field{margin-bottom:0}
+.erp-filters label{font-size:.72rem; text-transform:uppercase; letter-spacing:.04em}
+.erp-filters input,.erp-filters select{padding:.34rem .5rem; font-size:.82rem}
+table.grid{width:100%; border-collapse:collapse; font-size:.8rem; font-variant-numeric:tabular-nums}
+table.grid th{background:var(--surface-3); color:var(--ink-2); text-align:left; font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; font-weight:800; padding:.36rem .5rem; border:1px solid var(--line-2); white-space:nowrap; position:sticky; top:0}
+table.grid td{padding:.3rem .5rem; border:1px solid var(--line); white-space:nowrap}
+table.grid tbody tr{cursor:pointer}
+table.grid tbody tr:hover{background:var(--erp-soft)}
+table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2px solid var(--erp); outline-offset:-2px}
+.grid-wrap{max-height:none; overflow:auto; border:1px solid var(--line-2); border-radius:3px; background:var(--surface)}
+.st{display:inline-block; padding:.08rem .38rem; border-radius:3px; font-size:.68rem; font-weight:800; letter-spacing:.03em; border:1px solid}
+.st-hold{background:var(--risk-soft); color:var(--risk); border-color:var(--risk)}
+.st-rel{background:var(--ok-soft); color:var(--ok); border-color:var(--ok)}
+.st-alloc{background:var(--info-soft); color:var(--info); border-color:var(--info)}
+.st-canc{background:var(--surface-3); color:var(--ink-3); border-color:var(--line-2)}
+.st-new{background:var(--warn-soft); color:var(--warn); border-color:var(--warn)}
+.tabs{display:flex; gap:0; border-bottom:2px solid var(--line-2); margin-bottom:.8rem; flex-wrap:wrap}
+.tab{padding:.42rem .85rem; font-size:.8rem; font-weight:700; border:1px solid var(--line-2); border-bottom:0; background:var(--surface-2); color:var(--ink-2); cursor:pointer; margin-right:2px; border-radius:4px 4px 0 0; position:relative; top:2px; font-family:inherit}
+.tab:hover{background:var(--surface-3); color:var(--ink-1)}
+.tab[aria-selected="true"]{background:var(--surface); color:var(--ink-1); border-bottom:2px solid var(--surface)}
+.kv{display:grid; grid-template-columns:auto 1fr; gap:.22rem .8rem; font-size:.8rem}
+.kv dt{color:var(--ink-3); font-weight:700; text-transform:uppercase; font-size:.68rem; letter-spacing:.04em; padding-top:.1rem}
+.kv dd{margin:0; color:var(--ink-1)}
+.erp-cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1rem}
+
+/* ============================================================
+   WMS
+   ============================================================ */
+.wms-bar{background:var(--wms); color:var(--wms-ink); padding:.3rem 20px; font-size:.76rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; display:flex; gap:1.2rem; align-items:center}
+.pick-row{display:grid; grid-template-columns:auto 1fr auto auto; gap:.8rem; align-items:center; padding:.6rem .8rem; border:1px solid var(--line); border-radius:var(--radius-s); background:var(--surface); margin-bottom:.5rem}
+.pick-row.done{background:var(--ok-soft); border-color:var(--ok)}
+.pick-row.short{background:var(--warn-soft); border-color:var(--warn)}
+.bin{font-family:var(--mono); font-weight:800; font-size:.86rem; background:var(--surface-3); padding:.2rem .45rem; border-radius:3px; border:1px solid var(--line-2)}
+.track-timeline{position:relative; padding-left:1.6rem}
+.track-ev{position:relative; padding:0 0 1.1rem}
+.track-ev:before{content:""; position:absolute; left:-1.6rem; top:.35rem; width:11px; height:11px; border-radius:50%; background:var(--surface); border:2px solid var(--line-2)}
+.track-ev.done:before{background:var(--ok); border-color:var(--ok)}
+.track-ev:after{content:""; position:absolute; left:-1.13rem; top:1.05rem; bottom:-.15rem; width:2px; background:var(--line)}
+.track-ev:last-child:after{display:none}
+.track-when{font-size:.76rem; color:var(--ink-3); font-weight:700}
+.track-what{font-weight:700; font-size:.88rem}
+
+/* ---------- print-ish ---------- */
+@media (max-width:760px){
+  .hero h1{font-size:1.9rem}
+  .topbar-in{flex-wrap:wrap; row-gap:.45rem}
+  /* the storefront bar carries seven controls; without this it forces the
+     whole page 180px wider than a phone viewport */
+  .shop-top-in{flex-wrap:wrap; row-gap:.5rem; column-gap:.5rem}
+  .shop-top-in .spacer{display:none}
+  .shop-brand{flex:1 1 100%}
+  .wrap, .wrap-wide{padding:0 16px}
+  .checkout-grid, .pdp{gap:1.2rem}
+  .basket-line{grid-template-columns:64px 1fr; row-gap:.5rem}
+  .basket-line > .right{grid-column:2; text-align:left}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" aria-live="polite"></div>
+<script>
+"use strict";
+/* ============================================================
+   CORE - clock, storage, helpers, auth, launcher, routing
+   ============================================================ */
+
+const BUILD = "2026.09.23";
+const STORE_KEY = "halcyon.commerce.v1";
+
+/* Fixed clock. Every date in this application is derived from it so that
+   boundary values in the knowledge base stay stable between runs. */
+const NOW = new Date("2026-09-22T09:00:00Z");
+const nowISO = () => NOW.toISOString();
+
+const $  = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+/* ---------- formatting ---------- */
+const money = n => "GBP " + Number(n || 0).toFixed(2);
+const money0 = n => Number(n || 0).toLocaleString("en-GB", {minimumFractionDigits:2, maximumFractionDigits:2});
+const pad = (n, w) => String(n).padStart(w, "0");
+
+/* Dates: stored ISO, displayed dd-mm-yyyy. */
+function isoToUK(iso){
+  const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? (m[3] + "-" + m[2] + "-" + m[1]) : String(iso || "");
+}
+function ukToISO(v){
+  const s = String(v || "").trim();
+  let m = s.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if(m) return m[3] + "-" + m[2] + "-" + m[1];
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m) return s;
+  return null;
+}
+function stamp(iso){
+  const d = new Date(iso);
+  if(isNaN(d)) return String(iso || "");
+  return isoToUK(d.toISOString().slice(0,10)) + " " + pad(d.getUTCHours(),2) + ":" + pad(d.getUTCMinutes(),2);
+}
+function addDays(iso, n){
+  const d = new Date(iso); d.setUTCDate(d.getUTCDate() + n); return d.toISOString();
+}
+/* Working days skip Saturday and Sunday. */
+function addWorkingDays(iso, n){
+  const d = new Date(iso); let left = n;
+  while(left > 0){ d.setUTCDate(d.getUTCDate() + 1); const w = d.getUTCDay(); if(w !== 0 && w !== 6) left--; }
+  return d.toISOString();
+}
+const esc = s => String(s == null ? "" : s)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+/* ---------- toast ---------- */
+/* One toast at a time. Two elements carrying the same data-testid make a
+   strict locator ambiguous, which is a real problem for a test tool. */
+function toast(msg){
+  $$("#toast .toast").forEach(t => t.remove());
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.setAttribute("role","status");
+  el.setAttribute("data-testid","toast");
+  el.textContent = msg;
+  $("#toast").appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+
+/* ---------- state ---------- */
+let state = null;
+
+function blankState(){
+  return {
+    version: BUILD,
+    theme: "light",
+    session: null,
+    basket: { lines: [], promo: "", promoCode: "" },
+    checkout: null,
+    orders: [],
+    seq: { order: 146, delivery: 0, rma: 0 },
+    errors: {}
+  };
+}
+
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      const p = JSON.parse(raw);
+      if(p && p.version === BUILD){ state = p; return; }
+    }
+  }catch(e){}
+  state = blankState();
+  save();
+}
+/* Resetting clears orders, basket and checkout across all three systems.
+   The signed in user and the colour scheme are kept so that a journey can
+   reset at the start without having to sign in twice. */
+function resetDemo(){
+  const theme = state ? state.theme : "light";
+  const session = state ? state.session : null;
+  state = blankState();
+  state.theme = theme;
+  state.session = session;
+  save();
+}
+
+/* ---------- users ---------- */
+const USERS = [
+  { id:"salesops", name:"Amara Morgan", title:"Sales Operations", role:"SalesOps",
+    username:"amara.morgan", password:"Halcyon#2026", systems:["erp"], releaseLimit:5000 },
+  { id:"credit", name:"Ravi Chandra", title:"Credit Control", role:"CreditControl",
+    username:"ravi.chandra", password:"Halcyon#2026", systems:["erp"], releaseLimit:null },
+  { id:"picker", name:"Tolu Oyelaran", title:"Warehouse Operative", role:"Warehouse",
+    username:"tolu.oyelaran", password:"Halcyon#2026", systems:["wms"], releaseLimit:0 },
+  { id:"super", name:"Stefan Novak", title:"Logistics Supervisor", role:"Supervisor",
+    username:"stefan.novak", password:"Halcyon#2026", systems:["wms"], releaseLimit:0 },
+  { id:"admin", name:"Karen Bell", title:"Platform Administrator", role:"Administrator",
+    username:"karen.bell", password:"Halcyon#2026", systems:["erp","wms"], releaseLimit:null }
+];
+const userById = id => USERS.find(u => u.id === id) || null;
+const sessionUser = () => state && state.session ? userById(state.session.userId) : null;
+function hasSystem(sys){
+  const u = sessionUser();
+  if(!u) return false;
+  if(sys === "shop") return true;
+  return u.systems.indexOf(sys) >= 0;
+}
+
+/* ---------- theme ---------- */
+function applyTheme(){
+  document.documentElement.setAttribute("data-theme", state.theme === "dark" ? "dark" : "light");
+}
+function toggleTheme(){
+  state.theme = state.theme === "dark" ? "light" : "dark";
+  save(); applyTheme(); render();
+}
+
+/* ---------- routing ---------- */
+function routeParts(){
+  const h = (location.hash || "#/apps").replace(/^#\/?/, "");
+  return h.split("/").filter(Boolean);
+}
+function go(hash){
+  if(location.hash === hash) render();
+  else location.hash = hash;
+}
+
+/* ---------- login ---------- */
+let loginError = "";
+let loginDraft = { username:"", password:"" };
+
+function renderLogin(){
+  const app = $("#app");
+  app.innerHTML = `
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-head">
+        <div class="login-logo">HR</div>
+        <h1 style="margin-bottom:.15rem">Halcyon Retail Group</h1>
+        <div class="sys-sub">Order to Cash Platform</div>
+      </div>
+      <div class="card card-pad">
+        ${loginError ? `<div class="banner banner-risk" data-testid="login-error">${esc(loginError)}</div>` : ""}
+        <form id="login-form" data-testid="login-form" autocomplete="off">
+          <div class="field">
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" data-lfield="username" value="${esc(loginDraft.username)}" data-testid="input-username" autocomplete="username">
+          </div>
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" data-lfield="password" value="${esc(loginDraft.password)}" data-testid="input-password" autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" data-testid="btn-signin">Sign in</button>
+        </form>
+      </div>
+      <div class="accounts" data-testid="demo-accounts">
+        <b>Demo accounts</b> (password <span class="mono">Halcyon#2026</span>)
+        <table class="tbl small" style="margin-top:.5rem">
+          <thead><tr><th>Username</th><th>Role</th><th>Systems</th></tr></thead>
+          <tbody>
+            ${USERS.map(u => `<tr>
+              <td class="mono">${esc(u.username)}</td>
+              <td>${esc(u.title)}</td>
+              <td>${u.systems.map(s => s.toUpperCase()).join(", ")}, Storefront</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+      <div class="center small build" style="margin-top:.9rem">Build ${BUILD}</div>
+    </div>
+  </div>`;
+}
+
+function attemptLogin(){
+  const un = loginDraft.username || ($("#login-username") || {}).value || "";
+  const pw = loginDraft.password || ($("#login-password") || {}).value || "";
+  const u = USERS.find(x => x.username.toLowerCase() === String(un).trim().toLowerCase());
+  if(!u || u.password !== pw){
+    loginError = "Username or password not recognised.";
+    renderLogin();
+    return;
+  }
+  loginError = "";
+  loginDraft = { username:"", password:"" };
+  state.session = { userId: u.id, since: nowISO() };
+  save();
+  if(location.hash !== "#/apps") location.hash = "#/apps";
+  render();
+}
+
+function signOut(){
+  state.session = null;
+  state.checkout = null;
+  save();
+  loginError = "";
+  loginDraft = { username:"", password:"" };
+  if(location.hash !== "#/apps") location.hash = "#/apps";
+  renderLogin();
+}
+
+/* ---------- launcher ---------- */
+function renderLauncher(){
+  const u = sessionUser();
+  const app = $("#app");
+  const basketQty = state.basket.lines.reduce((a, l) => a + l.qty, 0);
+  const open = state.orders.filter(o => o.erp.status === "Hold").length;
+  const toPick = state.orders.reduce((a, o) => a + o.deliveries.filter(d => d.status === "Allocated").length, 0);
+
+  app.innerHTML = `
+  <div class="launchbody">
+  <div class="topbar"><div class="topbar-in">
+    <div class="brandmark">
+      <div class="brand-dot" style="background-color:#4c1d95; background-image:linear-gradient(135deg,#7c3aed,#0e7490)">HR</div>
+      <div><div class="sys-name">Halcyon Retail Group</div><div class="sys-sub">Order to Cash Platform</div></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="who"><b>${esc(u.name)}</b>${esc(u.title)}</div>
+    <button class="btn btn-sm" data-act="theme" data-testid="btn-theme">${state.theme === "dark" ? "Light mode" : "Dark mode"}</button>
+    <button class="btn btn-sm" data-act="reset" data-testid="btn-reset">Reset demo data</button>
+    <button class="btn btn-sm" data-act="signout" data-testid="btn-signout">Sign out</button>
+  </div></div>
+
+  <div class="wrap" style="padding-top:1.6rem; padding-bottom:3rem">
+    <h1>Applications</h1>
+    <p class="lede">One order, three systems. Place an order in the storefront, release it in the ERP, ship it from the warehouse.</p>
+
+    <div class="apps-grid">
+      <button class="app-card card-shop" data-act="open-app" data-app="shop" data-testid="app-shop">
+        <div class="app-chip chip-shop">L&amp;C</div>
+        <h3>Lumen and Co. Storefront</h3>
+        <div class="muted small">Direct to consumer store. Browse, basket, checkout and pay.</div>
+        <div class="app-meta">
+          <span class="badge badge-neutral">Customer facing</span>
+          ${basketQty ? `<span class="badge badge-info" data-testid="chip-basket">${basketQty} in basket</span>` : ""}
+        </div>
+      </button>
+
+      <button class="app-card card-erp" data-act="open-app" data-app="erp" data-testid="app-erp">
+        <div class="app-chip chip-erp">AX</div>
+        <h3>Axion ERP</h3>
+        <div class="muted small">Sales orders, holds and releases, allocation to fulfilment.</div>
+        <div class="app-meta">
+          <span class="badge badge-neutral">${hasSystem("erp") ? "Access granted" : "No access for this role"}</span>
+          ${open ? `<span class="badge badge-risk" data-testid="chip-holds">${open} on hold</span>` : ""}
+        </div>
+      </button>
+
+      <button class="app-card card-wms" data-act="open-app" data-app="wms" data-testid="app-wms">
+        <div class="app-chip chip-wms">VW</div>
+        <h3>Vector WMS</h3>
+        <div class="muted small">Pick, pack, despatch, carrier allocation and tracking.</div>
+        <div class="app-meta">
+          <span class="badge badge-neutral">${hasSystem("wms") ? "Access granted" : "No access for this role"}</span>
+          ${toPick ? `<span class="badge badge-warn" data-testid="chip-topick">${toPick} to pick</span>` : ""}
+        </div>
+      </button>
+    </div>
+
+    <div class="sect">
+      <div class="panel small chain-note">
+        <b>How the chain works.</b> An order placed in the storefront is given a reference such as
+        <span class="mono">ORD-2026-00147</span>. That same reference is the sales order number in Axion ERP.
+        Once released and allocated it produces a delivery note such as <span class="mono">DN-00147-1</span>
+        in Vector WMS, which on despatch is given a carrier tracking number.
+        Every system shows the same order from its own point of view.
+      </div>
+    </div>
+  </div>
+  </div>`;
+}
+
+function openApp(appName){
+  if(appName === "shop"){ go("#/shop"); return; }
+  if(!hasSystem(appName)){
+    toast("Your role does not have access to that system.");
+    return;
+  }
+  go(appName === "erp" ? "#/erp/orders" : "#/wms/work");
+}
+
+/* ---------- shared chrome for back office systems ---------- */
+function backOfficeTop(sys, links, active){
+  const u = sessionUser();
+  const meta = sys === "erp"
+    ? { name:"Axion ERP", sub:"Order to Cash", chip:"AX", cls:"chip-erp", bar:"erp-bar" }
+    : { name:"Vector WMS", sub:"Warehouse and Transport", chip:"VW", cls:"chip-wms", bar:"wms-bar" };
+  return `
+  <div class="topbar"><div class="topbar-in">
+    <div class="brandmark">
+      <div class="brand-dot ${meta.cls}">${meta.chip}</div>
+      <div><div class="sys-name">${meta.name}</div><div class="sys-sub">${meta.sub}</div></div>
+    </div>
+    <nav class="navlinks">
+      ${links.map(l => `<button class="navlink" data-act="nav" data-href="${l.href}" data-testid="nav-${l.id}"${l.id === active ? ' aria-current="page"' : ""}>${esc(l.label)}</button>`).join("")}
+    </nav>
+    <div class="spacer"></div>
+    <div class="who"><b>${esc(u.name)}</b>${esc(u.title)}</div>
+    <button class="btn btn-sm" data-act="apps" data-testid="btn-apps">Applications</button>
+    <button class="btn btn-sm" data-act="theme" data-testid="btn-theme">${state.theme === "dark" ? "Light" : "Dark"}</button>
+    <button class="btn btn-sm" data-act="signout" data-testid="btn-signout">Sign out</button>
+  </div></div>
+  <div class="${meta.bar}">
+    <span>${meta.name}</span><span>Environment DEMO</span><span>Build ${BUILD}</span>
+    <span>System date ${isoToUK(nowISO().slice(0,10))}</span>
+  </div>`;
+}
+/* ============================================================
+   REFERENCE DATA
+   Catalogue, promotions, delivery options, countries, customers,
+   payment test cards, carriers.
+   ============================================================ */
+
+/* Variant stock is what the storefront shows. Allocatable stock is what the
+   ERP can reserve, and it is deliberately lower on some variants: the web
+   figure is an available to promise number refreshed on a cycle, the ERP
+   figure is live. The divergence is what makes the stock hold reachable. */
+const CATALOGUE = [
+  { sku:"LC-1001", name:"Aurora Table Lamp", cat:"Lighting", price:89.00, weight:2.4, bulky:false, restricted:false,
+    blurb:"A turned metal base with a hand rolled linen shade. Dimmable, with a fabric braided flex.",
+    axes:["Finish"],
+    variants:[ {id:"BRASS", Finish:"Brushed Brass", stock:24, alloc:24},
+               {id:"BLACK", Finish:"Matte Black",   stock:12, alloc:12},
+               {id:"CHROME",Finish:"Polished Chrome",stock:3, alloc:1} ],
+    art:["#ffe9b0","#f59e0b","#7c2d12"] },
+
+  { sku:"LC-1002", name:"Washed Linen Bedding Set", cat:"Bedding", price:145.00, weight:3.1, bulky:false, restricted:false,
+    blurb:"Stonewashed European flax. One duvet cover and two pillowcases, softening with every wash.",
+    axes:["Colour","Size"],
+    variants:[ {id:"OAT-D", Colour:"Oatmeal", Size:"Double", stock:18, alloc:18},
+               {id:"OAT-K", Colour:"Oatmeal", Size:"King", stock:9, alloc:9},
+               {id:"SLA-D", Colour:"Slate",   Size:"Double", stock:14, alloc:14},
+               {id:"SLA-K", Colour:"Slate",   Size:"King", stock:6, alloc:2},
+               {id:"SAG-D", Colour:"Sage",    Size:"Double", stock:11, alloc:11},
+               {id:"SAG-K", Colour:"Sage",    Size:"King", stock:0, alloc:0} ],
+    art:["#e0e7ff","#818cf8","#312e81"] },
+
+  { sku:"LC-1003", name:"Stoneware Dinner Set", cat:"Tableware", price:118.00, weight:6.8, bulky:false, restricted:false,
+    blurb:"Reactive glaze stoneware thrown in small batches, so no two pieces carry the same shading.",
+    axes:["Size"],
+    variants:[ {id:"P4", Size:"Four place setting", stock:21, alloc:21},
+               {id:"P8", Size:"Eight place setting", stock:7, alloc:7} ],
+    art:["#ccfbf1","#2dd4bf","#115e59"] },
+
+  { sku:"LC-1004", name:"Cashmere Throw", cat:"Living", price:165.00, weight:1.2, bulky:false, restricted:false,
+    blurb:"Two ply Mongolian cashmere, woven on a narrow loom with a hand knotted fringe.",
+    axes:["Colour"],
+    variants:[ {id:"IVORY", Colour:"Ivory", stock:15, alloc:15},
+               {id:"CHAR",  Colour:"Charcoal", stock:8, alloc:8},
+               {id:"RUST",  Colour:"Rust", stock:4, alloc:4} ],
+    art:["#ffe4e6","#fb7185","#9f1239"] },
+
+  { sku:"LC-1005", name:"Copper Pour Over Kettle", cat:"Kitchen", price:74.50, weight:1.1, bulky:false, restricted:false,
+    blurb:"Hammered copper with a gooseneck spout weighted for a slow, even pour.",
+    axes:[], variants:[ {id:"STD", stock:33, alloc:33} ],
+    art:["#ffedd5","#fb923c","#9a3412"] },
+
+  { sku:"LC-1006", name:"Walnut Serving Board", cat:"Kitchen", price:42.00, weight:1.8, bulky:false, restricted:false,
+    blurb:"End grain American black walnut, finished with a food safe hardwax oil.",
+    axes:["Size"],
+    variants:[ {id:"SM", Size:"Small, 30 cm", stock:26, alloc:26},
+               {id:"LG", Size:"Large, 45 cm", stock:13, alloc:13} ],
+    art:["#fef3c7","#f59e0b","#78350f"] },
+
+  { sku:"LC-1007", name:"Ceramic Vase Trio", cat:"Decor", price:56.00, weight:2.2, bulky:false, restricted:false,
+    blurb:"Three matt glazed vessels in graduated heights, sold as a set.",
+    axes:[], variants:[ {id:"STD", stock:19, alloc:19} ],
+    art:["#dcfce7","#4ade80","#14532d"] },
+
+  { sku:"LC-1008", name:"Hand Knotted Wool Rug", cat:"Living", price:320.00, weight:16.5, bulky:true, restricted:false,
+    blurb:"Highland wool on a cotton warp, knotted by hand. Expect gentle shedding for the first month.",
+    axes:["Colour","Size"],
+    variants:[ {id:"NAT-S", Colour:"Natural", Size:"120 by 170 cm", stock:10, alloc:10},
+               {id:"NAT-M", Colour:"Natural", Size:"160 by 230 cm", stock:5, alloc:5},
+               {id:"NAT-L", Colour:"Natural", Size:"200 by 300 cm", stock:2, alloc:0},
+               {id:"IND-S", Colour:"Indigo",  Size:"120 by 170 cm", stock:8, alloc:8},
+               {id:"IND-M", Colour:"Indigo",  Size:"160 by 230 cm", stock:4, alloc:4},
+               {id:"IND-L", Colour:"Indigo",  Size:"200 by 300 cm", stock:1, alloc:1} ],
+    art:["#f3e8ff","#a855f7","#581c87"] },
+
+  { sku:"LC-1009", name:"Scented Candle Set", cat:"Decor", price:38.00, weight:1.4, bulky:false, restricted:false,
+    blurb:"Three soy wax candles in cedar, fig leaf and sea salt. Forty hours of burn time each.",
+    axes:[], variants:[ {id:"STD", stock:41, alloc:41} ],
+    art:["#fce7f3","#f472b6","#9d174d"] },
+
+  { sku:"LC-1010", name:"Lithium Power Bank", cat:"Technology", price:65.00, weight:0.5, bulky:false, restricted:true,
+    blurb:"A 20,000 mAh cell in an anodised shell. Contains a lithium ion battery.",
+    axes:[], variants:[ {id:"STD", stock:28, alloc:28} ],
+    art:["#cffafe","#22d3ee","#155e75"] },
+
+  { sku:"LC-1011", name:"Espresso Glass Set", cat:"Kitchen", price:29.00, weight:1.0, bulky:false, restricted:false,
+    blurb:"Double walled borosilicate, set of four. Keeps the crema intact and the outside cool.",
+    axes:[], variants:[ {id:"STD", stock:37, alloc:37} ],
+    art:["#dbeafe","#60a5fa","#1e3a8a"] },
+
+  { sku:"LC-1012", name:"Oak Bedside Table", cat:"Furniture", price:240.00, weight:19.0, bulky:true, restricted:false,
+    blurb:"Solid oak with a single soft close drawer and a routed finger pull. Arrives fully assembled.",
+    axes:["Finish"],
+    variants:[ {id:"NAT", Finish:"Natural Oak", stock:9, alloc:9},
+               {id:"SMK", Finish:"Smoked Oak", stock:4, alloc:4} ],
+    art:["#fee2e2","#f87171","#991b1b"] }
+];
+
+const productBySku = sku => CATALOGUE.find(p => p.sku === sku) || null;
+function variantOf(p, vid){ return (p && p.variants.find(v => v.id === vid)) || null; }
+function variantLabel(p, v){
+  if(!p || !v) return "";
+  if(!p.axes.length) return "Standard";
+  return p.axes.map(a => v[a]).join(", ");
+}
+
+/* Inline art. There is no network, so every product image is drawn here.
+   Each category gets its own motif so that the grid reads as a catalogue
+   rather than twelve variations of the same rectangle. */
+function artMotif(cat, c){
+  switch(cat){
+    case "Lighting": return `
+      <path d="M118 150 L202 150 L182 92 L138 92 Z" fill="${c[2]}" opacity=".72"/>
+      <rect x="156" y="150" width="8" height="52" fill="${c[2]}" opacity=".6"/>
+      <rect x="128" y="200" width="64" height="9" rx="4" fill="${c[2]}" opacity=".78"/>
+      <ellipse cx="160" cy="150" rx="42" ry="7" fill="#ffffff" opacity=".35"/>`;
+    case "Bedding": return `
+      <rect x="62" y="118" width="196" height="74" rx="10" fill="${c[2]}" opacity=".24"/>
+      <rect x="62" y="98" width="196" height="30" rx="10" fill="${c[2]}" opacity=".42"/>
+      <rect x="82" y="66" width="70" height="40" rx="9" fill="#ffffff" opacity=".55"/>
+      <rect x="168" y="66" width="70" height="40" rx="9" fill="#ffffff" opacity=".4"/>`;
+    case "Tableware": return `
+      <circle cx="160" cy="132" r="62" fill="${c[2]}" opacity=".2"/>
+      <circle cx="160" cy="132" r="44" fill="#ffffff" opacity=".45"/>
+      <circle cx="160" cy="132" r="22" fill="${c[2]}" opacity=".3"/>
+      <circle cx="252" cy="188" r="26" fill="${c[2]}" opacity=".22"/>`;
+    case "Living": return `
+      <path d="M40 176 C 100 138, 220 214, 288 160 L288 214 L40 214 Z" fill="${c[2]}" opacity=".3"/>
+      <path d="M40 146 C 104 108, 216 184, 288 130" stroke="${c[2]}" stroke-width="9" fill="none" opacity=".45"/>
+      <path d="M40 112 C 104 74, 216 150, 288 96" stroke="#ffffff" stroke-width="7" fill="none" opacity=".5"/>`;
+    case "Kitchen": return `
+      <rect x="104" y="112" width="112" height="86" rx="18" fill="${c[2]}" opacity=".55"/>
+      <path d="M216 132 C 258 118, 268 88, 250 70" stroke="${c[2]}" stroke-width="10" fill="none" opacity=".55"/>
+      <rect x="140" y="92" width="40" height="22" rx="8" fill="${c[2]}" opacity=".7"/>
+      <ellipse cx="160" cy="128" rx="46" ry="9" fill="#ffffff" opacity=".4"/>`;
+    case "Decor": return `
+      <path d="M94 200 L94 136 C 94 112, 122 112, 122 136 L122 200 Z" fill="${c[2]}" opacity=".55"/>
+      <path d="M142 200 L142 108 C 142 78, 178 78, 178 108 L178 200 Z" fill="${c[2]}" opacity=".38"/>
+      <path d="M198 200 L198 150 C 198 130, 228 130, 228 150 L228 200 Z" fill="#ffffff" opacity=".55"/>`;
+    case "Technology": return `
+      <rect x="112" y="76" width="96" height="140" rx="16" fill="${c[2]}" opacity=".62"/>
+      <rect x="128" y="100" width="64" height="8" rx="4" fill="#ffffff" opacity=".6"/>
+      <rect x="128" y="120" width="42" height="8" rx="4" fill="#ffffff" opacity=".4"/>
+      <circle cx="160" cy="184" r="14" fill="#ffffff" opacity=".35"/>`;
+    case "Furniture": return `
+      <rect x="86" y="96" width="148" height="86" rx="8" fill="${c[2]}" opacity=".55"/>
+      <rect x="100" y="118" width="120" height="6" rx="3" fill="#ffffff" opacity=".55"/>
+      <rect x="146" y="140" width="28" height="7" rx="3" fill="#ffffff" opacity=".7"/>
+      <rect x="94" y="182" width="12" height="34" fill="${c[2]}" opacity=".7"/>
+      <rect x="214" y="182" width="12" height="34" fill="${c[2]}" opacity=".7"/>`;
+    default: return `<circle cx="160" cy="130" r="56" fill="${c[2]}" opacity=".3"/>`;
+  }
+}
+
+function productArt(p, cls){
+  const c = p.art;
+  const id = "g" + p.sku.replace(/[^A-Za-z0-9]/g, "");
+  return `<svg class="${cls || "prod-art"}" viewBox="0 0 320 240" role="img" aria-label="${esc(p.name)}" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="${id}" x1="0" y1="0" x2=".6" y2="1">
+        <stop offset="0%" stop-color="${c[0]}"/><stop offset="100%" stop-color="${c[1]}"/>
+      </linearGradient>
+      <radialGradient id="${id}s" cx="28%" cy="18%" r="72%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity=".55"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="320" height="240" fill="url(#${id})"/>
+    ${artMotif(p.cat, c)}
+    <rect width="320" height="240" fill="url(#${id}s)"/>
+  </svg>`;
+}
+
+/* ---------- promotions ---------- */
+const PROMOS = [
+  { code:"LUMEN10",   kind:"percent", value:10,  minSpend:50,  validTo:"2026-12-31", label:"10 per cent off your order" },
+  { code:"FREESHIP",  kind:"freeship",value:0,   minSpend:75,  validTo:"2026-12-31", label:"Free standard delivery" },
+  { code:"WELCOME25", kind:"amount",  value:25,  minSpend:200, validTo:"2026-12-31", label:"25.00 off orders over 200.00" },
+  { code:"SPRING20",  kind:"percent", value:20,  minSpend:0,   validTo:"2026-04-30", label:"20 per cent off, spring event" }
+];
+const promoByCode = c => PROMOS.find(p => p.code === String(c || "").trim().toUpperCase()) || null;
+
+/* ---------- countries ---------- */
+const COUNTRIES = [
+  { code:"GB", name:"United Kingdom", zone:"UK" },
+  { code:"IE", name:"Ireland",        zone:"EU" },
+  { code:"FR", name:"France",         zone:"EU" },
+  { code:"DE", name:"Germany",        zone:"EU" },
+  { code:"ES", name:"Spain",          zone:"EU" },
+  { code:"NL", name:"Netherlands",    zone:"EU" },
+  { code:"NO", name:"Norway",         zone:"ROW" },
+  { code:"CH", name:"Switzerland",    zone:"ROW" },
+  { code:"US", name:"United States",  zone:"ROW" },
+  { code:"CA", name:"Canada",         zone:"ROW" },
+  { code:"AU", name:"Australia",      zone:"ROW" },
+  { code:"SG", name:"Singapore",      zone:"ROW" }
+];
+const countryByCode = c => COUNTRIES.find(x => x.code === c) || null;
+const zoneOf = c => (countryByCode(c) || {}).zone || "ROW";
+
+/* ---------- delivery options ---------- */
+const DELIVERY = [
+  { id:"standard", name:"Standard delivery",     desc:"Three to five working days", price:4.95,  freeOver:75,   zones:["UK"],        bulkyOk:true,  days:5 },
+  { id:"express",  name:"Express delivery",      desc:"Next working day, order before noon", price:9.95, freeOver:null, zones:["UK"], bulkyOk:false, days:1 },
+  { id:"collect",  name:"Click and collect",     desc:"Ready at your chosen store in two working days", price:0, freeOver:null, zones:["UK"], bulkyOk:true, days:2 },
+  { id:"intl",     name:"International standard",desc:"Seven to ten working days", price:19.95, freeOver:null, zones:["EU","ROW"], bulkyOk:true, days:10 }
+];
+const deliveryById = id => DELIVERY.find(d => d.id === id) || null;
+
+const STORES = [
+  { id:"ST-LDN", name:"London, Marylebone" },
+  { id:"ST-MAN", name:"Manchester, Deansgate" },
+  { id:"ST-BRI", name:"Bristol, Clifton" },
+  { id:"ST-EDI", name:"Edinburgh, Stockbridge" }
+];
+
+/* ---------- customers of record ---------- */
+const CUSTOMERS = [
+  { id:"CU-4001", email:"amelia.hart@example.test",    name:"Amelia Hart",       creditLimit:2500,
+    addr:{ line1:"14 Pelham Row", city:"Bristol", postcode:"BS1 4TR", country:"GB" }, since:"2023-04-18" },
+  { id:"CU-4002", email:"j.okonkwo@example.test",      name:"Joseph Okonkwo",    creditLimit:750,
+    addr:{ line1:"8 Carlisle Gate", city:"Leeds", postcode:"LS2 8QR", country:"GB" }, since:"2024-11-02" },
+  { id:"CU-4003", email:"m.delacroix@example.test",    name:"Margaux Delacroix", creditLimit:5000,
+    addr:{ line1:"22 Rue Beaumont", city:"Lyon", postcode:"69003", country:"FR" }, since:"2022-09-30" },
+  { id:"CU-4004", email:"s.ferreira@example.test",     name:"Sofia Ferreira",    creditLimit:400,
+    addr:{ line1:"5 Thornbury Close", city:"Cardiff", postcode:"CF10 3AT", country:"GB" }, since:"2025-06-12" },
+  { id:"CU-4005", email:"d.whitmore@example.test",     name:"Daniel Whitmore",   creditLimit:12000,
+    addr:{ line1:"41 Ashcombe Lane", city:"Edinburgh", postcode:"EH3 9QN", country:"GB" }, since:"2021-02-08" }
+];
+const customerByEmail = e => CUSTOMERS.find(c => c.email.toLowerCase() === String(e || "").trim().toLowerCase()) || null;
+
+/* ---------- payment test cards ---------- */
+/* Demonstration numbers only. No real card is ever accepted or stored. */
+const TEST_CARDS = {
+  "4111111111111111": "approve",
+  "4000000000000002": "decline",
+  "4000000000003220": "verify"
+};
+const VERIFY_CODE = "246813";
+const WATCHLIST_DOMAINS = ["mailinator.test", "guerrilla.test"];
+
+function luhnOk(num){
+  const s = String(num || "").replace(/\D/g, "");
+  if(s.length < 12 || s.length > 19) return false;
+  let sum = 0, alt = false;
+  for(let i = s.length - 1; i >= 0; i--){
+    let d = Number(s[i]);
+    if(alt){ d *= 2; if(d > 9) d -= 9; }
+    sum += d; alt = !alt;
+  }
+  return sum % 10 === 0;
+}
+
+/* ---------- carriers ---------- */
+const CARRIERS = [
+  { id:"NLX", name:"Nightline Express",  service:"Next working day", zones:["UK"], code:"LG-C01" },
+  { id:"BRK", name:"Brackwell Logistics",service:"Two to three days", zones:["UK"], code:"LG-C02" },
+  { id:"GLK", name:"GlobalLink Freight", service:"International",     zones:["EU","ROW"], code:"LG-C03" },
+  { id:"STC", name:"Store collection",   service:"Collection",        zones:["UK"], code:"LG-C04" }
+];
+const carrierById = id => CARRIERS.find(c => c.id === id) || null;
+
+/* ---------- VAT ---------- */
+const VAT_RATE = 0.20;
+
+/* ---------- warehouse bins ---------- */
+function binFor(sku, vid){
+  const n = (sku + vid).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const aisle = String.fromCharCode(65 + (n % 6));
+  return aisle + "-" + pad((n % 24) + 1, 2) + "-" + pad((n % 9) + 1, 2);
+}
+/* ============================================================
+   STOREFRONT - Lumen and Co.
+   Browse, product detail, basket, three step checkout, confirmation.
+   Decision codes EC-*.
+   ============================================================ */
+
+let shopFilter = { cat:"All", sort:"featured" };
+let shopStep = 1;
+let shopErrors = {};
+let shopBanner = null;   /* {kind, code, text} */
+
+/* ---------- basket maths ---------- */
+function basketLines(){
+  return state.basket.lines.map(l => {
+    const p = productBySku(l.sku);
+    const v = variantOf(p, l.vid);
+    const lineNet = +(p.price * l.qty).toFixed(2);
+    return { sku:l.sku, vid:l.vid, qty:l.qty, product:p, variant:v,
+             unit:p.price, lineNet, weight:+(p.weight * l.qty).toFixed(2) };
+  });
+}
+function basketCount(){ return state.basket.lines.reduce((a, l) => a + l.qty, 0); }
+
+function appliedPromo(){
+  const c = state.basket.promoCode;
+  return c ? promoByCode(c) : null;
+}
+
+function basketTotals(deliveryId){
+  const lines = basketLines();
+  const net = +lines.reduce((a, l) => a + l.lineNet, 0).toFixed(2);
+  const weight = +lines.reduce((a, l) => a + l.weight, 0).toFixed(2);
+  const bulky = lines.some(l => l.product.bulky);
+  const restricted = lines.some(l => l.product.restricted);
+
+  const promo = appliedPromo();
+  let discount = 0, freeship = false;
+  if(promo && net >= promo.minSpend){
+    if(promo.kind === "percent") discount = +(net * promo.value / 100).toFixed(2);
+    else if(promo.kind === "amount") discount = Math.min(promo.value, net);
+    else if(promo.kind === "freeship") freeship = true;
+  }
+
+  const opt = deliveryById(deliveryId);
+  let delivery = 0;
+  if(opt){
+    delivery = opt.price;
+    if(opt.freeOver !== null && opt.freeOver !== undefined && (net - discount) >= opt.freeOver) delivery = 0;
+    if(freeship && opt.id === "standard") delivery = 0;
+  }
+  const taxable = +(net - discount + delivery).toFixed(2);
+  const vat = +(taxable * VAT_RATE / (1 + VAT_RATE)).toFixed(2);
+  const gross = taxable;
+  return { lines, net, discount, delivery, vat, gross, weight, bulky, restricted, promo, freeship };
+}
+
+function availableDelivery(country, bulky){
+  const z = zoneOf(country);
+  return DELIVERY.filter(d => d.zones.indexOf(z) >= 0 && (d.bulkyOk || !bulky));
+}
+
+/* ---------- shop chrome ---------- */
+function shopTop(active){
+  const n = basketCount();
+  return `
+  <div class="shop-top"><div class="shop-top-in">
+    <button class="shop-brand" data-act="nav" data-href="#/shop" data-testid="shop-brand">Lumen <span>and Co.</span></button>
+    <nav class="shop-nav">
+      <button class="navlink" data-act="nav" data-href="#/shop" data-testid="nav-shop"${active === "shop" ? ' aria-current="page"' : ""}>Shop</button>
+      <button class="navlink" data-act="nav" data-href="#/shop/basket" data-testid="nav-basket"${active === "basket" ? ' aria-current="page"' : ""}>Basket</button>
+    </nav>
+    <div class="spacer"></div>
+    <button class="btn btn-sm basket-btn" data-act="nav" data-href="#/shop/basket" data-testid="btn-basket">
+      Basket${n ? `<span class="basket-count" data-testid="basket-count">${n}</span>` : ""}
+    </button>
+    <button class="btn btn-sm" data-act="apps" data-testid="btn-apps">Applications</button>
+    <button class="btn btn-sm" data-act="theme" data-testid="btn-theme">${state.theme === "dark" ? "Light" : "Dark"}</button>
+    <button class="btn btn-sm" data-act="signout" data-testid="btn-signout">Sign out</button>
+  </div></div>`;
+}
+
+/* A scarcity flag, derived from the variant stock rather than invented. */
+function scarcityTag(p){
+  const stocks = p.variants.map(v => v.stock);
+  if(stocks.every(n => n === 0)) return `<span class="tag tag-out">Sold out</span>`;
+  if(stocks.some(n => n >= 1 && n <= 5)) return `<span class="tag tag-low">Low stock</span>`;
+  if(stocks.some(n => n === 0)) return `<span class="tag tag-low">Low stock</span>`;
+  return "";
+}
+
+/* ---------- catalogue listing ---------- */
+function viewShopHome(){
+  const cats = ["All"].concat(Array.from(new Set(CATALOGUE.map(p => p.cat))).sort());
+  let list = CATALOGUE.slice();
+  if(shopFilter.cat !== "All") list = list.filter(p => p.cat === shopFilter.cat);
+  if(shopFilter.sort === "priceLow") list.sort((a, b) => a.price - b.price);
+  if(shopFilter.sort === "priceHigh") list.sort((a, b) => b.price - a.price);
+  if(shopFilter.sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
+
+  $("#app").innerHTML = `
+  <div class="shopbody">
+    ${shopTop("shop")}
+    <div class="wrap">
+      <section class="hero">
+        <div class="hero-pill">Autumn collection</div>
+        <h1>Things made to be kept</h1>
+        <p>Small batch homeware from workshops we have visited. Free standard delivery on United Kingdom orders over 75.00.</p>
+        <button class="btn btn-accent btn-lg" data-act="scroll-products" data-testid="btn-shop-now">Shop the collection</button>
+      </section>
+
+      <div class="promise" data-testid="promise-strip">
+        <div class="p1"><b>Free delivery</b>On United Kingdom orders over 75.00</div>
+        <div class="p2"><b>30 day returns</b>No questions, no restocking fee</div>
+        <div class="p3"><b>Small batch</b>Made by workshops we have visited</div>
+        <div class="p4"><b>Click and collect</b>Ready in two working days</div>
+      </div>
+
+      <div class="row" style="margin-bottom:1.1rem" id="products">
+        <div class="field" style="margin:0; min-width:190px">
+          <label for="filter-cat">Category</label>
+          <select id="filter-cat" data-act="filter-cat" data-testid="select-category">
+            ${cats.map(c => `<option value="${esc(c)}"${c === shopFilter.cat ? " selected" : ""}>${esc(c)}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field" style="margin:0; min-width:190px">
+          <label for="filter-sort">Sort by</label>
+          <select id="filter-sort" data-act="filter-sort" data-testid="select-sort">
+            <option value="featured"${shopFilter.sort === "featured" ? " selected" : ""}>Featured</option>
+            <option value="priceLow"${shopFilter.sort === "priceLow" ? " selected" : ""}>Price, low to high</option>
+            <option value="priceHigh"${shopFilter.sort === "priceHigh" ? " selected" : ""}>Price, high to low</option>
+            <option value="name"${shopFilter.sort === "name" ? " selected" : ""}>Name</option>
+          </select>
+        </div>
+        <div class="spacer"></div>
+        <div class="muted small" data-testid="result-count">${list.length} product${list.length === 1 ? "" : "s"}</div>
+      </div>
+
+      <div class="prod-grid" data-testid="product-grid">
+        ${list.map(p => `
+          <button class="prod-card" data-act="open-product" data-sku="${p.sku}" data-testid="card-${p.sku}">
+            ${scarcityTag(p)}
+            ${productArt(p)}
+            <div class="prod-body">
+              <div class="prod-cat">${esc(p.cat)}</div>
+              <div class="prod-name">${esc(p.name)}</div>
+              <div class="prod-price">${money(p.price)}</div>
+            </div>
+          </button>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- product detail ---------- */
+let pdpSel = {};   /* axis -> value */
+let pdpQty = 1;
+
+function pdpVariant(p){
+  if(!p.axes.length) return p.variants[0];
+  return p.variants.find(v => p.axes.every(a => v[a] === pdpSel[a])) || null;
+}
+
+function viewProduct(sku){
+  const p = productBySku(sku);
+  if(!p){ go("#/shop"); return; }
+
+  /* default the axis selections to the first variant that has stock */
+  if(p.axes.length && !p.axes.every(a => pdpSel[a])){
+    const first = p.variants.find(v => v.stock > 0) || p.variants[0];
+    pdpSel = {};
+    p.axes.forEach(a => pdpSel[a] = first[a]);
+  }
+  const v = pdpVariant(p);
+  const stock = v ? v.stock : 0;
+  const err = shopErrors.pdp;
+
+  $("#app").innerHTML = `
+  <div class="shopbody">
+    ${shopTop("shop")}
+    <div class="wrap">
+      <div style="padding-top:1rem">
+        <button class="btn btn-ghost btn-sm" data-act="nav" data-href="#/shop" data-testid="btn-back-shop">Back to shop</button>
+      </div>
+      <div class="pdp">
+        <div class="pdp-art">${productArt(p, "prod-art")}</div>
+        <div>
+          <div class="prod-cat">${esc(p.cat)}</div>
+          <h1 data-testid="pdp-name">${esc(p.name)}</h1>
+          <div class="mono muted small" data-testid="pdp-sku">${esc(p.sku)}</div>
+          <div class="price-lg" data-testid="pdp-price">${money(p.price)}</div>
+          <p class="muted">${esc(p.blurb)}</p>
+
+          ${p.axes.map(axis => {
+            const vals = Array.from(new Set(p.variants.map(x => x[axis])));
+            return `<div class="field">
+              <label for="pdp-${esc(axis)}">${esc(axis)}</label>
+              <select id="pdp-${esc(axis)}" data-act="pdp-axis" data-axis="${esc(axis)}" data-testid="select-${esc(axis.toLowerCase())}">
+                ${vals.map(val => `<option value="${esc(val)}"${pdpSel[axis] === val ? " selected" : ""}>${esc(val)}</option>`).join("")}
+              </select>
+            </div>`;
+          }).join("")}
+
+          <div class="stock-line" data-testid="pdp-stock">
+            ${!v ? `<span style="color:var(--risk)">That combination is not made.</span>`
+                 : stock === 0 ? `<span style="color:var(--risk)">Out of stock</span>`
+                 : stock <= 5 ? `<span style="color:var(--warn)">Only ${stock} left</span>`
+                 : `<span style="color:var(--ok)">In stock</span>`}
+          </div>
+
+          <div class="row" style="margin:1rem 0">
+            <div class="qty">
+              <button type="button" data-act="pdp-minus" data-testid="btn-qty-minus" aria-label="Decrease quantity">-</button>
+              <input type="number" id="pdp-qty" value="${pdpQty}" min="1" max="10" data-act="pdp-qty" data-testid="input-qty" aria-label="Quantity">
+              <button type="button" data-act="pdp-plus" data-testid="btn-qty-plus" aria-label="Increase quantity">+</button>
+            </div>
+            <button class="btn btn-accent btn-lg" data-act="add-basket" data-sku="${p.sku}" data-testid="btn-add-basket"${stock === 0 || !v ? " disabled" : ""}>Add to basket</button>
+          </div>
+
+          ${err ? `<div class="banner banner-risk" data-testid="pdp-error"><b>${esc(err.code)}</b> ${esc(err.text)}</div>` : ""}
+
+          <div class="panel small" style="margin-top:1.2rem">
+            <div><b>Weight</b> ${p.weight.toFixed(1)} kg${p.bulky ? " (bulky item, express delivery not available)" : ""}</div>
+            ${p.restricted ? `<div style="margin-top:.3rem"><b>Shipping note</b> Contains a lithium ion battery. Deliveries outside the United Kingdom and the European Union are reviewed before despatch.</div>` : ""}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function addToBasket(sku){
+  const p = productBySku(sku);
+  const v = pdpVariant(p);
+  const qty = Math.max(1, Number(pdpQty) || 1);
+  shopErrors.pdp = null;
+
+  if(!v){ shopErrors.pdp = { code:"EC-V02", text:"That combination is not available." }; render(); return; }
+  const existing = state.basket.lines.find(l => l.sku === sku && l.vid === v.id);
+  const want = (existing ? existing.qty : 0) + qty;
+
+  if(want > 10){
+    shopErrors.pdp = { code:"EC-V03", text:"A maximum of 10 units of one item may be bought in a single order." };
+    render(); return;
+  }
+  if(want > v.stock){
+    shopErrors.pdp = { code:"EC-V02", text:"Only " + v.stock + " of that option are available." };
+    render(); return;
+  }
+  if(existing) existing.qty = want;
+  else state.basket.lines.push({ sku:sku, vid:v.id, qty:qty });
+  save();
+  toast(p.name + " added to your basket.");
+  pdpQty = 1;
+  go("#/shop/basket");
+}
+
+/* ---------- basket ---------- */
+function viewBasket(){
+  const t = basketTotals(null);
+  const promoMsg = shopBanner;
+
+  $("#app").innerHTML = `
+  <div class="shopbody">
+    ${shopTop("basket")}
+    <div class="wrap" style="padding-bottom:3rem">
+      <h1 style="margin-top:1.4rem">Your basket</h1>
+      ${!t.lines.length ? `
+        <div class="card card-pad center" data-testid="basket-empty" style="margin-top:1rem">
+          <p class="muted">Your basket is empty.</p>
+          <button class="btn btn-primary" data-act="nav" data-href="#/shop" data-testid="btn-continue-shopping">Continue shopping</button>
+        </div>` : `
+        <div class="checkout-grid">
+          <div>
+            <div class="card card-pad">
+              ${t.lines.map((l, i) => `
+                <div class="basket-line" data-testid="line-${l.sku}-${l.vid}">
+                  <div class="basket-art">${productArt(l.product, "prod-art")}</div>
+                  <div>
+                    <div style="font-weight:700">${esc(l.product.name)}</div>
+                    <div class="small muted mono">${esc(l.sku)} ${esc(l.vid)}</div>
+                    <div class="small muted">${esc(variantLabel(l.product, l.variant))}</div>
+                    <div class="row" style="margin-top:.5rem">
+                      <div class="qty">
+                        <button type="button" data-act="line-minus" data-idx="${i}" data-testid="btn-minus-${l.sku}-${l.vid}" aria-label="Decrease quantity">-</button>
+                        <input type="number" value="${l.qty}" min="1" max="10" data-act="line-qty" data-idx="${i}" data-testid="input-qty-${l.sku}-${l.vid}" aria-label="Quantity for ${esc(l.product.name)}">
+                        <button type="button" data-act="line-plus" data-idx="${i}" data-testid="btn-plus-${l.sku}-${l.vid}" aria-label="Increase quantity">+</button>
+                      </div>
+                      <button class="btn btn-danger btn-sm" data-act="line-remove" data-idx="${i}" data-testid="btn-remove-${l.sku}-${l.vid}">Remove</button>
+                    </div>
+                  </div>
+                  <div class="right">
+                    <div style="font-weight:800">${money(l.lineNet)}</div>
+                    <div class="small muted">${money(l.unit)} each</div>
+                  </div>
+                </div>`).join("")}
+            </div>
+          </div>
+
+          <div>
+            <div class="card card-pad">
+              <h3>Order summary</h3>
+              ${promoMsg ? `<div class="banner banner-${promoMsg.kind}" data-testid="promo-message"><b>${esc(promoMsg.code)}</b> ${esc(promoMsg.text)}</div>` : ""}
+              <div class="field">
+                <label for="promo-input">Promotion code</label>
+                <div class="row" style="flex-wrap:nowrap">
+                  <input type="text" id="promo-input" value="${esc(state.basket.promo)}" data-act="promo-typed" data-testid="input-promo" placeholder="Enter a code">
+                  <button class="btn btn-primary" data-act="promo-apply" data-testid="btn-apply-promo">Apply</button>
+                </div>
+              </div>
+              ${t.promo ? `<div class="row small" style="margin-bottom:.6rem">
+                <span class="badge badge-ok" data-testid="promo-applied">${esc(t.promo.code)}</span>
+                <span class="muted">${esc(t.promo.label)}</span>
+                <button class="btn btn-ghost btn-sm" data-act="promo-remove" data-testid="btn-remove-promo">Remove</button>
+              </div>` : ""}
+              <hr class="divider">
+              <div class="totals">
+                <div class="t-lbl">Subtotal</div><div class="t-val" data-testid="total-net">${money(t.net)}</div>
+                ${t.discount ? `<div class="t-lbl">Discount</div><div class="t-val" data-testid="total-discount">-${money(t.discount)}</div>` : ""}
+                <div class="t-lbl">Delivery</div><div class="t-val" data-testid="total-delivery">Chosen at checkout</div>
+                <div class="t-lbl t-grand">Total so far</div><div class="t-val t-grand" data-testid="total-gross">${money(t.net - t.discount)}</div>
+              </div>
+              <div class="small muted" style="margin-top:.4rem">Includes VAT at 20 per cent.</div>
+              <button class="btn btn-accent btn-lg btn-block" style="margin-top:1rem" data-act="to-checkout" data-testid="btn-checkout">Go to checkout</button>
+              <button class="btn btn-ghost btn-block btn-sm" style="margin-top:.4rem" data-act="nav" data-href="#/shop" data-testid="btn-keep-shopping">Keep shopping</button>
+            </div>
+          </div>
+        </div>`}
+    </div>
+  </div>`;
+}
+
+function applyPromo(){
+  const raw = state.basket.promo;
+  const t0 = basketTotals(null);
+  const p = promoByCode(raw);
+  if(!p){
+    shopBanner = { kind:"risk", code:"EC-P01", text:"That promotion code is not recognised." };
+    state.basket.promoCode = ""; save(); render(); return;
+  }
+  if(p.validTo < nowISO().slice(0,10)){
+    shopBanner = { kind:"risk", code:"EC-P02", text:"That promotion ended on " + isoToUK(p.validTo) + "." };
+    state.basket.promoCode = ""; save(); render(); return;
+  }
+  if(t0.net < p.minSpend){
+    shopBanner = { kind:"warn", code:"EC-P03", text:"Spend " + money(p.minSpend) + " to use this code. Your basket is " + money(t0.net) + "." };
+    state.basket.promoCode = ""; save(); render(); return;
+  }
+  state.basket.promoCode = p.code;
+  shopBanner = { kind:"ok", code:"EC-P04", text:p.label + " applied." };
+  save(); render();
+}
+
+/* ---------- checkout ---------- */
+function ensureCheckout(){
+  if(!state.checkout){
+    state.checkout = {
+      email:"", firstName:"", lastName:"", phone:"",
+      line1:"", line2:"", city:"", postcode:"", country:"GB",
+      deliveryOption:"", storeId:"",
+      billingSame:true, bLine1:"", bCity:"", bPostcode:"", bCountry:"GB",
+      cardName:"", cardNumber:"", expMonth:"", expYear:"", cvc:"",
+      verifyCode:"", terms:false, marketing:false,
+      stage:1, verifyRequired:false
+    };
+    save();
+  }
+  return state.checkout;
+}
+
+const CHECKOUT_LIVE = ["country","deliveryOption","billingSame"];
+
+function viewCheckout(){
+  const c = ensureCheckout();
+  const t0 = basketTotals(null);
+  if(!t0.lines.length){ go("#/shop/basket"); return; }
+
+  /* A delivery method chosen for one destination may not be offered for
+     another. Changing the country used to leave the old method selected and
+     its charge in the summary, so the total shown was for a method the
+     customer could not have. Drop it and say why. */
+  const opts = availableDelivery(c.country, t0.bulky);
+  if(c.deliveryOption && !opts.some(o => o.id === c.deliveryOption)){
+    c.deliveryOption = "";
+    c.storeId = "";
+    save();
+    shopBanner = { kind:"warn", code:"EC-D01",
+      text:"Delivery to " + ((countryByCode(c.country) || {}).name || "that destination") +
+           " uses different options, so please choose again." };
+  }
+  const t = basketTotals(c.deliveryOption);
+  const step = shopStep;
+
+  const e = k => shopErrors[k]
+    ? `<div class="err-msg" data-testid="error-${k}">${esc(shopErrors[k])}</div>` : "";
+  const cls = k => shopErrors[k] ? " err-field" : "";
+
+  const years = [];
+  for(let y = 2026; y <= 2034; y++) years.push(String(y));
+
+  $("#app").innerHTML = `
+  <div class="shopbody">
+    ${shopTop("")}
+    <div class="wrap" style="padding-bottom:3rem">
+      <h1 style="margin-top:1.4rem">Checkout</h1>
+      <div class="row small muted" style="margin-bottom:1rem" data-testid="checkout-steps">
+        <span class="badge ${step === 1 ? "badge-info" : "badge-neutral"}" data-testid="step-1">1. Contact and address</span>
+        <span class="badge ${step === 2 ? "badge-info" : "badge-neutral"}" data-testid="step-2">2. Delivery</span>
+        <span class="badge ${step === 3 ? "badge-info" : "badge-neutral"}" data-testid="step-3">3. Payment</span>
+      </div>
+
+      ${shopBanner ? `<div class="banner banner-${shopBanner.kind}" data-testid="checkout-banner"><b>${esc(shopBanner.code)}</b> ${esc(shopBanner.text)}</div>` : ""}
+
+      <div class="checkout-grid">
+        <div class="card card-pad">
+          ${step === 1 ? `
+            <h3>Contact</h3>
+            <div class="grid2">
+              <div class="field">
+                <label for="co-email">Email address *</label>
+                <input type="email" id="co-email" data-cfield="email" value="${esc(c.email)}" class="${cls("email")}" data-testid="input-email" autocomplete="off">
+                ${e("email")}
+                <div class="hint">Used for your order confirmation.</div>
+              </div>
+              <div class="field">
+                <label for="co-phone">Telephone *</label>
+                <input type="tel" id="co-phone" data-cfield="phone" value="${esc(c.phone)}" class="${cls("phone")}" data-testid="input-phone">
+                ${e("phone")}
+              </div>
+              <div class="field">
+                <label for="co-first">First name *</label>
+                <input type="text" id="co-first" data-cfield="firstName" value="${esc(c.firstName)}" class="${cls("firstName")}" data-testid="input-firstname">
+                ${e("firstName")}
+              </div>
+              <div class="field">
+                <label for="co-last">Last name *</label>
+                <input type="text" id="co-last" data-cfield="lastName" value="${esc(c.lastName)}" class="${cls("lastName")}" data-testid="input-lastname">
+                ${e("lastName")}
+              </div>
+            </div>
+
+            <h3 style="margin-top:1rem">Delivery address</h3>
+            <div class="field">
+              <label for="co-line1">Address line 1 *</label>
+              <input type="text" id="co-line1" data-cfield="line1" value="${esc(c.line1)}" class="${cls("line1")}" data-testid="input-line1">
+              ${e("line1")}
+            </div>
+            <div class="field">
+              <label for="co-line2">Address line 2</label>
+              <input type="text" id="co-line2" data-cfield="line2" value="${esc(c.line2)}" data-testid="input-line2">
+            </div>
+            <div class="grid3">
+              <div class="field">
+                <label for="co-city">Town or city *</label>
+                <input type="text" id="co-city" data-cfield="city" value="${esc(c.city)}" class="${cls("city")}" data-testid="input-city">
+                ${e("city")}
+              </div>
+              <div class="field">
+                <label for="co-postcode">Postcode *</label>
+                <input type="text" id="co-postcode" data-cfield="postcode" value="${esc(c.postcode)}" class="${cls("postcode")}" data-testid="input-postcode">
+                ${e("postcode")}
+              </div>
+              <div class="field">
+                <label for="co-country">Country *</label>
+                <select id="co-country" data-cfield="country" data-testid="select-country">
+                  ${COUNTRIES.map(x => `<option value="${x.code}"${c.country === x.code ? " selected" : ""}>${esc(x.name)}</option>`).join("")}
+                </select>
+                <div class="hint">Changing the country changes the delivery options offered.</div>
+              </div>
+            </div>
+            <div class="row-end" style="margin-top:.6rem">
+              <button class="btn" data-act="nav" data-href="#/shop/basket" data-testid="btn-back-basket">Back to basket</button>
+              <button class="btn btn-primary" data-act="co-next" data-testid="btn-continue">Continue to delivery</button>
+            </div>
+
+          ` : step === 2 ? `
+            <h3>Delivery method</h3>
+            ${!opts.length ? `<div class="banner banner-risk" data-testid="no-delivery"><b>EC-D01</b> No delivery option is available for this basket and destination.</div>` : ""}
+            <div class="opt-list">
+              ${opts.map(o => {
+                const free = (o.freeOver !== null && o.freeOver !== undefined && (t.net - t.discount) >= o.freeOver) || (t.freeship && o.id === "standard");
+                const eta = addWorkingDays(nowISO(), o.days).slice(0,10);
+                return `<label class="opt" data-testid="opt-${o.id}">
+                  <input type="radio" name="deliveryOption" value="${o.id}" data-cfield="deliveryOption"${c.deliveryOption === o.id ? " checked" : ""} data-testid="radio-${o.id}">
+                  <span>
+                    <span class="opt-name">${esc(o.name)}</span>
+                    <span class="opt-desc">${esc(o.desc)}. Estimated ${isoToUK(eta)}.</span>
+                  </span>
+                  <span class="opt-price">${free ? "Free" : money(o.price)}</span>
+                </label>`;
+              }).join("")}
+            </div>
+            ${e("deliveryOption")}
+            ${t.bulky ? `<div class="hint" style="margin-top:.5rem" data-testid="bulky-note"><b>EC-D02</b> Your basket contains a bulky item, so express delivery is not offered.</div>` : ""}
+
+            ${c.deliveryOption === "collect" ? `
+              <div class="field" style="margin-top:1rem">
+                <label for="co-store">Collection store *</label>
+                <select id="co-store" data-cfield="storeId" class="${cls("storeId")}" data-testid="select-store">
+                  <option value="">Choose a store</option>
+                  ${STORES.map(s => `<option value="${s.id}"${c.storeId === s.id ? " selected" : ""}>${esc(s.name)}</option>`).join("")}
+                </select>
+                ${e("storeId")}
+              </div>` : ""}
+
+            <div class="row-end" style="margin-top:.8rem">
+              <button class="btn" data-act="co-back" data-testid="btn-back">Back</button>
+              <button class="btn btn-primary" data-act="co-next" data-testid="btn-continue">Continue to payment</button>
+            </div>
+
+          ` : `
+            <h3>Payment</h3>
+            <div class="panel small" style="margin-bottom:.9rem" data-testid="payment-note">
+              This is a demonstration checkout. No payment is taken and no card details leave this page.
+              Use <span class="mono">4111 1111 1111 1111</span> to approve,
+              <span class="mono">4000 0000 0000 0002</span> to decline, or
+              <span class="mono">4000 0000 0000 3220</span> to trigger additional verification.
+            </div>
+            <div class="field">
+              <label for="co-cardname">Name on card *</label>
+              <input type="text" id="co-cardname" data-cfield="cardName" value="${esc(c.cardName)}" class="${cls("cardName")}" data-testid="input-cardname" autocomplete="off">
+              ${e("cardName")}
+            </div>
+            <div class="field">
+              <label for="co-cardnumber">Card number *</label>
+              <input type="text" id="co-cardnumber" data-cfield="cardNumber" value="${esc(c.cardNumber)}" class="${cls("cardNumber")}" data-testid="input-cardnumber" autocomplete="off" inputmode="numeric">
+              ${e("cardNumber")}
+            </div>
+            <div class="grid3">
+              <div class="field">
+                <label for="co-expmonth">Expiry month *</label>
+                <select id="co-expmonth" data-cfield="expMonth" class="${cls("expMonth")}" data-testid="select-expmonth">
+                  <option value="">Month</option>
+                  ${["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => `<option value="${m}"${c.expMonth === m ? " selected" : ""}>${m}</option>`).join("")}
+                </select>
+                ${e("expMonth")}
+              </div>
+              <div class="field">
+                <label for="co-expyear">Expiry year *</label>
+                <select id="co-expyear" data-cfield="expYear" class="${cls("expYear")}" data-testid="select-expyear">
+                  <option value="">Year</option>
+                  ${["2024","2025"].concat(years).map(y => `<option value="${y}"${c.expYear === y ? " selected" : ""}>${y}</option>`).join("")}
+                </select>
+                ${e("expYear")}
+              </div>
+              <div class="field">
+                <label for="co-cvc">Security code *</label>
+                <input type="text" id="co-cvc" data-cfield="cvc" value="${esc(c.cvc)}" class="${cls("cvc")}" data-testid="input-cvc" autocomplete="off" inputmode="numeric" maxlength="4">
+                ${e("cvc")}
+              </div>
+            </div>
+
+            <div class="check">
+              <input type="checkbox" id="co-billsame" data-cfield="billingSame"${c.billingSame ? " checked" : ""} data-testid="check-billingsame">
+              <label for="co-billsame" style="font-weight:600">Billing address is the same as the delivery address</label>
+            </div>
+            ${!c.billingSame ? `
+              <div class="panel" data-testid="billing-panel" style="margin-bottom:.9rem">
+                <div class="field">
+                  <label for="co-bline1">Billing address line 1 *</label>
+                  <input type="text" id="co-bline1" data-cfield="bLine1" value="${esc(c.bLine1)}" class="${cls("bLine1")}" data-testid="input-bline1">
+                  ${e("bLine1")}
+                </div>
+                <div class="grid3">
+                  <div class="field">
+                    <label for="co-bcity">Town or city *</label>
+                    <input type="text" id="co-bcity" data-cfield="bCity" value="${esc(c.bCity)}" class="${cls("bCity")}" data-testid="input-bcity">
+                    ${e("bCity")}
+                  </div>
+                  <div class="field">
+                    <label for="co-bpostcode">Postcode *</label>
+                    <input type="text" id="co-bpostcode" data-cfield="bPostcode" value="${esc(c.bPostcode)}" class="${cls("bPostcode")}" data-testid="input-bpostcode">
+                    ${e("bPostcode")}
+                  </div>
+                  <div class="field">
+                    <label for="co-bcountry">Country *</label>
+                    <select id="co-bcountry" data-cfield="bCountry" data-testid="select-bcountry">
+                      ${COUNTRIES.map(x => `<option value="${x.code}"${c.bCountry === x.code ? " selected" : ""}>${esc(x.name)}</option>`).join("")}
+                    </select>
+                  </div>
+                </div>
+              </div>` : ""}
+
+            ${c.verifyRequired ? `
+              <div class="panel" data-testid="verify-panel" style="margin-bottom:.9rem; border-color:var(--warn)">
+                <h4>Additional verification</h4>
+                <p class="small muted">Your bank has asked for a one time code. For this demonstration the code is <span class="mono">${VERIFY_CODE}</span>.</p>
+                <div class="field" style="margin-bottom:0">
+                  <label for="co-verify">One time code *</label>
+                  <input type="text" id="co-verify" data-cfield="verifyCode" value="${esc(c.verifyCode)}" class="${cls("verifyCode")}" data-testid="input-verify" inputmode="numeric" maxlength="6">
+                  ${e("verifyCode")}
+                </div>
+              </div>` : ""}
+
+            <div class="check">
+              <input type="checkbox" id="co-terms" data-cfield="terms"${c.terms ? " checked" : ""} data-testid="check-terms">
+              <label for="co-terms" style="font-weight:600">I accept the terms of sale and the returns policy *</label>
+            </div>
+            ${e("terms")}
+            <div class="check">
+              <input type="checkbox" id="co-marketing" data-cfield="marketing"${c.marketing ? " checked" : ""} data-testid="check-marketing">
+              <label for="co-marketing" style="font-weight:600">Send me news about new collections</label>
+            </div>
+
+            <div class="row-end" style="margin-top:.8rem">
+              <button class="btn" data-act="co-back" data-testid="btn-back">Back</button>
+              <button class="btn btn-accent btn-lg" data-act="place-order" data-testid="btn-place-order">Pay ${money(t.gross)}</button>
+            </div>
+          `}
+        </div>
+
+        <div>
+          <div class="card card-pad">
+            <h3>Order summary</h3>
+            <table class="tbl small" data-testid="summary-lines">
+              <tbody>
+                ${t.lines.map(l => `<tr>
+                  <td>${esc(l.product.name)}<div class="muted">${esc(variantLabel(l.product, l.variant))} x ${l.qty}</div></td>
+                  <td class="right nowrap">${money(l.lineNet)}</td>
+                </tr>`).join("")}
+              </tbody>
+            </table>
+            <hr class="divider">
+            <div class="totals">
+              <div class="t-lbl">Subtotal</div><div class="t-val" data-testid="sum-net">${money(t.net)}</div>
+              ${t.discount ? `<div class="t-lbl">Discount</div><div class="t-val" data-testid="sum-discount">-${money(t.discount)}</div>` : ""}
+              <div class="t-lbl">Delivery</div><div class="t-val" data-testid="sum-delivery">${c.deliveryOption ? money(t.delivery) : "Not chosen"}</div>
+              <div class="t-lbl">of which VAT</div><div class="t-val" data-testid="sum-vat">${money(t.vat)}</div>
+              <div class="t-lbl t-grand">Total</div><div class="t-val t-grand" data-testid="sum-gross">${money(t.gross)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- checkout validation ---------- */
+function validateCheckoutStep(step){
+  const c = state.checkout;
+  const t = basketTotals(c.deliveryOption);
+  shopErrors = {};
+
+  if(step === 1){
+    if(!c.email.trim()) shopErrors.email = "Enter your email address.";
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email.trim())) shopErrors.email = "Enter a valid email address.";
+    if(!c.phone.trim()) shopErrors.phone = "Enter a telephone number.";
+    if(!c.firstName.trim()) shopErrors.firstName = "Enter your first name.";
+    if(!c.lastName.trim()) shopErrors.lastName = "Enter your last name.";
+    if(!c.line1.trim()) shopErrors.line1 = "Enter the first line of the address.";
+    if(!c.city.trim()) shopErrors.city = "Enter a town or city.";
+    if(!c.postcode.trim()) shopErrors.postcode = "Enter a postcode.";
+  }
+
+  if(step === 2){
+    const opts = availableDelivery(c.country, t.bulky);
+    if(!c.deliveryOption) shopErrors.deliveryOption = "Choose a delivery method.";
+    else if(!opts.some(o => o.id === c.deliveryOption)){
+      shopBanner = { kind:"risk", code:"EC-D01", text:"That delivery method is not available for " + (countryByCode(c.country) || {}).name + "." };
+      shopErrors.deliveryOption = "Choose a delivery method.";
+    }
+    if(c.deliveryOption === "collect" && !c.storeId) shopErrors.storeId = "Choose a collection store.";
+  }
+
+  if(step === 3){
+    if(!c.cardName.trim()) shopErrors.cardName = "Enter the name on the card.";
+    if(!c.cardNumber.trim()) shopErrors.cardNumber = "Enter the card number.";
+    if(!c.expMonth) shopErrors.expMonth = "Choose a month.";
+    if(!c.expYear) shopErrors.expYear = "Choose a year.";
+    if(!/^\d{3,4}$/.test(String(c.cvc).trim())) shopErrors.cvc = "Enter the 3 or 4 digit security code.";
+    if(!c.billingSame){
+      if(!c.bLine1.trim()) shopErrors.bLine1 = "Enter the first line of the billing address.";
+      if(!c.bCity.trim()) shopErrors.bCity = "Enter a town or city.";
+      if(!c.bPostcode.trim()) shopErrors.bPostcode = "Enter a postcode.";
+    }
+    if(!c.terms) shopErrors.terms = "You must accept the terms of sale.";
+    if(c.verifyRequired && !String(c.verifyCode).trim()) shopErrors.verifyCode = "Enter the one time code.";
+  }
+  return Object.keys(shopErrors).length === 0;
+}
+
+/* ---------- payment authorisation ---------- */
+function authorise(){
+  const c = state.checkout;
+  const num = String(c.cardNumber).replace(/\s|-/g, "");
+
+  if(!luhnOk(num)) return { ok:false, code:"EC-C01", text:"That card number is not valid." };
+
+  const expIso = c.expYear + "-" + c.expMonth + "-01";
+  const endOfMonth = new Date(Date.UTC(Number(c.expYear), Number(c.expMonth), 0));
+  if(endOfMonth < NOW) return { ok:false, code:"EC-C02", text:"That card expired in " + c.expMonth + "-" + c.expYear + "." };
+
+  const behaviour = TEST_CARDS[num] || "approve";
+  if(behaviour === "decline") return { ok:false, code:"EC-C03", text:"The payment was declined by the card issuer." };
+
+  if(behaviour === "verify" && !c.verifyRequired){
+    return { ok:false, code:"EC-C04", text:"Your bank has asked for additional verification.", stepUp:true };
+  }
+  if(behaviour === "verify" && c.verifyRequired && String(c.verifyCode).trim() !== VERIFY_CODE){
+    return { ok:false, code:"EC-C05", text:"That verification code is not correct." };
+  }
+  return { ok:true, code:"EC-A01", last4:num.slice(-4),
+           authCode:"A" + pad((num.split("").reduce((a, ch) => a + Number(ch), 0) * 7) % 100000, 5) };
+}
+
+/* ---------- place order ---------- */
+function placeOrder(){
+  const c = state.checkout;
+  shopBanner = null;
+  if(!validateCheckoutStep(3)){ render(); return; }
+
+  const auth = authorise();
+  if(!auth.ok){
+    if(auth.stepUp){
+      c.verifyRequired = true;
+      shopBanner = { kind:"warn", code:auth.code, text:auth.text };
+    }else{
+      shopBanner = { kind:"risk", code:auth.code, text:auth.text };
+    }
+    save(); render(); return;
+  }
+
+  const t = basketTotals(c.deliveryOption);
+  state.seq.order += 1;
+  const ref = "ORD-2026-" + pad(state.seq.order, 5);
+  const cust = customerByEmail(c.email);
+  const opt = deliveryById(c.deliveryOption);
+
+  const order = {
+    ref: ref,
+    placedAt: nowISO(),
+    channel: "Web",
+    customer: {
+      id: cust ? cust.id : null,
+      name: (c.firstName + " " + c.lastName).trim(),
+      email: c.email.trim(),
+      phone: c.phone.trim(),
+      isNew: !cust,
+      creditLimit: cust ? cust.creditLimit : 0,
+      addrOfRecord: cust ? cust.addr : null
+    },
+    delivery: {
+      line1:c.line1.trim(), line2:c.line2.trim(), city:c.city.trim(),
+      postcode:c.postcode.trim().toUpperCase(), country:c.country,
+      option:c.deliveryOption, optionName:opt.name, storeId:c.storeId,
+      promisedBy: addWorkingDays(nowISO(), opt.days).slice(0,10)
+    },
+    billing: c.billingSame
+      ? { same:true, line1:c.line1.trim(), city:c.city.trim(), postcode:c.postcode.trim().toUpperCase(), country:c.country }
+      : { same:false, line1:c.bLine1.trim(), city:c.bCity.trim(), postcode:c.bPostcode.trim().toUpperCase(), country:c.bCountry },
+    lines: t.lines.map((l, i) => ({
+      no: i + 1, sku:l.sku, vid:l.vid, name:l.product.name,
+      variant: variantLabel(l.product, l.variant),
+      qty:l.qty, unit:l.unit, net:l.lineNet,
+      weight:l.product.weight, bulky:l.product.bulky, restricted:l.product.restricted,
+      alloc: l.variant.alloc
+    })),
+    totals: { net:t.net, discount:t.discount, delivery:t.delivery, vat:t.vat, gross:t.gross, weight:t.weight },
+    promo: t.promo ? t.promo.code : "",
+    payment: { last4:auth.last4, authCode:auth.authCode, status:"Authorised", takenAt:nowISO(), stepUp:!!c.verifyRequired },
+    erp: null,
+    deliveries: [],
+    audit: [{ at:nowISO(), who:"Storefront", what:"Order placed", code:"EC-A01" }]
+  };
+
+  runErpIntake(order);
+  state.orders.unshift(order);
+  state.basket = { lines:[], promo:"", promoCode:"" };
+  state.checkout = null;
+  shopStep = 1; shopErrors = {}; shopBanner = null;
+  save();
+  go("#/shop/confirm/" + ref);
+}
+
+/* ---------- confirmation ---------- */
+function viewConfirm(ref){
+  const o = state.orders.find(x => x.ref === ref);
+  if(!o){ go("#/shop"); return; }
+  const opt = deliveryById(o.delivery.option);
+  const store = STORES.find(s => s.id === o.delivery.storeId);
+
+  $("#app").innerHTML = `
+  <div class="shopbody">
+    ${shopTop("")}
+    <div class="wrap" style="padding-bottom:3rem">
+      <div class="confirm-hero">
+        <div class="confirm-tick" data-testid="confirm-tick">OK</div>
+        <h1>Thank you, ${esc(o.customer.name.split(" ")[0])}</h1>
+        <p class="muted">Your order is placed. A confirmation has been sent to ${esc(o.customer.email)}.</p>
+        <div class="ref-box">
+          <div class="small muted">Order reference</div>
+          <div class="ref" data-testid="order-reference">${esc(o.ref)}</div>
+        </div>
+        <div class="small muted">Quote this reference in the ERP sales order screen.</div>
+      </div>
+
+      <div class="checkout-grid">
+        <div class="card card-pad">
+          <h3>What you ordered</h3>
+          <table class="tbl" data-testid="confirm-lines">
+            <thead><tr><th>Item</th><th>Option</th><th class="right">Qty</th><th class="right">Total</th></tr></thead>
+            <tbody>
+              ${o.lines.map(l => `<tr data-testid="confirm-line-${l.sku}">
+                <td>${esc(l.name)}<div class="muted small mono">${esc(l.sku)}</div></td>
+                <td>${esc(l.variant)}</td>
+                <td class="right">${l.qty}</td>
+                <td class="right nowrap">${money(l.net)}</td>
+              </tr>`).join("")}
+            </tbody>
+          </table>
+          <hr class="divider">
+          <div class="totals">
+            <div class="t-lbl">Subtotal</div><div class="t-val">${money(o.totals.net)}</div>
+            ${o.totals.discount ? `<div class="t-lbl">Discount ${esc(o.promo)}</div><div class="t-val">-${money(o.totals.discount)}</div>` : ""}
+            <div class="t-lbl">Delivery</div><div class="t-val">${money(o.totals.delivery)}</div>
+            <div class="t-lbl">of which VAT</div><div class="t-val">${money(o.totals.vat)}</div>
+            <div class="t-lbl t-grand">Paid</div><div class="t-val t-grand" data-testid="confirm-total">${money(o.totals.gross)}</div>
+          </div>
+        </div>
+        <div>
+          <div class="card card-pad">
+            <h3>Delivery</h3>
+            <dl class="kv">
+              <dt>Method</dt><dd data-testid="confirm-method">${esc(o.delivery.optionName)}</dd>
+              ${store ? `<dt>Store</dt><dd data-testid="confirm-store">${esc(store.name)}</dd>` : ""}
+              <dt>Expected</dt><dd data-testid="confirm-promised">${isoToUK(o.delivery.promisedBy)}</dd>
+              <dt>Address</dt><dd>${esc(o.delivery.line1)}${o.delivery.line2 ? ", " + esc(o.delivery.line2) : ""}, ${esc(o.delivery.city)}, ${esc(o.delivery.postcode)}, ${esc((countryByCode(o.delivery.country) || {}).name)}</dd>
+            </dl>
+            <hr class="divider">
+            <h3>Payment</h3>
+            <dl class="kv">
+              <dt>Card</dt><dd class="mono" data-testid="confirm-card">ending ${esc(o.payment.last4)}</dd>
+              <dt>Authorisation</dt><dd class="mono" data-testid="confirm-auth">${esc(o.payment.authCode)}</dd>
+              <dt>Taken</dt><dd>${stamp(o.payment.takenAt)}</dd>
+            </dl>
+            <hr class="divider">
+            <div class="small muted">Order status in the ERP is
+              <b data-testid="confirm-erp-status">${esc(o.erp.status)}</b>${o.erp.holdCode ? ` (${esc(o.erp.holdCode)})` : ""}.</div>
+            <button class="btn btn-block" style="margin-top:.8rem" data-act="nav" data-href="#/shop" data-testid="btn-back-to-shop">Continue shopping</button>
+            <button class="btn btn-primary btn-block" style="margin-top:.4rem" data-act="open-erp-order" data-ref="${esc(o.ref)}" data-testid="btn-view-in-erp">View this order in the ERP</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+/* ============================================================
+   AXION ERP
+   Sales order grid, order detail, hold engine, release and
+   allocation. Decision codes ER-*.
+   ============================================================ */
+
+let erpFilters = { q:"", status:"All", hold:"All", country:"All", from:"", to:"", fromRaw:"", toRaw:"" };
+let erpTab = "header";
+let erpForm = { cancelReason:"", partial:false };
+let erpBanner = null;
+
+const norm = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+/* ---------- fraud scoring ---------- */
+function fraudScore(order){
+  let s = 0; const parts = [];
+  if(order.billing.country !== order.delivery.country){ s += 40; parts.push("Billing country differs from delivery country, 40"); }
+  if(order.totals.gross > 1000){ s += 25; parts.push("Order value above 1,000.00, 25"); }
+  if(order.delivery.option === "express" && order.customer.isNew){ s += 20; parts.push("Express delivery on a first order, 20"); }
+  const dom = String(order.customer.email).split("@")[1] || "";
+  if(WATCHLIST_DOMAINS.indexOf(dom.toLowerCase()) >= 0){ s += 15; parts.push("Email domain on the watchlist, 15"); }
+  if(order.lines.length > 5){ s += 10; parts.push("More than five order lines, 10"); }
+  return { score: Math.min(100, s), parts: parts };
+}
+
+/* ---------- hold engine, strict precedence ---------- */
+function assessOrder(order){
+  const f = fraudScore(order);
+  const shortLines = order.lines.filter(l => l.alloc < l.qty);
+  const addrOfRecord = order.customer.addrOfRecord;
+  const addrDiffers = !!addrOfRecord &&
+    (norm(addrOfRecord.postcode) !== norm(order.delivery.postcode) || norm(addrOfRecord.line1) !== norm(order.delivery.line1));
+  const restrictedLines = order.lines.filter(l => l.restricted);
+  const zone = zoneOf(order.delivery.country);
+
+  /* 1 */
+  if(restrictedLines.length && zone === "ROW")
+    return { code:"ER-H01", status:"Hold", holdName:"Export control",
+      reason:"Line " + restrictedLines[0].no + " contains a lithium ion battery and the destination is outside the United Kingdom and the European Union.",
+      fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
+  /* 2 */
+  if(f.score >= 70)
+    return { code:"ER-H02", status:"Hold", holdName:"Fraud review",
+      reason:"The fraud score is " + f.score + ", at or above the review threshold of 70.",
+      fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
+  /* 3 */
+  if(!order.customer.isNew && order.totals.gross > order.customer.creditLimit)
+    return { code:"ER-H03", status:"Hold", holdName:"Credit limit",
+      reason:"The order value of " + money(order.totals.gross) + " is above the account credit limit of " + money(order.customer.creditLimit) + ".",
+      fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
+  /* 4 */
+  if(addrDiffers)
+    return { code:"ER-H04", status:"Hold", holdName:"Address verification",
+      reason:"The delivery address does not match the address of record for account " + order.customer.id + ".",
+      fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
+  /* 5 */
+  if(shortLines.length)
+    return { code:"ER-H05", status:"Hold", holdName:"Stock shortage",
+      reason:"Line " + shortLines[0].no + " requires " + shortLines[0].qty + " units and " + shortLines[0].alloc + " are allocatable.",
+      fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
+  /* 6 */
+  if(order.customer.isNew && order.totals.gross > 500)
+    return { code:"ER-H06", status:"Hold", holdName:"New account review",
+      reason:"This is a first order for this email address and the value of " + money(order.totals.gross) + " is above the new account threshold of 500.00.",
+      fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
+  /* 7 */
+  return { code:"ER-P01", status:"Released", holdName:"",
+    reason:"No hold condition applies. Released for fulfilment automatically.",
+    fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
+}
+
+function runErpIntake(order){
+  const a = assessOrder(order);
+  order.erp = {
+    status: a.status,
+    holdCode: a.status === "Hold" ? a.code : "",
+    holdName: a.holdName,
+    reason: a.reason,
+    decisionCode: a.code,
+    fraudScore: a.fraud.score,
+    fraudParts: a.fraud.parts,
+    addrDiffers: a.addrDiffers,
+    shortLineNos: a.shortLines.map(l => l.no),
+    releasedBy: a.status === "Released" ? "System" : "",
+    releasedAt: a.status === "Released" ? nowISO() : "",
+    allocatedAt: "",
+    cancelReason: ""
+  };
+  order.audit.push({ at:nowISO(), who:"Axion ERP", what:a.status === "Hold" ? ("Held: " + a.holdName) : "Released automatically", code:a.code });
+  if(a.status === "Released") allocateOrder(order, false);
+}
+
+/* ---------- allocation creates a delivery note ---------- */
+function allocateOrder(order, partial){
+  const take = order.lines
+    .map(l => ({ l:l, qty: partial ? Math.min(l.qty, l.alloc) : l.qty }))
+    .filter(x => x.qty > 0);
+  if(!take.length) return null;
+
+  state.seq.delivery += 1;
+  const num = order.ref.split("-")[2];
+  const dnRef = "DN-" + num + "-" + (order.deliveries.length + 1);
+
+  const d = {
+    dn: dnRef,
+    createdAt: nowISO(),
+    status: "Allocated",
+    lines: take.map((x, i) => ({
+      no:i + 1, sku:x.l.sku, vid:x.l.vid, name:x.l.name, variant:x.l.variant,
+      qty:x.qty, ordered:x.l.qty, bin:binFor(x.l.sku, x.l.vid),
+      picked:null, short:false, damaged:false, weight:x.l.weight
+    })),
+    parcels: 0, carrierId:"", carrierName:"", tracking:"",
+    events: [{ at:nowISO(), code:"", what:"Allocated to the warehouse" }]
+  };
+  order.deliveries.push(d);
+  order.erp.allocatedAt = nowISO();
+  order.erp.status = partial ? "Part allocated" : "Allocated";
+  const back = order.lines.filter(l => l.alloc < l.qty);
+  if(partial && back.length){
+    order.erp.backOrder = back.map(l => ({ no:l.no, sku:l.sku, qty:l.qty - Math.max(0, l.alloc) }));
+  }
+  order.audit.push({ at:nowISO(), who:"Axion ERP", what:"Delivery note " + dnRef + " created", code: partial ? "ER-R02" : "ER-P01" });
+  return d;
+}
+
+/* ---------- grid ---------- */
+function erpRows(){
+  let rows = state.orders.slice();
+  const q = erpFilters.q.trim().toUpperCase();
+  if(q) rows = rows.filter(o =>
+    o.ref.toUpperCase().indexOf(q) >= 0 ||
+    o.customer.name.toUpperCase().indexOf(q) >= 0 ||
+    o.customer.email.toUpperCase().indexOf(q) >= 0 ||
+    (o.customer.id || "").toUpperCase().indexOf(q) >= 0);
+  if(erpFilters.status !== "All") rows = rows.filter(o => o.erp.status === erpFilters.status);
+  if(erpFilters.hold !== "All") rows = rows.filter(o => (o.erp.holdCode || "None") === erpFilters.hold);
+  if(erpFilters.country !== "All") rows = rows.filter(o => o.delivery.country === erpFilters.country);
+  if(erpFilters.from) rows = rows.filter(o => o.placedAt.slice(0,10) >= erpFilters.from);
+  if(erpFilters.to) rows = rows.filter(o => o.placedAt.slice(0,10) <= erpFilters.to);
+  return rows;
+}
+
+const ST_CLASS = { "Hold":"st-hold", "Released":"st-rel", "Allocated":"st-alloc", "Part allocated":"st-alloc", "Cancelled":"st-canc", "New":"st-new" };
+
+function viewErpOrders(){
+  const rows = erpRows();
+  const links = [
+    { id:"orders", label:"Sales orders", href:"#/erp/orders" },
+    { id:"holds", label:"Hold queue", href:"#/erp/holds" },
+    { id:"customers", label:"Customers", href:"#/erp/customers" }
+  ];
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("erp", links, "orders")}
+    <div class="erp-fnkeys">
+      <button class="fnkey" data-act="erp-clear" data-testid="fn-clear">F2 Clear filters</button>
+      <button class="fnkey" data-act="nav" data-href="#/erp/holds" data-testid="fn-holds">F4 Hold queue</button>
+      <button class="fnkey" data-act="nav" data-href="#/shop" data-testid="fn-shop">F6 Storefront</button>
+      <button class="fnkey" data-act="reset" data-testid="fn-reset">F9 Reset demo data</button>
+    </div>
+    <div class="wrap-wide" style="padding-top:.8rem; padding-bottom:2rem">
+      <h1>Sales order enquiry</h1>
+      ${erpBanner ? `<div class="banner banner-${erpBanner.kind}" data-testid="erp-banner"><b>${esc(erpBanner.code)}</b> ${esc(erpBanner.text)}</div>` : ""}
+
+      <div class="erp-filters">
+        <div class="field">
+          <label for="f-q">Search</label>
+          <input type="search" id="f-q" data-efield="q" value="${esc(erpFilters.q)}" data-testid="filter-search" placeholder="Order, name or email">
+        </div>
+        <div class="field">
+          <label for="f-status">Status</label>
+          <select id="f-status" data-efield="status" data-testid="filter-status">
+            ${["All","Hold","Released","Allocated","Part allocated","Cancelled"].map(s => `<option value="${s}"${erpFilters.status === s ? " selected" : ""}>${s}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-hold">Hold code</label>
+          <select id="f-hold" data-efield="hold" data-testid="filter-hold">
+            ${["All","None","ER-H01","ER-H02","ER-H03","ER-H04","ER-H05","ER-H06"].map(s => `<option value="${s}"${erpFilters.hold === s ? " selected" : ""}>${s}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-country">Destination</label>
+          <select id="f-country" data-efield="country" data-testid="filter-country">
+            <option value="All"${erpFilters.country === "All" ? " selected" : ""}>All</option>
+            ${COUNTRIES.map(c => `<option value="${c.code}"${erpFilters.country === c.code ? " selected" : ""}>${esc(c.name)}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-from">Placed from</label>
+          <input type="text" id="f-from" data-efield="from" value="${esc(erpFilters.fromRaw)}" data-testid="filter-from" placeholder="dd-mm-yyyy">
+        </div>
+        <div class="field">
+          <label for="f-to">Placed to</label>
+          <input type="text" id="f-to" data-efield="to" value="${esc(erpFilters.toRaw)}" data-testid="filter-to" placeholder="dd-mm-yyyy">
+        </div>
+      </div>
+
+      <div class="row small" style="margin-bottom:.5rem">
+        <span data-testid="erp-count"><b>${rows.length}</b> order${rows.length === 1 ? "" : "s"}</span>
+        <span class="muted">of ${state.orders.length} on file</span>
+      </div>
+
+      <div class="grid-wrap">
+        <table class="grid" data-testid="grid-orders">
+          <thead><tr>
+            <th>Order</th><th>Placed</th><th>Customer</th><th>Account</th><th>Dest</th>
+            <th class="right">Lines</th><th class="right">Net</th><th class="right">Gross</th>
+            <th>Status</th><th>Hold</th><th class="right">Fraud</th><th>Delivery note</th>
+          </tr></thead>
+          <tbody>
+            ${!rows.length ? `<tr><td colspan="12" class="center muted" data-testid="grid-empty">No orders match the filters. Place an order in the storefront first.</td></tr>` : ""}
+            ${rows.map(o => `<tr data-act="open-order" data-ref="${esc(o.ref)}" data-testid="row-${esc(o.ref)}">
+              <td class="mono"><b>${esc(o.ref)}</b></td>
+              <td>${isoToUK(o.placedAt.slice(0,10))}</td>
+              <td>${esc(o.customer.name)}</td>
+              <td class="mono">${esc(o.customer.id || "new")}</td>
+              <td>${esc(o.delivery.country)}</td>
+              <td class="right">${o.lines.length}</td>
+              <td class="right">${money0(o.totals.net)}</td>
+              <td class="right">${money0(o.totals.gross)}</td>
+              <td><span class="st ${ST_CLASS[o.erp.status] || "st-new"}">${esc(o.erp.status)}</span></td>
+              <td class="mono">${esc(o.erp.holdCode || "")}</td>
+              <td class="right">${o.erp.fraudScore}</td>
+              <td class="mono">${esc(o.deliveries.map(d => d.dn).join(" "))}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function viewErpHolds(){
+  const rows = state.orders.filter(o => o.erp.status === "Hold");
+  const links = [
+    { id:"orders", label:"Sales orders", href:"#/erp/orders" },
+    { id:"holds", label:"Hold queue", href:"#/erp/holds" },
+    { id:"customers", label:"Customers", href:"#/erp/customers" }
+  ];
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("erp", links, "holds")}
+    <div class="wrap-wide" style="padding-top:.9rem; padding-bottom:2rem">
+      <h1>Hold queue</h1>
+      <p class="muted small">Orders awaiting a release decision, oldest first.</p>
+      <div class="grid-wrap">
+        <table class="grid" data-testid="grid-holds">
+          <thead><tr><th>Order</th><th>Placed</th><th>Customer</th><th>Hold</th><th>Reason</th><th class="right">Gross</th></tr></thead>
+          <tbody>
+            ${!rows.length ? `<tr><td colspan="6" class="center muted" data-testid="holds-empty">Nothing is on hold.</td></tr>` : ""}
+            ${rows.slice().reverse().map(o => `<tr data-act="open-order" data-ref="${esc(o.ref)}" data-testid="hold-${esc(o.ref)}">
+              <td class="mono"><b>${esc(o.ref)}</b></td>
+              <td>${isoToUK(o.placedAt.slice(0,10))}</td>
+              <td>${esc(o.customer.name)}</td>
+              <td class="mono">${esc(o.erp.holdCode)} ${esc(o.erp.holdName)}</td>
+              <td style="white-space:normal">${esc(o.erp.reason)}</td>
+              <td class="right">${money0(o.totals.gross)}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function viewErpCustomers(){
+  const links = [
+    { id:"orders", label:"Sales orders", href:"#/erp/orders" },
+    { id:"holds", label:"Hold queue", href:"#/erp/holds" },
+    { id:"customers", label:"Customers", href:"#/erp/customers" }
+  ];
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("erp", links, "customers")}
+    <div class="wrap-wide" style="padding-top:.9rem; padding-bottom:2rem">
+      <h1>Customer accounts</h1>
+      <p class="muted small">An email address that does not appear here is treated as a new customer at order intake.</p>
+      <div class="grid-wrap">
+        <table class="grid" data-testid="grid-customers">
+          <thead><tr><th>Account</th><th>Name</th><th>Email</th><th class="right">Credit limit</th><th>Address of record</th><th>Customer since</th><th class="right">Orders</th></tr></thead>
+          <tbody>
+            ${CUSTOMERS.map(c => `<tr data-testid="cust-${c.id}">
+              <td class="mono"><b>${esc(c.id)}</b></td>
+              <td>${esc(c.name)}</td>
+              <td class="mono">${esc(c.email)}</td>
+              <td class="right">${money0(c.creditLimit)}</td>
+              <td>${esc(c.addr.line1)}, ${esc(c.addr.city)}, ${esc(c.addr.postcode)}, ${esc(c.addr.country)}</td>
+              <td>${isoToUK(c.since)}</td>
+              <td class="right">${state.orders.filter(o => o.customer.id === c.id).length}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- order detail ---------- */
+function viewErpOrder(ref){
+  const o = state.orders.find(x => x.ref === ref);
+  if(!o){ go("#/erp/orders"); return; }
+  const u = sessionUser();
+  const links = [
+    { id:"orders", label:"Sales orders", href:"#/erp/orders" },
+    { id:"holds", label:"Hold queue", href:"#/erp/holds" },
+    { id:"customers", label:"Customers", href:"#/erp/customers" }
+  ];
+  const canRelease = o.erp.status === "Hold";
+  const overLimit = u.releaseLimit !== null && o.totals.gross > u.releaseLimit;
+
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("erp", links, "orders")}
+    <div class="erp-fnkeys">
+      <button class="fnkey" data-act="nav" data-href="#/erp/orders" data-testid="fn-back">F3 Back to enquiry</button>
+      <button class="fnkey" data-act="erp-tab" data-tab="lines" data-testid="fn-lines">F5 Lines</button>
+      <button class="fnkey" data-act="erp-tab" data-tab="audit" data-testid="fn-audit">F8 Audit</button>
+    </div>
+    <div class="wrap-wide" style="padding-top:.9rem; padding-bottom:2.5rem">
+      <div class="row">
+        <h1 style="margin:0">Sales order <span class="mono" data-testid="order-ref">${esc(o.ref)}</span></h1>
+        <span class="st ${ST_CLASS[o.erp.status] || "st-new"}" data-testid="order-status">${esc(o.erp.status)}</span>
+        ${o.erp.holdCode ? `<span class="st st-hold mono" data-testid="order-holdcode">${esc(o.erp.holdCode)}</span>` : ""}
+        <div class="spacer"></div>
+        <button class="btn btn-sm" data-act="nav" data-href="#/erp/orders" data-testid="btn-back-grid">Back to enquiry</button>
+      </div>
+
+      ${erpBanner ? `<div class="banner banner-${erpBanner.kind}" style="margin-top:.7rem" data-testid="erp-banner"><b>${esc(erpBanner.code)}</b> ${esc(erpBanner.text)}</div>` : ""}
+
+      ${o.erp.status === "Hold" ? `
+        <div class="banner banner-risk" style="margin-top:.7rem" data-testid="hold-banner">
+          <b>${esc(o.erp.holdCode)} ${esc(o.erp.holdName)}</b> ${esc(o.erp.reason)}
+        </div>` : ""}
+
+      <div class="tabs" style="margin-top:.8rem">
+        ${[["header","Header"],["lines","Lines"],["holds","Hold and risk"],["fulfil","Fulfilment"],["audit","Audit"]]
+          .map(([id, label]) => `<button class="tab" data-act="erp-tab" data-tab="${id}" data-testid="tab-${id}"${erpTab === id ? ' aria-selected="true"' : ""}>${label}</button>`).join("")}
+      </div>
+
+      ${erpTab === "header" ? `
+        <div class="erp-cols">
+          <div class="panel">
+            <h3>Order</h3>
+            <dl class="kv">
+              <dt>Reference</dt><dd class="mono">${esc(o.ref)}</dd>
+              <dt>Placed</dt><dd data-testid="hdr-placed">${stamp(o.placedAt)}</dd>
+              <dt>Channel</dt><dd>${esc(o.channel)}</dd>
+              <dt>Promotion</dt><dd class="mono">${esc(o.promo || "none")}</dd>
+            </dl>
+          </div>
+          <div class="panel">
+            <h3>Customer</h3>
+            <dl class="kv">
+              <dt>Name</dt><dd data-testid="hdr-customer">${esc(o.customer.name)}</dd>
+              <dt>Email</dt><dd class="mono">${esc(o.customer.email)}</dd>
+              <dt>Account</dt><dd class="mono" data-testid="hdr-account">${esc(o.customer.id || "New customer")}</dd>
+              <dt>Credit limit</dt><dd data-testid="hdr-limit">${o.customer.isNew ? "Not established" : money(o.customer.creditLimit)}</dd>
+            </dl>
+          </div>
+          <div class="panel">
+            <h3>Delivery</h3>
+            <dl class="kv">
+              <dt>Method</dt><dd>${esc(o.delivery.optionName)}</dd>
+              <dt>Promised</dt><dd data-testid="hdr-promised">${isoToUK(o.delivery.promisedBy)}</dd>
+              <dt>Address</dt><dd style="white-space:normal">${esc(o.delivery.line1)}, ${esc(o.delivery.city)}, ${esc(o.delivery.postcode)}, ${esc((countryByCode(o.delivery.country) || {}).name)}</dd>
+              <dt>Billing</dt><dd style="white-space:normal">${o.billing.same ? "Same as delivery" : esc(o.billing.line1 + ", " + o.billing.city + ", " + o.billing.postcode + ", " + o.billing.country)}</dd>
+            </dl>
+          </div>
+          <div class="panel">
+            <h3>Value</h3>
+            <dl class="kv">
+              <dt>Net</dt><dd>${money(o.totals.net)}</dd>
+              <dt>Discount</dt><dd>${money(o.totals.discount)}</dd>
+              <dt>Delivery</dt><dd>${money(o.totals.delivery)}</dd>
+              <dt>VAT</dt><dd>${money(o.totals.vat)}</dd>
+              <dt>Gross</dt><dd data-testid="hdr-gross"><b>${money(o.totals.gross)}</b></dd>
+              <dt>Payment</dt><dd class="mono">${esc(o.payment.authCode)} card ending ${esc(o.payment.last4)}</dd>
+            </dl>
+          </div>
+        </div>
+
+      ` : erpTab === "lines" ? `
+        <div class="grid-wrap">
+          <table class="grid" data-testid="grid-lines">
+            <thead><tr><th>Line</th><th>SKU</th><th>Variant</th><th>Description</th><th class="right">Qty</th><th class="right">Allocatable</th><th class="right">Unit</th><th class="right">Net</th><th class="right">Weight</th><th>Flags</th></tr></thead>
+            <tbody>
+              ${o.lines.map(l => `<tr data-testid="line-${l.no}">
+                <td class="right">${l.no}</td>
+                <td class="mono">${esc(l.sku)}</td>
+                <td class="mono">${esc(l.vid)}</td>
+                <td style="white-space:normal">${esc(l.name)}<div class="muted">${esc(l.variant)}</div></td>
+                <td class="right">${l.qty}</td>
+                <td class="right"${l.alloc < l.qty ? ' style="color:var(--risk); font-weight:800"' : ""} data-testid="alloc-${l.no}">${l.alloc}</td>
+                <td class="right">${money0(l.unit)}</td>
+                <td class="right">${money0(l.net)}</td>
+                <td class="right">${(l.weight * l.qty).toFixed(1)}</td>
+                <td>${l.bulky ? '<span class="st st-new">BULKY</span> ' : ""}${l.restricted ? '<span class="st st-hold">RESTRICTED</span>' : ""}</td>
+              </tr>`).join("")}
+            </tbody>
+            <tfoot><tr>
+              <td colspan="7" class="right">Order net</td>
+              <td class="right">${money0(o.totals.net)}</td>
+              <td class="right">${o.totals.weight.toFixed(1)}</td><td></td>
+            </tr></tfoot>
+          </table>
+        </div>
+
+      ` : erpTab === "holds" ? `
+        <div class="erp-cols">
+          <div class="panel">
+            <h3>Decision</h3>
+            <dl class="kv">
+              <dt>Code</dt><dd class="mono" data-testid="dec-code"><b>${esc(o.erp.decisionCode)}</b></dd>
+              <dt>Outcome</dt><dd data-testid="dec-outcome">${esc(o.erp.status)}</dd>
+              <dt>Reason</dt><dd style="white-space:normal" data-testid="dec-reason">${esc(o.erp.reason)}</dd>
+              ${o.erp.releasedBy ? `<dt>Released by</dt><dd data-testid="dec-releasedby">${esc(o.erp.releasedBy)}</dd>` : ""}
+              ${o.erp.releasedAt ? `<dt>Released at</dt><dd>${stamp(o.erp.releasedAt)}</dd>` : ""}
+              ${o.erp.cancelReason ? `<dt>Cancellation</dt><dd style="white-space:normal">${esc(o.erp.cancelReason)}</dd>` : ""}
+            </dl>
+          </div>
+          <div class="panel">
+            <h3>Fraud score ${o.erp.fraudScore}</h3>
+            ${!o.erp.fraudParts.length ? `<div class="small muted">No risk factors were scored.</div>` : `
+              <ul class="small" style="margin:0; padding-left:1.1rem">
+                ${o.erp.fraudParts.map(p => `<li>${esc(p)}</li>`).join("")}
+              </ul>`}
+            <div class="small muted" style="margin-top:.5rem">Review threshold is 70.</div>
+          </div>
+          <div class="panel">
+            <h3>Checks</h3>
+            <dl class="kv">
+              <dt>Address of record</dt><dd data-testid="chk-addr">${o.customer.addrOfRecord ? (o.erp.addrDiffers ? "Differs" : "Matches") : "No account on file"}</dd>
+              <dt>Stock</dt><dd data-testid="chk-stock">${o.erp.shortLineNos.length ? ("Short on line " + o.erp.shortLineNos.join(", ")) : "All lines allocatable"}</dd>
+              <dt>Export control</dt><dd data-testid="chk-export">${o.lines.some(l => l.restricted) ? ("Restricted item to zone " + zoneOf(o.delivery.country)) : "No restricted items"}</dd>
+            </dl>
+          </div>
+        </div>
+
+        ${canRelease ? `
+          <div class="card card-pad" style="margin-top:1rem" data-testid="release-panel">
+            <h3>Release decision</h3>
+            ${overLimit ? `<div class="banner banner-warn" data-testid="limit-warning"><b>ER-R04</b> This order is ${money(o.totals.gross)}, above your release limit of ${money(u.releaseLimit)}. A Credit Control user must release it.</div>` : ""}
+            ${o.erp.shortLineNos.length ? `
+              <div class="check">
+                <input type="checkbox" id="erp-partial" data-efield="partial"${erpForm.partial ? " checked" : ""} data-testid="check-partial">
+                <label for="erp-partial" style="font-weight:600">Release only the lines that can be allocated now and back order the remainder</label>
+              </div>` : ""}
+            <div class="field">
+              <label for="erp-reason">Cancellation reason, at least 20 characters</label>
+              <textarea id="erp-reason" data-efield="cancelReason" data-testid="input-cancel-reason" placeholder="Required only if you cancel the order">${esc(erpForm.cancelReason)}</textarea>
+              <div class="hint"><span data-testid="reason-count">${erpForm.cancelReason.trim().length}</span> of 20 characters</div>
+            </div>
+            <div class="row">
+              <button class="btn btn-ok" data-act="erp-release" data-ref="${esc(o.ref)}" data-testid="btn-release"${overLimit ? " disabled" : ""}>Release for fulfilment</button>
+              <button class="btn btn-danger" data-act="erp-cancel" data-ref="${esc(o.ref)}" data-testid="btn-cancel-order">Cancel order</button>
+            </div>
+          </div>` : ""}
+
+      ` : erpTab === "fulfil" ? `
+        ${!o.deliveries.length ? `<div class="panel" data-testid="no-deliveries">No delivery note has been created. The order must be released first.</div>` : `
+          <div class="grid-wrap">
+            <table class="grid" data-testid="grid-deliveries">
+              <thead><tr><th>Delivery note</th><th>Created</th><th>Status</th><th class="right">Lines</th><th class="right">Parcels</th><th>Carrier</th><th>Tracking</th></tr></thead>
+              <tbody>
+                ${o.deliveries.map(d => `<tr data-act="open-dn" data-dn="${esc(d.dn)}" data-testid="dn-${esc(d.dn)}">
+                  <td class="mono"><b>${esc(d.dn)}</b></td>
+                  <td>${isoToUK(d.createdAt.slice(0,10))}</td>
+                  <td>${esc(d.status)}</td>
+                  <td class="right">${d.lines.length}</td>
+                  <td class="right">${d.parcels || ""}</td>
+                  <td>${esc(d.carrierName)}</td>
+                  <td class="mono">${esc(d.tracking)}</td>
+                </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>`}
+        ${o.erp.backOrder && o.erp.backOrder.length ? `
+          <div class="panel" style="margin-top:.8rem" data-testid="backorder-panel">
+            <h3>Back ordered</h3>
+            <ul class="small" style="margin:0; padding-left:1.1rem">
+              ${o.erp.backOrder.map(b => `<li>Line ${b.no}, ${esc(b.sku)}, ${b.qty} unit${b.qty === 1 ? "" : "s"} awaiting stock</li>`).join("")}
+            </ul>
+          </div>` : ""}
+
+      ` : `
+        <div class="grid-wrap">
+          <table class="grid" data-testid="grid-audit">
+            <thead><tr><th>When</th><th>System or user</th><th>Event</th><th>Code</th></tr></thead>
+            <tbody>
+              ${o.audit.map((a, i) => `<tr data-testid="audit-${i}">
+                <td>${stamp(a.at)}</td><td>${esc(a.who)}</td>
+                <td style="white-space:normal">${esc(a.what)}</td>
+                <td class="mono">${esc(a.code || "")}</td>
+              </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      `}
+    </div>
+  </div>`;
+}
+
+/* ---------- release and cancel ---------- */
+function erpRelease(ref){
+  const o = state.orders.find(x => x.ref === ref);
+  const u = sessionUser();
+  if(!o || o.erp.status !== "Hold") return;
+
+  if(u.releaseLimit !== null && o.totals.gross > u.releaseLimit){
+    erpBanner = { kind:"risk", code:"ER-R04",
+      text:"Release refused. " + money(o.totals.gross) + " is above your release limit of " + money(u.releaseLimit) + "." };
+    o.audit.push({ at:nowISO(), who:u.name, what:"Release refused, above role limit", code:"ER-R04" });
+    save(); render(); return;
+  }
+
+  const partial = !!erpForm.partial && o.erp.shortLineNos.length > 0;
+  o.erp.status = "Released";
+  o.erp.holdCode = "";
+  o.erp.releasedBy = u.name;
+  o.erp.releasedAt = nowISO();
+  o.erp.decisionCode = partial ? "ER-R02" : "ER-R01";
+  o.erp.reason = partial
+    ? "Released with partial allocation by " + u.name + ". Lines without stock are back ordered."
+    : "Released by " + u.name + " after review of " + (o.erp.holdName || "the hold") + ".";
+  o.audit.push({ at:nowISO(), who:u.name, what: partial ? "Released with partial allocation" : "Released for fulfilment", code:o.erp.decisionCode });
+
+  allocateOrder(o, partial);
+  erpForm = { cancelReason:"", partial:false };
+  erpBanner = { kind:"ok", code:o.erp.decisionCode, text:"Order " + o.ref + " released. Delivery note " + o.deliveries[o.deliveries.length - 1].dn + " created." };
+  save(); render();
+}
+
+function erpCancel(ref){
+  const o = state.orders.find(x => x.ref === ref);
+  const u = sessionUser();
+  if(!o) return;
+  const reason = String(erpForm.cancelReason || "").trim();
+  if(reason.length < 20){
+    erpBanner = { kind:"risk", code:"ER-R03", text:"A cancellation reason of at least 20 characters is required. You entered " + reason.length + "." };
+    save(); render(); return;
+  }
+  o.erp.status = "Cancelled";
+  o.erp.holdCode = "";
+  o.erp.decisionCode = "ER-R03";
+  o.erp.cancelReason = reason;
+  o.erp.reason = "Cancelled by " + u.name + ".";
+  o.audit.push({ at:nowISO(), who:u.name, what:"Order cancelled. " + reason, code:"ER-R03" });
+  erpForm = { cancelReason:"", partial:false };
+  erpBanner = { kind:"warn", code:"ER-R03", text:"Order " + o.ref + " cancelled." };
+  save(); render();
+}
+/* ============================================================
+   VECTOR WMS
+   Work queue, pick, pack, despatch, carrier allocation, tracking.
+   Decision codes LG-*.
+   ============================================================ */
+
+let wmsForm = { picks:{}, damageLine:"", damageNote:"", trackQuery:"", failReason:"" };
+let wmsBanner = null;
+
+const WMS_LINKS = [
+  { id:"work", label:"Work queue", href:"#/wms/work" },
+  { id:"track", label:"Tracking", href:"#/wms/track" },
+  { id:"returns", label:"Returns", href:"#/wms/returns" }
+];
+
+function allDeliveries(){
+  const out = [];
+  state.orders.forEach(o => o.deliveries.forEach(d => out.push({ o:o, d:d })));
+  return out;
+}
+function findDelivery(dn){
+  return allDeliveries().find(x => x.d.dn === dn) || null;
+}
+function isSupervisor(){
+  const u = sessionUser();
+  return u && (u.role === "Supervisor" || u.role === "Administrator");
+}
+
+function carrierFor(order){
+  const opt = order.delivery.option;
+  const z = zoneOf(order.delivery.country);
+  if(opt === "collect") return carrierById("STC");
+  if(z !== "UK") return carrierById("GLK");
+  if(opt === "express") return carrierById("NLX");
+  return carrierById("BRK");
+}
+function trackingFor(carrier, dn){
+  const n = dn.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return carrier.id + pad((n * 8081) % 1000000000, 9);
+}
+function parcelsFor(d){
+  const w = d.lines.reduce((a, l) => a + l.weight * (l.picked === null ? l.qty : l.picked), 0);
+  return Math.max(1, Math.ceil(w / 15));
+}
+
+function dEvent(d, code, what){
+  d.events.push({ at:nowISO(), code:code, what:what });
+}
+
+/* ---------- work queue ---------- */
+function viewWmsWork(){
+  const all = allDeliveries();
+  const groups = [
+    { key:"Allocated", label:"To pick", act:"Pick", route:"pick" },
+    { key:"Picked",    label:"To pack", act:"Pack", route:"pack" },
+    { key:"Packed",    label:"To despatch", act:"Despatch", route:"despatch" },
+    { key:"Despatched",label:"In transit", act:"View", route:"delivery" },
+    { key:"Delivered", label:"Delivered", act:"View", route:"delivery" },
+    { key:"Failed",    label:"Delivery failed", act:"View", route:"delivery" },
+    { key:"Cancelled", label:"Cancelled", act:"View", route:"delivery" }
+  ];
+
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("wms", WMS_LINKS, "work")}
+    <div class="wrap-wide" style="padding-top:.9rem; padding-bottom:2.5rem">
+      <h1>Warehouse work queue</h1>
+      ${wmsBanner ? `<div class="banner banner-${wmsBanner.kind}" data-testid="wms-banner"><b>${esc(wmsBanner.code)}</b> ${esc(wmsBanner.text)}</div>` : ""}
+      ${!all.length ? `<div class="panel" data-testid="work-empty">Nothing has been allocated to the warehouse. Place an order in the storefront and release it in the ERP.</div>` : ""}
+
+      ${groups.map(g => {
+        const rows = all.filter(x => x.d.status === g.key);
+        if(!rows.length) return "";
+        return `
+        <div class="sect">
+          <div class="sect-head"><h3 style="margin:0">${g.label}</h3><span class="badge badge-neutral" data-testid="count-${g.route}-${g.key}">${rows.length}</span></div>
+          <div class="grid-wrap">
+            <table class="grid" data-testid="grid-${g.key.toLowerCase()}">
+              <thead><tr><th>Delivery note</th><th>Order</th><th>Customer</th><th>Destination</th><th>Service</th><th class="right">Lines</th><th class="right">Weight</th><th>Tracking</th><th>Action</th></tr></thead>
+              <tbody>
+                ${rows.map(x => `<tr data-testid="row-${esc(x.d.dn)}">
+                  <td class="mono"><b>${esc(x.d.dn)}</b></td>
+                  <td class="mono">${esc(x.o.ref)}</td>
+                  <td>${esc(x.o.customer.name)}</td>
+                  <td>${esc(x.o.delivery.city)}, ${esc(x.o.delivery.country)}</td>
+                  <td>${esc(x.o.delivery.optionName)}</td>
+                  <td class="right">${x.d.lines.length}</td>
+                  <td class="right">${x.d.lines.reduce((a, l) => a + l.weight * l.qty, 0).toFixed(1)}</td>
+                  <td class="mono">${esc(x.d.tracking)}</td>
+                  <td><button class="btn btn-sm btn-primary" data-act="nav" data-href="#/wms/${g.route}/${esc(x.d.dn)}" data-testid="btn-${g.route}-${esc(x.d.dn)}">${g.act}</button></td>
+                </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`;
+}
+
+/* ---------- pick ---------- */
+function viewWmsPick(dn){
+  const x = findDelivery(dn);
+  if(!x){ go("#/wms/work"); return; }
+  const { o, d } = x;
+  if(d.status !== "Allocated"){ go("#/wms/delivery/" + dn); return; }
+
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("wms", WMS_LINKS, "work")}
+    <div class="wrap" style="padding-top:.9rem; padding-bottom:2.5rem">
+      <div class="row">
+        <h1 style="margin:0">Pick list <span class="mono" data-testid="pick-dn">${esc(d.dn)}</span></h1>
+        <span class="badge badge-info">${esc(o.ref)}</span>
+        <div class="spacer"></div>
+        <button class="btn btn-sm" data-act="nav" data-href="#/wms/work" data-testid="btn-back-work">Back to queue</button>
+      </div>
+      <p class="muted small">Enter the quantity actually picked from each bin. A quantity below the requirement records a short pick.</p>
+      ${wmsBanner ? `<div class="banner banner-${wmsBanner.kind}" data-testid="wms-banner"><b>${esc(wmsBanner.code)}</b> ${esc(wmsBanner.text)}</div>` : ""}
+
+      ${d.lines.map(l => {
+        const val = wmsForm.picks[l.no] === undefined ? l.qty : wmsForm.picks[l.no];
+        const short = Number(val) < l.qty;
+        return `
+        <div class="pick-row ${short ? "short" : ""}" data-testid="pick-row-${l.no}">
+          <span class="bin" data-testid="bin-${l.no}">${esc(l.bin)}</span>
+          <div>
+            <div style="font-weight:700">${esc(l.name)}</div>
+            <div class="small muted mono">${esc(l.sku)} ${esc(l.vid)}</div>
+            <div class="small muted">${esc(l.variant)}</div>
+          </div>
+          <div class="right small"><div class="muted">Required</div><b data-testid="req-${l.no}">${l.qty}</b></div>
+          <div style="width:120px">
+            <label class="lbl" for="pick-${l.no}">Picked</label>
+            <input type="number" id="pick-${l.no}" min="0" max="${l.qty}" value="${val}" data-wfield="pick" data-line="${l.no}" data-testid="input-pick-${l.no}">
+          </div>
+        </div>`;
+      }).join("")}
+
+      <div class="row-end" style="margin-top:1rem">
+        ${isSupervisor() ? `<button class="btn btn-danger" data-act="wms-cancel-pick" data-dn="${esc(d.dn)}" data-testid="btn-cancel-pick">Cancel pick and return stock</button>` : ""}
+        <button class="btn btn-ok btn-lg" data-act="wms-confirm-pick" data-dn="${esc(d.dn)}" data-testid="btn-confirm-pick">Confirm pick</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function wmsConfirmPick(dn){
+  const x = findDelivery(dn);
+  if(!x) return;
+  const { o, d } = x;
+  if(d.status !== "Allocated") return;          /* already picked */
+  let short = false, any = false;
+  d.lines.forEach(l => {
+    const raw = wmsForm.picks[l.no];
+    const v = raw === undefined ? l.qty : Math.max(0, Math.min(l.qty, Number(raw) || 0));
+    l.picked = v;
+    if(v < l.qty) short = true;
+    if(v > 0) any = true;
+  });
+  if(!any){
+    wmsBanner = { kind:"risk", code:"LG-P02", text:"Nothing was picked. Record at least one unit or cancel the pick." };
+    save(); render(); return;
+  }
+  d.status = "Picked";
+  const code = short ? "LG-P02" : "LG-P01";
+  dEvent(d, code, short ? "Short pick recorded, remainder back ordered" : "Pick confirmed in full");
+  o.audit.push({ at:nowISO(), who:sessionUser().name, what:"Pick " + (short ? "short" : "complete") + " on " + d.dn, code:code });
+  if(short){
+    o.erp.backOrder = (o.erp.backOrder || []).concat(
+      d.lines.filter(l => l.picked < l.qty).map(l => ({ no:l.no, sku:l.sku, qty:l.qty - l.picked })));
+  }
+  wmsForm.picks = {};
+  wmsBanner = { kind: short ? "warn" : "ok", code:code,
+    text: short ? "Short pick recorded on " + d.dn + ". The remainder is back ordered." : "Pick confirmed on " + d.dn + "." };
+  save(); go("#/wms/pack/" + dn);
+}
+
+function wmsCancelPick(dn){
+  const x = findDelivery(dn);
+  if(!x) return;
+  if(x.d.status !== "Allocated") return;
+  if(!isSupervisor()){
+    wmsBanner = { kind:"risk", code:"LG-P03", text:"Only a supervisor may cancel a pick." };
+    save(); render(); return;
+  }
+  const { o, d } = x;
+  d.status = "Cancelled";
+  dEvent(d, "LG-P03", "Pick cancelled, stock returned to the bin");
+  o.audit.push({ at:nowISO(), who:sessionUser().name, what:"Pick cancelled on " + d.dn, code:"LG-P03" });
+  wmsBanner = { kind:"warn", code:"LG-P03", text:"Pick cancelled on " + d.dn + "." };
+  save(); go("#/wms/work");
+}
+
+/* ---------- pack ---------- */
+function viewWmsPack(dn){
+  const x = findDelivery(dn);
+  if(!x){ go("#/wms/work"); return; }
+  const { o, d } = x;
+  if(d.status !== "Picked"){ go("#/wms/delivery/" + dn); return; }
+  const parcels = parcelsFor(d);
+  const live = d.lines.filter(l => !l.damaged && l.picked > 0);
+
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("wms", WMS_LINKS, "work")}
+    <div class="wrap" style="padding-top:.9rem; padding-bottom:2.5rem">
+      <div class="row">
+        <h1 style="margin:0">Pack <span class="mono" data-testid="pack-dn">${esc(d.dn)}</span></h1>
+        <span class="badge badge-info">${esc(o.ref)}</span>
+        <div class="spacer"></div>
+        <button class="btn btn-sm" data-act="nav" data-href="#/wms/work" data-testid="btn-back-work">Back to queue</button>
+      </div>
+      ${wmsBanner ? `<div class="banner banner-${wmsBanner.kind}" data-testid="wms-banner"><b>${esc(wmsBanner.code)}</b> ${esc(wmsBanner.text)}</div>` : ""}
+
+      <div class="grid-wrap" style="margin-bottom:1rem">
+        <table class="grid" data-testid="grid-pack">
+          <thead><tr><th>Line</th><th>SKU</th><th>Description</th><th class="right">Picked</th><th class="right">Weight</th><th>State</th></tr></thead>
+          <tbody>
+            ${d.lines.map(l => `<tr data-testid="pack-line-${l.no}">
+              <td class="right">${l.no}</td>
+              <td class="mono">${esc(l.sku)}</td>
+              <td style="white-space:normal">${esc(l.name)}<div class="muted">${esc(l.variant)}</div></td>
+              <td class="right">${l.picked}</td>
+              <td class="right">${(l.weight * l.picked).toFixed(1)}</td>
+              <td>${l.damaged ? '<span class="st st-hold">WITHDRAWN</span>' : '<span class="st st-rel">OK</span>'}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel" style="margin-bottom:1rem">
+        <dl class="kv">
+          <dt>Total weight</dt><dd data-testid="pack-weight">${d.lines.reduce((a, l) => a + (l.damaged ? 0 : l.weight * l.picked), 0).toFixed(1)} kg</dd>
+          <dt>Parcels</dt><dd data-testid="pack-parcels">${parcels}</dd>
+          <dt>Rule</dt><dd class="small muted">One parcel for every 15 kg or part thereof.</dd>
+        </dl>
+      </div>
+
+      ${isSupervisor() ? `
+        <div class="card card-pad" data-testid="damage-panel" style="margin-bottom:1rem">
+          <h3>Record damage</h3>
+          <div class="grid2">
+            <div class="field">
+              <label for="dmg-line">Line</label>
+              <select id="dmg-line" data-wfield="damageLine" data-testid="select-damage-line">
+                <option value="">No damage to record</option>
+                ${live.map(l => `<option value="${l.no}"${wmsForm.damageLine === String(l.no) ? " selected" : ""}>Line ${l.no}, ${esc(l.name)}</option>`).join("")}
+              </select>
+            </div>
+            <div class="field">
+              <label for="dmg-note">Note, at least 15 characters</label>
+              <input type="text" id="dmg-note" value="${esc(wmsForm.damageNote)}" data-wfield="damageNote" data-testid="input-damage-note">
+            </div>
+          </div>
+          <button class="btn btn-danger" data-act="wms-damage" data-dn="${esc(d.dn)}" data-testid="btn-record-damage">Withdraw line as damaged</button>
+        </div>` : ""}
+
+      <div class="row-end">
+        <button class="btn btn-ok btn-lg" data-act="wms-pack" data-dn="${esc(d.dn)}" data-testid="btn-confirm-pack">Confirm pack</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function wmsDamage(dn){
+  const x = findDelivery(dn);
+  if(!x) return;
+  const { o, d } = x;
+  if(d.status !== "Picked") return;
+  const no = Number(wmsForm.damageLine);
+  const note = String(wmsForm.damageNote || "").trim();
+  if(!no){
+    wmsBanner = { kind:"risk", code:"LG-K03", text:"Choose the line that is damaged." };
+    save(); render(); return;
+  }
+  if(note.length < 15){
+    wmsBanner = { kind:"risk", code:"LG-K03", text:"A damage note of at least 15 characters is required. You entered " + note.length + "." };
+    save(); render(); return;
+  }
+  const line = d.lines.find(l => l.no === no);
+  if(!line) return;
+  line.damaged = true;
+  dEvent(d, "LG-K03", "Line " + no + " withdrawn as damaged. " + note);
+  o.audit.push({ at:nowISO(), who:sessionUser().name, what:"Damage recorded on " + d.dn + " line " + no + ". " + note, code:"LG-K03" });
+  wmsForm.damageLine = ""; wmsForm.damageNote = "";
+  wmsBanner = { kind:"warn", code:"LG-K03", text:"Line " + no + " withdrawn as damaged." };
+  save(); render();
+}
+
+function wmsPack(dn){
+  const x = findDelivery(dn);
+  if(!x) return;
+  const { o, d } = x;
+  if(d.status !== "Picked") return;              /* already packed */
+  const live = d.lines.filter(l => !l.damaged && l.picked > 0);
+  if(!live.length){
+    wmsBanner = { kind:"risk", code:"LG-K03", text:"Every line has been withdrawn. Cancel the delivery instead of packing it." };
+    save(); render(); return;
+  }
+  d.parcels = parcelsFor(d);
+  d.status = "Packed";
+  const code = d.parcels > 1 ? "LG-K02" : "LG-K01";
+  dEvent(d, code, "Packed into " + d.parcels + " parcel" + (d.parcels === 1 ? "" : "s"));
+  o.audit.push({ at:nowISO(), who:sessionUser().name, what:"Packed " + d.dn + " into " + d.parcels + " parcel" + (d.parcels === 1 ? "" : "s"), code:code });
+  wmsBanner = { kind:"ok", code:code, text:d.dn + " packed into " + d.parcels + " parcel" + (d.parcels === 1 ? "" : "s") + "." };
+  save(); go("#/wms/despatch/" + dn);
+}
+
+/* ---------- despatch ---------- */
+function viewWmsDespatch(dn){
+  const x = findDelivery(dn);
+  if(!x){ go("#/wms/work"); return; }
+  const { o, d } = x;
+  if(d.status !== "Packed"){ go("#/wms/delivery/" + dn); return; }
+  const carrier = carrierFor(o);
+
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("wms", WMS_LINKS, "work")}
+    <div class="wrap" style="padding-top:.9rem; padding-bottom:2.5rem">
+      <div class="row">
+        <h1 style="margin:0">Despatch <span class="mono" data-testid="desp-dn">${esc(d.dn)}</span></h1>
+        <span class="badge badge-info">${esc(o.ref)}</span>
+        <div class="spacer"></div>
+        <button class="btn btn-sm" data-act="nav" data-href="#/wms/work" data-testid="btn-back-work">Back to queue</button>
+      </div>
+      ${wmsBanner ? `<div class="banner banner-${wmsBanner.kind}" data-testid="wms-banner"><b>${esc(wmsBanner.code)}</b> ${esc(wmsBanner.text)}</div>` : ""}
+
+      <div class="erp-cols">
+        <div class="panel">
+          <h3>Carrier allocation</h3>
+          <dl class="kv">
+            <dt>Service chosen</dt><dd>${esc(o.delivery.optionName)}</dd>
+            <dt>Destination zone</dt><dd data-testid="desp-zone">${esc(zoneOf(o.delivery.country))}</dd>
+            <dt>Carrier</dt><dd data-testid="desp-carrier"><b>${esc(carrier.name)}</b></dd>
+            <dt>Service level</dt><dd>${esc(carrier.service)}</dd>
+            <dt>Rule code</dt><dd class="mono" data-testid="desp-code">${esc(carrier.code)}</dd>
+          </dl>
+          <div class="small muted" style="margin-top:.5rem">The carrier is decided by the service chosen at checkout and the destination zone. It cannot be overridden here.</div>
+        </div>
+        <div class="panel">
+          <h3>Consignment</h3>
+          <dl class="kv">
+            <dt>Parcels</dt><dd data-testid="desp-parcels">${d.parcels}</dd>
+            <dt>Weight</dt><dd>${d.lines.reduce((a, l) => a + (l.damaged ? 0 : l.weight * l.picked), 0).toFixed(1)} kg</dd>
+            <dt>Deliver to</dt><dd style="white-space:normal">${esc(o.delivery.line1)}, ${esc(o.delivery.city)}, ${esc(o.delivery.postcode)}</dd>
+            <dt>Promised</dt><dd>${isoToUK(o.delivery.promisedBy)}</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="row-end" style="margin-top:1rem">
+        <button class="btn btn-ok btn-lg" data-act="wms-despatch" data-dn="${esc(d.dn)}" data-testid="btn-despatch">Despatch consignment</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function wmsDespatch(dn){
+  const x = findDelivery(dn);
+  if(!x) return;
+  const { o, d } = x;
+  if(d.status !== "Packed") return;              /* already despatched */
+  const carrier = carrierFor(o);
+  d.carrierId = carrier.id;
+  d.carrierName = carrier.name;
+  d.tracking = trackingFor(carrier, d.dn);
+  d.status = "Despatched";
+  dEvent(d, carrier.code, "Carrier allocated, " + carrier.name);
+  dEvent(d, "LG-D01", "Despatched from the Rugby national distribution centre");
+  o.audit.push({ at:nowISO(), who:sessionUser().name, what:"Despatched " + d.dn + " with " + carrier.name + ", tracking " + d.tracking, code:"LG-D01" });
+  wmsBanner = { kind:"ok", code:"LG-D01", text:d.dn + " despatched. Tracking number " + d.tracking + "." };
+  save(); go("#/wms/delivery/" + dn);
+}
+
+/* ---------- delivery detail and outcomes ---------- */
+function viewWmsDelivery(dn){
+  const x = findDelivery(dn);
+  if(!x){ go("#/wms/work"); return; }
+  const { o, d } = x;
+
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("wms", WMS_LINKS, "work")}
+    <div class="wrap" style="padding-top:.9rem; padding-bottom:2.5rem">
+      <div class="row">
+        <h1 style="margin:0">Delivery <span class="mono" data-testid="del-dn">${esc(d.dn)}</span></h1>
+        <span class="badge badge-neutral" data-testid="del-status">${esc(d.status)}</span>
+        <div class="spacer"></div>
+        <button class="btn btn-sm" data-act="nav" data-href="#/wms/work" data-testid="btn-back-work">Back to queue</button>
+      </div>
+      ${wmsBanner ? `<div class="banner banner-${wmsBanner.kind}" data-testid="wms-banner"><b>${esc(wmsBanner.code)}</b> ${esc(wmsBanner.text)}</div>` : ""}
+
+      <div class="erp-cols" style="margin-top:.8rem">
+        <div class="panel">
+          <h3>Consignment</h3>
+          <dl class="kv">
+            <dt>Order</dt><dd class="mono" data-testid="del-order">${esc(o.ref)}</dd>
+            <dt>Customer</dt><dd>${esc(o.customer.name)}</dd>
+            <dt>Carrier</dt><dd data-testid="del-carrier">${esc(d.carrierName || "Not allocated")}</dd>
+            <dt>Tracking</dt><dd class="mono" data-testid="del-tracking">${esc(d.tracking || "Not issued")}</dd>
+            <dt>Parcels</dt><dd>${d.parcels || "Not packed"}</dd>
+          </dl>
+        </div>
+        <div class="panel">
+          <h3>History</h3>
+          <div class="track-timeline">
+            ${d.events.map(ev => `<div class="track-ev done" data-testid="event-${esc(ev.code || "none")}">
+              <div class="track-when">${stamp(ev.at)} ${esc(ev.code || "")}</div>
+              <div class="track-what">${esc(ev.what)}</div>
+            </div>`).join("")}
+          </div>
+        </div>
+      </div>
+
+      ${d.status === "Despatched" ? `
+        <div class="card card-pad" style="margin-top:1rem" data-testid="outcome-panel">
+          <h3>Record the delivery outcome</h3>
+          ${!isSupervisor() ? `<div class="banner banner-info" data-testid="role-note">Only a supervisor may record a failed attempt. A successful delivery may be recorded by any warehouse user.</div>` : ""}
+          <div class="field">
+            <label for="fail-reason">Reason, required for a failed attempt</label>
+            <select id="fail-reason" data-wfield="failReason" data-testid="select-fail-reason"${isSupervisor() ? "" : " disabled"}>
+              <option value="">Choose a reason</option>
+              <option value="No one at the address"${wmsForm.failReason === "No one at the address" ? " selected" : ""}>No one at the address</option>
+              <option value="Address could not be found"${wmsForm.failReason === "Address could not be found" ? " selected" : ""}>Address could not be found</option>
+              <option value="Refused by the recipient"${wmsForm.failReason === "Refused by the recipient" ? " selected" : ""}>Refused by the recipient</option>
+              <option value="Access denied to the building"${wmsForm.failReason === "Access denied to the building" ? " selected" : ""}>Access denied to the building</option>
+            </select>
+          </div>
+          <div class="row">
+            <button class="btn btn-ok" data-act="wms-delivered" data-dn="${esc(d.dn)}" data-testid="btn-delivered">Record as delivered</button>
+            <button class="btn btn-danger" data-act="wms-failed" data-dn="${esc(d.dn)}" data-testid="btn-failed"${isSupervisor() ? "" : " disabled"}>Record failed attempt</button>
+          </div>
+        </div>` : ""}
+
+      ${d.status === "Delivered" ? `
+        <div class="card card-pad" style="margin-top:1rem" data-testid="return-panel">
+          <h3>Returns</h3>
+          <p class="small muted">A return may be raised within 30 days of delivery.</p>
+          <button class="btn" data-act="wms-return" data-dn="${esc(d.dn)}" data-testid="btn-raise-return">Raise a return</button>
+        </div>` : ""}
+    </div>
+  </div>`;
+}
+
+function wmsDelivered(dn){
+  const x = findDelivery(dn);
+  if(!x) return;
+  const { o, d } = x;
+  if(d.status !== "Despatched") return;
+  d.status = "Delivered";
+  d.deliveredAt = nowISO();
+  dEvent(d, "LG-D03", "Delivered and signed for");
+  o.audit.push({ at:nowISO(), who:sessionUser().name, what:"Delivered " + d.dn, code:"LG-D03" });
+  wmsBanner = { kind:"ok", code:"LG-D03", text:d.dn + " recorded as delivered." };
+  save(); render();
+}
+
+function wmsFailed(dn){
+  const x = findDelivery(dn);
+  if(!x) return;
+  if(x.d.status !== "Despatched") return;
+  if(!isSupervisor()){
+    wmsBanner = { kind:"risk", code:"LG-D02", text:"Only a supervisor may record a failed attempt." };
+    save(); render(); return;
+  }
+  const reason = wmsForm.failReason;
+  if(!reason){
+    wmsBanner = { kind:"risk", code:"LG-D02", text:"Choose a reason for the failed attempt." };
+    save(); render(); return;
+  }
+  const { o, d } = x;
+  d.status = "Failed";
+  d.attempts = (d.attempts || 0) + 1;
+  dEvent(d, "LG-D02", "Delivery attempt " + d.attempts + " failed. " + reason);
+  o.audit.push({ at:nowISO(), who:sessionUser().name, what:"Failed attempt on " + d.dn + ". " + reason, code:"LG-D02" });
+  wmsForm.failReason = "";
+  wmsBanner = { kind:"warn", code:"LG-D02", text:"Failed attempt recorded on " + d.dn + "." };
+  save(); render();
+}
+
+function wmsReturn(dn){
+  const x = findDelivery(dn);
+  if(!x) return;
+  const { o, d } = x;
+  if(d.status !== "Delivered") return;
+  state.seq.rma += 1;
+  const rma = "RMA-" + pad(state.seq.rma, 4);
+  d.rma = rma;
+  d.status = "Return requested";
+  dEvent(d, "LG-R01", "Return requested, reference " + rma);
+  o.audit.push({ at:nowISO(), who:sessionUser().name, what:"Return " + rma + " raised on " + d.dn, code:"LG-R01" });
+  wmsBanner = { kind:"info", code:"LG-R01", text:"Return " + rma + " raised." };
+  save(); go("#/wms/returns");
+}
+
+function viewWmsReturns(){
+  const rows = allDeliveries().filter(x => x.d.rma);
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("wms", WMS_LINKS, "returns")}
+    <div class="wrap-wide" style="padding-top:.9rem; padding-bottom:2.5rem">
+      <h1>Returns</h1>
+      ${wmsBanner ? `<div class="banner banner-${wmsBanner.kind}" data-testid="wms-banner"><b>${esc(wmsBanner.code)}</b> ${esc(wmsBanner.text)}</div>` : ""}
+      <div class="grid-wrap">
+        <table class="grid" data-testid="grid-returns">
+          <thead><tr><th>Return</th><th>Delivery note</th><th>Order</th><th>Customer</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            ${!rows.length ? `<tr><td colspan="6" class="center muted" data-testid="returns-empty">No returns have been raised.</td></tr>` : ""}
+            ${rows.map(x => `<tr data-testid="rma-${esc(x.d.rma)}">
+              <td class="mono"><b>${esc(x.d.rma)}</b></td>
+              <td class="mono">${esc(x.d.dn)}</td>
+              <td class="mono">${esc(x.o.ref)}</td>
+              <td>${esc(x.o.customer.name)}</td>
+              <td>${esc(x.d.status)}</td>
+              <td>${x.d.status === "Return requested"
+                ? `<button class="btn btn-sm btn-ok" data-act="wms-return-received" data-dn="${esc(x.d.dn)}" data-testid="btn-receive-${esc(x.d.rma)}">Record as received</button>`
+                : '<span class="muted small">Closed</span>'}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function wmsReturnReceived(dn){
+  const x = findDelivery(dn);
+  if(!x) return;
+  const { o, d } = x;
+  if(d.status !== "Return requested") return;
+  d.status = "Return received";
+  dEvent(d, "LG-R02", "Return " + d.rma + " received into the warehouse");
+  o.audit.push({ at:nowISO(), who:sessionUser().name, what:"Return " + d.rma + " received", code:"LG-R02" });
+  wmsBanner = { kind:"ok", code:"LG-R02", text:"Return " + d.rma + " received." };
+  save(); render();
+}
+
+/* ---------- tracking ---------- */
+function viewWmsTrack(){
+  const q = String(wmsForm.trackQuery || "").trim().toUpperCase();
+  let hit = null;
+  if(q) hit = allDeliveries().find(x =>
+    (x.d.tracking || "").toUpperCase() === q ||
+    (x.d.dn || "").toUpperCase() === q ||
+    (x.o.ref || "").toUpperCase() === q) || null;
+
+  $("#app").innerHTML = `
+  <div class="erp-shell">
+    ${backOfficeTop("wms", WMS_LINKS, "track")}
+    <div class="wrap" style="padding-top:.9rem; padding-bottom:2.5rem">
+      <h1>Track a consignment</h1>
+      <p class="muted small">Search by tracking number, delivery note or order reference.</p>
+      <div class="row" style="flex-wrap:nowrap; max-width:560px">
+        <input type="search" id="track-q" value="${esc(wmsForm.trackQuery)}" data-wfield="trackQuery" data-testid="input-track" placeholder="NLX123456789, DN-00147-1 or ORD-2026-00147">
+        <button class="btn btn-primary" data-act="wms-track" data-testid="btn-track">Track</button>
+      </div>
+
+      ${!q ? "" : !hit ? `
+        <div class="banner banner-warn" style="margin-top:1rem" data-testid="track-none"><b>Not found</b> No consignment matches that reference.</div>` : `
+        <div class="card card-pad" style="margin-top:1rem" data-testid="track-result">
+          <div class="row">
+            <h3 style="margin:0">${esc(hit.d.dn)}</h3>
+            <span class="badge badge-neutral" data-testid="track-status">${esc(hit.d.status)}</span>
+            <div class="spacer"></div>
+            <button class="btn btn-sm" data-act="nav" data-href="#/wms/delivery/${esc(hit.d.dn)}" data-testid="btn-open-delivery">Open</button>
+          </div>
+          <dl class="kv" style="margin-top:.7rem">
+            <dt>Order</dt><dd class="mono">${esc(hit.o.ref)}</dd>
+            <dt>Carrier</dt><dd>${esc(hit.d.carrierName || "Not allocated")}</dd>
+            <dt>Tracking</dt><dd class="mono">${esc(hit.d.tracking || "Not issued")}</dd>
+            <dt>Deliver to</dt><dd>${esc(hit.o.delivery.city)}, ${esc(hit.o.delivery.postcode)}</dd>
+          </dl>
+          <hr class="divider">
+          <div class="track-timeline">
+            ${hit.d.events.map(ev => `<div class="track-ev done">
+              <div class="track-when">${stamp(ev.at)} ${esc(ev.code || "")}</div>
+              <div class="track-what">${esc(ev.what)}</div>
+            </div>`).join("")}
+          </div>
+        </div>`}
+    </div>
+  </div>`;
+}
+/* ============================================================
+   EVENT HANDLING, ROUTER, BOOT
+   Every field is written on BOTH the input and the change event.
+   A WebDriver select by visible text fires change only; typing in a
+   text box fires input only. Listening to one of them is the single
+   commonest cause of a value that appears on screen and is then lost
+   on the next re-render.
+   ============================================================ */
+
+/* Fields that change what is on the page and therefore need a re-render. */
+const LIVE = {
+  cfield: ["country", "deliveryOption", "billingSame", "verifyRequired"],
+  efield: ["status", "hold", "country", "partial"],
+  wfield: ["damageLine", "failReason"]
+};
+
+/* Fields that update one region only, so that typing is never interrupted. */
+const PARTIAL = {
+  efield: {
+    q: refreshErpGrid, from: refreshErpGrid, to: refreshErpGrid,
+    cancelReason: refreshReasonCount
+  },
+  wfield: {
+    pick: refreshPickRow
+  }
+};
+
+function refreshErpGrid(){
+  if(!$("[data-testid=grid-orders]")) return;
+  const rows = erpRows();
+  const body = $("[data-testid=grid-orders] tbody");
+  if(body) body.innerHTML = rows.length
+    ? rows.map(o => `<tr data-act="open-order" data-ref="${esc(o.ref)}" data-testid="row-${esc(o.ref)}">
+        <td class="mono"><b>${esc(o.ref)}</b></td>
+        <td>${isoToUK(o.placedAt.slice(0,10))}</td>
+        <td>${esc(o.customer.name)}</td>
+        <td class="mono">${esc(o.customer.id || "new")}</td>
+        <td>${esc(o.delivery.country)}</td>
+        <td class="right">${o.lines.length}</td>
+        <td class="right">${money0(o.totals.net)}</td>
+        <td class="right">${money0(o.totals.gross)}</td>
+        <td><span class="st ${ST_CLASS[o.erp.status] || "st-new"}">${esc(o.erp.status)}</span></td>
+        <td class="mono">${esc(o.erp.holdCode || "")}</td>
+        <td class="right">${o.erp.fraudScore}</td>
+        <td class="mono">${esc(o.deliveries.map(d => d.dn).join(" "))}</td>
+      </tr>`).join("")
+    : `<tr><td colspan="12" class="center muted" data-testid="grid-empty">No orders match the filters. Place an order in the storefront first.</td></tr>`;
+  const c = $("[data-testid=erp-count]");
+  if(c) c.innerHTML = "<b>" + rows.length + "</b> order" + (rows.length === 1 ? "" : "s");
+}
+
+function refreshReasonCount(){
+  const n = $("[data-testid=reason-count]");
+  if(n) n.textContent = String(erpForm.cancelReason).trim().length;
+}
+
+function refreshPickRow(line){
+  const row = $('[data-testid="pick-row-' + line + '"]');
+  const req = $('[data-testid="req-' + line + '"]');
+  if(!row || !req) return;
+  const got = Number(wmsForm.picks[line]);
+  row.classList.toggle("short", got < Number(req.textContent));
+}
+
+/* ---------- the one field writer ---------- */
+function writeField(el){
+  const val = el.type === "checkbox" ? el.checked : el.value;
+
+  if(el.hasAttribute("data-lfield")){
+    loginDraft[el.getAttribute("data-lfield")] = val;
+    return true;
+  }
+
+  if(el.hasAttribute("data-cfield")){
+    const k = el.getAttribute("data-cfield");
+    const c = ensureCheckout();
+    if(el.type === "radio" && !el.checked) return false;
+    c[k] = val;
+    delete shopErrors[k];
+    save();
+    return LIVE.cfield.indexOf(k) >= 0 ? "render" : true;
+  }
+
+  if(el.hasAttribute("data-efield")){
+    const k = el.getAttribute("data-efield");
+    if(["q","status","hold","country","from","to"].indexOf(k) >= 0){
+      if(k === "from" || k === "to"){
+        /* keep exactly what was typed so that a re-render never rewrites it,
+           and filter on the parsed date only once it is a complete date */
+        erpFilters[k + "Raw"] = val;
+        erpFilters[k] = ukToISO(val) || "";
+      }else{
+        erpFilters[k] = val;
+      }
+    }else{
+      erpForm[k] = val;
+    }
+    if(PARTIAL.efield[k]){ try{ PARTIAL.efield[k](); }catch(e){} return true; }
+    return LIVE.efield.indexOf(k) >= 0 ? "render" : true;
+  }
+
+  if(el.hasAttribute("data-wfield")){
+    const k = el.getAttribute("data-wfield");
+    if(k === "pick"){
+      const line = el.getAttribute("data-line");
+      wmsForm.picks[line] = val;
+      try{ refreshPickRow(line); }catch(e){}
+      return true;
+    }
+    wmsForm[k] = val;
+    return LIVE.wfield.indexOf(k) >= 0 ? "render" : true;
+  }
+
+  return false;
+}
+
+function handleFieldEvent(el){
+  const r = writeField(el);
+  if(r === "render") render();
+  return r !== false;
+}
+
+document.addEventListener("input", ev => {
+  const el = ev.target;
+  if(!el || !el.tagName) return;
+  if(handleFieldEvent(el)) return;
+  handleLooseInput(el);
+});
+
+document.addEventListener("change", ev => {
+  const el = ev.target;
+  if(!el || !el.tagName) return;
+  if(handleFieldEvent(el)) return;
+  handleLooseInput(el);
+});
+
+/* Controls that are not backed by a draft field. */
+function handleLooseInput(el){
+  const act = el.getAttribute && el.getAttribute("data-act");
+  if(!act) return;
+  if(act === "filter-cat"){ shopFilter.cat = el.value; render(); return; }
+  if(act === "filter-sort"){ shopFilter.sort = el.value; render(); return; }
+  if(act === "pdp-axis"){ pdpSel[el.getAttribute("data-axis")] = el.value; render(); return; }
+  if(act === "pdp-qty"){ pdpQty = Math.max(1, Math.min(10, Number(el.value) || 1)); return; }
+  if(act === "promo-typed"){ state.basket.promo = el.value; save(); return; }
+  if(act === "line-qty"){
+    const i = Number(el.getAttribute("data-idx"));
+    const l = state.basket.lines[i];
+    if(!l) return;
+    const p = productBySku(l.sku), v = variantOf(p, l.vid);
+    let q = Math.max(1, Math.min(10, Number(el.value) || 1));
+    if(q > v.stock){ q = v.stock; toast("Only " + v.stock + " of that option are available."); }
+    l.qty = q; save(); render(); return;
+  }
+}
+
+/* ---------- clicks ---------- */
+/* A state changing click re-renders the page. The second click of a double
+   click therefore lands on whichever control has moved into that position,
+   which is how a double click used to remove two basket lines, or take a
+   consignment from Despatched straight to Return requested in one gesture.
+   The browser tells us which clicks belong to one gesture: the second click
+   of a double carries detail 2. A tool driving the page issues independent
+   single clicks with detail 1, so nothing legitimate is dropped. */
+const GUARDED_ACTS = ["place-order", "erp-release", "erp-cancel", "line-remove",
+  "line-minus", "line-plus", "promo-apply", "promo-remove", "wms-confirm-pick",
+  "wms-cancel-pick", "wms-damage", "wms-pack", "wms-despatch", "wms-delivered",
+  "wms-failed", "wms-return", "wms-return-received"];
+
+document.addEventListener("click", ev => {
+  const el = ev.target.closest("[data-act]");
+  if(!el) return;
+  const act = el.getAttribute("data-act");
+  const ref = el.getAttribute("data-ref");
+  const dn  = el.getAttribute("data-dn");
+
+  if(ev.detail > 1 && GUARDED_ACTS.indexOf(act) >= 0) return;
+
+  switch(act){
+    /* shell */
+    case "nav":      ev.preventDefault(); go(el.getAttribute("data-href")); break;
+    case "apps":     go("#/apps"); break;
+    case "signout":  signOut(); break;
+    case "theme":    toggleTheme(); break;
+    case "reset":
+      resetDemo();
+      shopFilter = { cat:"All", sort:"featured" };
+      shopStep = 1; shopErrors = {}; shopBanner = null;
+      erpFilters = { q:"", status:"All", hold:"All", country:"All", from:"", to:"", fromRaw:"", toRaw:"" };
+      erpForm = { cancelReason:"", partial:false }; erpBanner = null; erpTab = "header";
+      wmsForm = { picks:{}, damageLine:"", damageNote:"", trackQuery:"", failReason:"" }; wmsBanner = null;
+      toast("Demo data reset.");
+      go("#/apps");
+      break;
+    case "open-app": openApp(el.getAttribute("data-app")); break;
+
+    /* storefront */
+    case "scroll-products": { const t = $("#products"); if(t) t.scrollIntoView({ behavior:"smooth", block:"start" }); break; }
+    case "open-product": pdpSel = {}; pdpQty = 1; shopErrors = {}; go("#/shop/product/" + el.getAttribute("data-sku")); break;
+    case "pdp-minus": pdpQty = Math.max(1, pdpQty - 1); render(); break;
+    case "pdp-plus":  pdpQty = Math.min(10, pdpQty + 1); render(); break;
+    case "add-basket": addToBasket(el.getAttribute("data-sku")); break;
+    case "line-minus": { const i = Number(el.getAttribute("data-idx")); const l = state.basket.lines[i];
+      if(l){ l.qty = Math.max(1, l.qty - 1); save(); render(); } break; }
+    case "line-plus": { const i = Number(el.getAttribute("data-idx")); const l = state.basket.lines[i];
+      if(l){ const v = variantOf(productBySku(l.sku), l.vid);
+        if(l.qty + 1 > 10) toast("A maximum of 10 units of one item may be bought in a single order.");
+        else if(l.qty + 1 > v.stock) toast("Only " + v.stock + " of that option are available.");
+        else { l.qty += 1; save(); } render(); } break; }
+    case "line-remove": { const i = Number(el.getAttribute("data-idx"));
+      state.basket.lines.splice(i, 1); if(!state.basket.lines.length){ state.basket.promoCode = ""; state.basket.promo = ""; }
+      save(); shopBanner = null; render(); break; }
+    case "promo-apply": applyPromo(); break;
+    case "promo-remove": state.basket.promoCode = ""; state.basket.promo = ""; shopBanner = null; save(); render(); break;
+    case "to-checkout":
+      if(!state.basket.lines.length){ shopBanner = { kind:"risk", code:"EC-V01", text:"Your basket is empty." }; render(); break; }
+      ensureCheckout(); shopStep = 1; shopErrors = {}; shopBanner = null; go("#/shop/checkout"); break;
+    case "co-next":
+      shopBanner = null;
+      if(validateCheckoutStep(shopStep)) shopStep = Math.min(3, shopStep + 1);
+      render(); break;
+    case "co-back": shopBanner = null; shopErrors = {}; shopStep = Math.max(1, shopStep - 1); render(); break;
+    case "place-order": placeOrder(); break;
+    case "open-erp-order":
+      if(!hasSystem("erp")){ toast("Your role does not have access to the ERP."); break; }
+      erpTab = "header"; erpBanner = null; go("#/erp/order/" + ref); break;
+
+    /* erp */
+    case "open-order": erpTab = "header"; erpBanner = null; erpForm = { cancelReason:"", partial:false };
+      go("#/erp/order/" + (ref || el.getAttribute("data-ref"))); break;
+    case "erp-tab": erpTab = el.getAttribute("data-tab"); render(); break;
+    case "erp-clear": erpFilters = { q:"", status:"All", hold:"All", country:"All", from:"", to:"", fromRaw:"", toRaw:"" }; render(); break;
+    case "erp-release": erpRelease(ref); break;
+    case "erp-cancel": erpCancel(ref); break;
+    case "open-dn": go("#/wms/delivery/" + el.getAttribute("data-dn")); break;
+
+    /* wms */
+    case "wms-confirm-pick": wmsConfirmPick(dn); break;
+    case "wms-cancel-pick": wmsCancelPick(dn); break;
+    case "wms-damage": wmsDamage(dn); break;
+    case "wms-pack": wmsPack(dn); break;
+    case "wms-despatch": wmsDespatch(dn); break;
+    case "wms-delivered": wmsDelivered(dn); break;
+    case "wms-failed": wmsFailed(dn); break;
+    case "wms-return": wmsReturn(dn); break;
+    case "wms-return-received": wmsReturnReceived(dn); break;
+    case "wms-track": render(); break;
+  }
+});
+
+/* Submitting the sign in form. */
+document.addEventListener("submit", ev => {
+  if(ev.target && ev.target.id === "login-form"){ ev.preventDefault(); attemptLogin(); }
+});
+
+/* ---------- router ---------- */
+function render(){
+  applyTheme();
+  if(!state.session){ renderLogin(); return; }
+
+  const p = routeParts();
+  const head = p[0] || "apps";
+
+  if(head === "shop"){
+    const sub = p[1] || "";
+    if(sub === "product") return viewProduct(p[2]);
+    if(sub === "basket")  return viewBasket();
+    if(sub === "checkout")return viewCheckout();
+    if(sub === "confirm") return viewConfirm(p[2]);
+    return viewShopHome();
+  }
+
+  if(head === "erp"){
+    if(!hasSystem("erp")){ toast("Your role does not have access to the ERP."); go("#/apps"); return; }
+    const sub = p[1] || "orders";
+    if(sub === "order")     return viewErpOrder(p[2]);
+    if(sub === "holds")     return viewErpHolds();
+    if(sub === "customers") return viewErpCustomers();
+    return viewErpOrders();
+  }
+
+  if(head === "wms"){
+    if(!hasSystem("wms")){ toast("Your role does not have access to the warehouse system."); go("#/apps"); return; }
+    const sub = p[1] || "work";
+    if(sub === "pick")     return viewWmsPick(p[2]);
+    if(sub === "pack")     return viewWmsPack(p[2]);
+    if(sub === "despatch") return viewWmsDespatch(p[2]);
+    if(sub === "delivery") return viewWmsDelivery(p[2]);
+    if(sub === "track")    return viewWmsTrack();
+    if(sub === "returns")  return viewWmsReturns();
+    return viewWmsWork();
+  }
+
+  return renderLauncher();
+}
+
+window.addEventListener("hashchange", () => { render(); });
+
+/* ---------- boot ---------- */
+load();
+applyTheme();
+if(!location.hash) location.hash = "#/apps";
+render();
+
+</script>
+</body>
+</html>
