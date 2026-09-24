@@ -1,0 +1,178 @@
+{
+ "HM-1001": {
+  "dataset_product_id": "20042696",
+  "dataset_brand": "Flying Machine",
+  "dataset_name": "Men White Standard Slim Fit Solid Casual Shirt",
+  "source_subfolder": "UnisexClothing/shirts",
+  "images": [
+   {
+    "file": "assets/products/hm-1001/1.jpg",
+    "source_file": "UnisexClothing/shirts/20042696_1.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 42411
+   },
+   {
+    "file": "assets/products/hm-1001/2.jpg",
+    "source_file": "UnisexClothing/shirts/20042696_3.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 23815
+   },
+   {
+    "file": "assets/products/hm-1001/3.jpg",
+    "source_file": "UnisexClothing/shirts/20042696_4.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 46671
+   }
+  ]
+ },
+ "HM-1002": {
+  "dataset_product_id": "14335774",
+  "dataset_brand": "INVICTUS",
+  "dataset_name": "Men Black Solid Pullover",
+  "source_subfolder": "UnisexClothing/sweaters",
+  "images": [
+   {
+    "file": "assets/products/hm-1002/1.jpg",
+    "source_file": "UnisexClothing/sweaters/14335774_1.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 44793
+   },
+   {
+    "file": "assets/products/hm-1002/2.jpg",
+    "source_file": "UnisexClothing/sweaters/14335774_3.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 39847
+   },
+   {
+    "file": "assets/products/hm-1002/3.jpg",
+    "source_file": "UnisexClothing/sweaters/14335774_4.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 37012
+   }
+  ]
+ },
+ "HM-1005": {
+  "dataset_product_id": "13703862",
+  "dataset_brand": "Style Quotient",
+  "dataset_name": "Women Olive Green Solid Shirt Dress",
+  "source_subfolder": "WomensClothing/dresses",
+  "images": [
+   {
+    "file": "assets/products/hm-1005/1.jpg",
+    "source_file": "WomensClothing/dresses/13703862_1.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 55610
+   },
+   {
+    "file": "assets/products/hm-1005/2.jpg",
+    "source_file": "WomensClothing/dresses/13703862_2.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 77085
+   },
+   {
+    "file": "assets/products/hm-1005/3.jpg",
+    "source_file": "WomensClothing/dresses/13703862_3.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 42526
+   },
+   {
+    "file": "assets/products/hm-1005/4.jpg",
+    "source_file": "WomensClothing/dresses/13703862_4.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 39409
+   }
+  ]
+ },
+ "HM-1008": {
+  "dataset_product_id": "17312062",
+  "dataset_brand": "Clarks",
+  "dataset_name": "Men Blue Nubuck Penny Loafers",
+  "source_subfolder": "Footwear/casual-shoes",
+  "images": [
+   {
+    "file": "assets/products/hm-1008/1.jpg",
+    "source_file": "Footwear/casual-shoes/17312062_1.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 27098
+   },
+   {
+    "file": "assets/products/hm-1008/2.jpg",
+    "source_file": "Footwear/casual-shoes/17312062_2.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 25063
+   },
+   {
+    "file": "assets/products/hm-1008/3.jpg",
+    "source_file": "Footwear/casual-shoes/17312062_3.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 20140
+   },
+   {
+    "file": "assets/products/hm-1008/4.jpg",
+    "source_file": "Footwear/casual-shoes/17312062_4.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 18801
+   }
+  ]
+ },
+ "HM-1021": {
+  "dataset_product_id": "13374206",
+  "dataset_brand": "Saral Home",
+  "dataset_name": "White & Grey Geometric Patterned Multi-Use Dhurrie",
+  "source_subfolder": "HomeAndLiving/floor-mats--dhurries",
+  "images": [
+   {
+    "file": "assets/products/hm-1021/1.jpg",
+    "source_file": "HomeAndLiving/floor-mats--dhurries/13374206_1.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 97984
+   },
+   {
+    "file": "assets/products/hm-1021/2.jpg",
+    "source_file": "HomeAndLiving/floor-mats--dhurries/13374206_2.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 133081
+   },
+   {
+    "file": "assets/products/hm-1021/3.jpg",
+    "source_file": "HomeAndLiving/floor-mats--dhurries/13374206_3.jpg",
+    "w": 675,
+    "h": 900,
+    "orig": "1080x1440",
+    "bytes": 113427
+   }
+  ]
+ }
+}
