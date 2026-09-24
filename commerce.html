@@ -317,15 +317,6 @@ table.tbl tfoot td{font-weight:700; border-top:2px solid var(--line-2)}
 .shop-brand{font-weight:900; font-size:1.22rem; letter-spacing:-.03em; color:var(--ink-1); cursor:pointer; background:none; border:0; font-family:inherit; padding:0}
 .shop-brand span{color:var(--pop-pink)}
 .shop-nav{display:flex; gap:.15rem}
-.sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
-.searchbar{display:flex; flex:1 1 320px; max-width:560px; gap:0}
-.searchbar input{border-radius:var(--radius-s) 0 0 var(--radius-s); border-right:0}
-.searchbar .btn{border-radius:0 var(--radius-s) var(--radius-s) 0; white-space:nowrap}
-.cat-rail{display:flex; gap:.2rem; flex-wrap:wrap; padding:0 20px .55rem; max-width:1560px; margin:0 auto}
-.cat-chip{padding:.3rem .8rem; border-radius:999px; border:1px solid var(--line-2); background:var(--surface);
-  color:var(--ink-2); font:inherit; font-size:.82rem; font-weight:700; cursor:pointer}
-.cat-chip:hover{border-color:var(--pop-violet); color:var(--ink-1)}
-.cat-chip[aria-current="true"]{background-color:var(--pop-violet); border-color:transparent; color:var(--pop-ink)}
 .basket-btn{position:relative}
 .basket-count{
   position:absolute; top:-7px; right:-7px; min-width:20px; height:20px; padding:0 5px;
@@ -383,98 +374,24 @@ table.tbl tfoot td{font-weight:700; border-top:2px solid var(--line-2)}
 .promise b{display:block; font-size:.72rem; letter-spacing:.09em; text-transform:uppercase; margin-bottom:.15rem}
 .p1 b{color:var(--pop-violet)} .p2 b{color:var(--pop-pink)} .p3 b{color:var(--pop-cyan)} .p4 b{color:var(--pop-amber)}
 
-/* marketplace layout */
-.market{display:grid; grid-template-columns:248px 1fr; gap:1.6rem; padding:1.4rem 20px 3rem; align-items:start}
-@media(max-width:940px){.market{grid-template-columns:1fr; gap:1rem}}
-
-.facets{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:1rem 1.1rem; box-shadow:var(--shadow); position:sticky; top:118px}
-@media(max-width:940px){.facets{position:static}}
-.facet-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:.4rem}
-.facet-head h3{margin:0; font-size:1rem}
-.facet{padding:.7rem 0; border-top:1px solid var(--line)}
-.facet h4{font-size:.8rem; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3); margin-bottom:.45rem}
-.facet .check{font-size:.86rem; margin-bottom:.32rem}
-.facet .check label{font-weight:600; color:var(--ink-2)}
-
-.res-head{display:flex; align-items:flex-end; gap:1rem; flex-wrap:wrap; margin-bottom:1rem}
-.res-head h1{font-size:1.5rem; letter-spacing:-.025em; margin:0}
-.res-list{display:grid; gap:.9rem}
-.res{display:grid; grid-template-columns:190px 1fr 190px; gap:1.1rem; background:var(--surface);
-  border:1px solid var(--line); border-radius:16px; padding:1rem; box-shadow:var(--shadow);
-  transition:box-shadow .15s ease, border-color .15s ease}
-.res:hover{box-shadow:0 14px 32px -18px rgba(124,58,237,.5); border-color:var(--line-2)}
-@media(max-width:860px){.res{grid-template-columns:120px 1fr} .res-buy{grid-column:1 / -1}}
-.res-art{position:relative; padding:0; border:1px solid var(--line); border-radius:12px; overflow:hidden;
-  background:none; color:inherit; cursor:pointer; display:block; width:100%}
-.res-brand{font-size:.72rem; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:var(--pop-violet)}
-.res-title{display:block; text-align:left; background:none; border:0; padding:0; font:inherit;
-  font-size:1.06rem; font-weight:750; letter-spacing:-.015em; color:var(--ink-1); cursor:pointer; margin:.1rem 0 .3rem}
-.res-title:hover{color:var(--pop-violet); text-decoration:underline}
-.res-rate{display:flex; align-items:center; gap:.4rem; margin-bottom:.35rem}
-.stars{width:88px; height:17px; display:block}
-.res-rate-n{font-weight:800; font-size:.86rem}
-.res-price{display:flex; align-items:baseline; gap:.5rem; margin-bottom:.35rem}
-.price-now{font-weight:900; font-size:1.15rem; letter-spacing:-.02em}
-.price-was{text-decoration:line-through; color:var(--ink-3); font-size:.88rem}
-.res-eta{font-size:.82rem; color:var(--ink-2); margin-top:.35rem}
-.res-buy{display:grid; gap:.4rem; align-content:start; text-align:center}
-.tag-deal{background:var(--pop-pink); color:#fff}
-:root[data-theme="dark"] .tag-deal{color:var(--pop-ink)}
-
-.pager{display:flex; gap:.3rem; justify-content:center; margin:1.6rem 0 .5rem; flex-wrap:wrap}
-.pg{min-width:38px; padding:.42rem .7rem; border:1px solid var(--line-2); background:var(--surface);
-  color:var(--ink-1); border-radius:var(--radius-s); font:inherit; font-size:.86rem; font-weight:700; cursor:pointer}
-.pg:hover:not(:disabled){border-color:var(--pop-violet)}
-.pg.on{background-color:var(--pop-violet); border-color:transparent; color:var(--pop-ink)}
-.pg:disabled{opacity:.45; cursor:not-allowed}
-
-.crumbs{display:flex; gap:.45rem; align-items:center; padding:.9rem 0 .2rem; font-size:.84rem; flex-wrap:wrap}
-.crumbs button{background:none; border:0; padding:0; font:inherit; color:var(--pop-violet); font-weight:700; cursor:pointer}
-.res-title{color:var(--ink-1)}
-.crumbs button:hover{text-decoration:underline}
-.crumbs span{color:var(--ink-3)}
-
-.thumbs{display:flex; gap:.5rem; margin-top:.7rem}
-.thumb{width:74px; height:56px; padding:0; overflow:hidden; border:2px solid var(--line-2);
-  border-radius:9px; background:none; color:inherit; cursor:pointer}
-.thumb:hover{border-color:var(--pop-violet)}
-.thumb.on{border-color:var(--pop-violet); box-shadow:0 0 0 3px rgba(124,58,237,.18)}
-.thumb .prod-art{width:100%; height:100%; aspect-ratio:auto}
-
-.swatches{display:flex; gap:.5rem; flex-wrap:wrap}
-.swatch{width:36px; height:36px; border-radius:50%; border:2px solid var(--line-2); color:inherit; cursor:pointer; padding:0}
-.swatch:hover{border-color:var(--ink-3)}
-.swatch.on{border-color:var(--pop-violet); box-shadow:0 0 0 3px rgba(124,58,237,.22)}
-
-.bullets{margin:.2rem 0 1rem; padding-left:1.15rem; font-size:.9rem; color:var(--ink-2)}
-.bullets li{margin-bottom:.22rem}
-
-/* One box, one ratio, whether thebox  holds a photograph or the vector
-   artwork. The ratio is declared so space is reserved before the image
-   arrives and nothing moves when it does. Photographs are portrait and
-   the box is landscape, so contain rather than cover: the whole product
-   is visible and nothing is stretched or cropped. */
-.prod-art{aspect-ratio:4/3; display:block; width:100%; height:auto; object-fit:contain;
-  background:#f7f8fa; -webkit-user-select:none; user-select:none}
-img.prod-art{padding:2px}
-.line-thumb{width:52px; height:52px; object-fit:contain; background:#f7f8fa; border-radius:8px;
-  border:1px solid var(--line); display:block}
-.sum-thumb{width:60px; padding-right:.4rem !important}
-.basket-art .prod-art{aspect-ratio:3/4}
-.pdp-art .prod-art{aspect-ratio:4/3}
-@media(max-width:760px){
-  .sum-thumb{display:none}
-  /* on a phone a grid item is only as wide as the column, so the line tables
-     wrap their text instead of forcing the page to scroll sideways */
-  .checkout-grid table{table-layout:fixed}
-  .checkout-grid td, .checkout-grid th{overflow-wrap:anywhere}
-  .checkout-grid .nowrap{white-space:normal}
-  [data-testid="confirm-lines"] td:nth-child(4), [data-testid="confirm-lines"] th:nth-child(4){width:3.2rem}
-  [data-testid="confirm-lines"] td:nth-child(5), [data-testid="confirm-lines"] th:nth-child(5){width:5.6rem}
+/* product grid */
+.prod-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(236px,1fr)); gap:1.2rem; padding-bottom:3rem}
+.prod-card{
+  position:relative; background:var(--surface); border:1px solid var(--line); border-radius:18px;
+  overflow:hidden; box-shadow:var(--shadow); cursor:pointer; text-align:left; padding:0;
+  font:inherit; color:var(--ink-1);
+  transition:transform .16s cubic-bezier(.2,.7,.3,1), box-shadow .16s ease, border-color .16s ease;
 }
+.prod-card:hover{transform:translateY(-5px); box-shadow:0 20px 40px -18px rgba(124,58,237,.55); border-color:var(--pop-violet)}
+.prod-art{aspect-ratio:4/3; display:block; width:100%}
+.prod-body{padding:.9rem 1rem 1.05rem}
 .prod-cat{font-size:.68rem; font-weight:900; letter-spacing:.11em; text-transform:uppercase; color:var(--pop-violet); margin-bottom:.35rem}
-.tag{position:absolute; top:.5rem; left:.5rem; z-index:2; padding:.16rem .5rem; border-radius:999px;
-  font-size:.62rem; font-weight:900; letter-spacing:.06em; text-transform:uppercase}
+.prod-name{font-weight:750; font-size:1rem; margin-bottom:.35rem; letter-spacing:-.01em}
+.prod-price{font-weight:900; font-size:1.12rem; color:var(--ink-1); letter-spacing:-.02em}
+.tag{
+  position:absolute; top:.7rem; left:.7rem; padding:.2rem .55rem; border-radius:999px;
+  font-size:.66rem; font-weight:900; letter-spacing:.07em; text-transform:uppercase;
+}
 .tag-low{background:var(--pop-amber); color:#fff}
 .tag-out{background:var(--ink-1); color:var(--bg)}
 :root[data-theme="dark"] .tag-low{color:var(--pop-ink)}
@@ -501,10 +418,6 @@ img.prod-art{padding:2px}
 
 /* checkout */
 .checkout-grid{display:grid; grid-template-columns:1.4fr .9fr; gap:2rem; padding:1.6rem 0 3.4rem; align-items:start}
-/* a grid item defaults to min-width:auto, which lets a wide table push the
-   column past the container and scroll the whole page sideways */
-.checkout-grid > *{min-width:0}
-.checkout-grid table{width:100%}
 @media(max-width:940px){.checkout-grid{grid-template-columns:1fr}}
 .opt-list{display:grid; gap:.6rem}
 .opt{display:flex; gap:.8rem; align-items:flex-start; border:2px solid var(--line-2); border-radius:14px; padding:.8rem .95rem; cursor:pointer; background:var(--surface); transition:border-color .12s ease, background .12s ease}
@@ -592,9 +505,6 @@ table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2p
   .wrap, .wrap-wide{padding:0 16px}
   .checkout-grid, .pdp{gap:1.2rem}
   .basket-line{grid-template-columns:64px 1fr; row-gap:.5rem}
-  .searchbar{flex:1 1 100%; max-width:none; order:5}
-  .res{grid-template-columns:96px 1fr}
-  .thumb{width:60px; height:46px}
   .basket-line > .right{grid-column:2; text-align:left}
 }
 </style>
@@ -608,7 +518,7 @@ table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2p
    CORE - clock, storage, helpers, auth, launcher, routing
    ============================================================ */
 
-const BUILD = "2026.09.24";
+const BUILD = "2026.09.23";
 const STORE_KEY = "halcyon.commerce.v1";
 
 /* Fixed clock. Every date in this application is derived from it so that
@@ -751,23 +661,11 @@ function go(hash){
   else location.hash = hash;
 }
 
-/* Setting location.hash does not fire hashchange synchronously: the browser
-   dispatches it on a later task. Code that sets the hash and then draws the
-   new screen itself therefore gets a second, redundant draw a moment later.
-   On every signed in screen that is invisible, but on the sign in form it
-   replaces the input the person is typing into, so their keystrokes are lost
-   to a detached element. Recording the hash each draw was made for lets the
-   listener ignore the echo while still honouring a real navigation. */
-let renderedHash = null;
-function markRendered(){ renderedHash = location.hash || "#/apps"; }
-function hashAlreadyRendered(){ return (location.hash || "#/apps") === renderedHash; }
-
 /* ---------- login ---------- */
 let loginError = "";
 let loginDraft = { username:"", password:"" };
 
 function renderLogin(){
-  markRendered();
   const app = $("#app");
   app.innerHTML = `
   <div class="login-wrap">
@@ -943,716 +841,100 @@ function backOfficeTop(sys, links, active){
   </div>`;
 }
 /* ============================================================
-   PRODUCT ART
-   There is no network, so every product image is drawn here as
-   vector. One motif per product type, three views per product so
-   the detail page can show a thumbnail strip: the full product,
-   a close detail, and an alternate presentation.
-   Palette per product is [light, mid, dark].
-   ============================================================ */
-
-/* studio backdrop: soft gradient, floor shadow, specular sheen */
-function artStage(id, c, tint){
-  return `
-  <defs>
-    <linearGradient id="${id}bg" x1="0" y1="0" x2=".3" y2="1">
-      <stop offset="0%" stop-color="${tint[0]}"/><stop offset="100%" stop-color="${tint[1]}"/>
-    </linearGradient>
-    <linearGradient id="${id}m" x1="0" y1="0" x2=".7" y2="1">
-      <stop offset="0%" stop-color="${c[0]}"/><stop offset="55%" stop-color="${c[1]}"/><stop offset="100%" stop-color="${c[2]}"/>
-    </linearGradient>
-    <radialGradient id="${id}s" cx="26%" cy="14%" r="70%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity=".5"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="320" height="240" fill="url(#${id}bg)"/>
-  <ellipse cx="160" cy="214" rx="96" ry="13" fill="${c[2]}" opacity=".16"/>`;
-}
-
-/* ---------- fashion ---------- */
-function mShirt(g, c){ return `
-  <path d="M116 60 L142 48 L160 68 L178 48 L204 60 L242 108 L212 130 L206 206 Q160 214 114 206 L108 130 L78 108 Z" fill="url(#${g}m)"/>
-  <path d="M78 108 L108 130 L100 146 L68 122 Z" fill="${c[1]}"/>
-  <path d="M242 108 L212 130 L220 146 L252 122 Z" fill="${c[1]}"/>
-  <path d="M96 140 L104 146 L100 158 L90 150 Z" fill="${c[0]}" opacity=".8"/>
-  <path d="M224 140 L216 146 L220 158 L230 150 Z" fill="${c[0]}" opacity=".8"/>
-  <path d="M142 48 L160 68 L134 76 L126 54 Z" fill="${c[0]}"/>
-  <path d="M178 48 L160 68 L186 76 L194 54 Z" fill="${c[0]}"/>
-  <rect x="152" y="66" width="16" height="140" fill="${c[0]}" opacity=".75"/>
-  <rect x="158" y="66" width="4" height="140" fill="${c[2]}" opacity=".45"/>
-  ${[92, 120, 148, 176].map(y => `<circle cx="160" cy="${y}" r="3.4" fill="${c[2]}" opacity=".8"/>`).join('')}
-  <rect x="180" y="96" width="30" height="26" rx="3" fill="${c[2]}" opacity=".22"/>`; }
-
-function mJumper(g, c){ return `
-  <path d="M112 64 Q160 42 208 64 L250 118 L216 142 L210 198 Q160 208 110 198 L104 142 L70 118 Z" fill="url(#${g}m)"/>
-  <path d="M70 118 L104 142 L92 162 L56 136 Z" fill="${c[1]}"/>
-  <path d="M250 118 L216 142 L228 162 L264 136 Z" fill="${c[1]}"/>
-  <path d="M56 136 L92 162 L84 180 L48 154 Z" fill="${c[2]}" opacity=".8"/>
-  <path d="M264 136 L228 162 L236 180 L272 154 Z" fill="${c[2]}" opacity=".8"/>
-  <ellipse cx="160" cy="62" rx="36" ry="14" fill="${c[2]}" opacity=".85"/>
-  <ellipse cx="160" cy="60" rx="27" ry="9" fill="${c[0]}"/>
-  ${[0,1,2,3,4,5,6,7].map(i => `<rect x="${134 + i*7}" y="50" width="3" height="22" fill="${c[1]}" opacity=".5"/>`).join('')}
-  <rect x="110" y="188" width="100" height="16" fill="${c[2]}" opacity=".65"/>
-  ${[0,1,2,3,4,5,6,7,8,9,10,11].map(i => `<rect x="${114 + i*8}" y="188" width="3" height="16" fill="${c[0]}" opacity=".35"/>`).join('')}`; }
-
-function mTshirt(g, c){ return `
-  <path d="M118 60 Q160 44 202 60 L256 96 L222 126 L212 202 Q160 212 108 202 L98 126 L64 96 Z" fill="url(#${g}m)"/>
-  <path d="M64 96 L98 126 L86 144 L52 114 Z" fill="${c[1]}"/>
-  <path d="M256 96 L222 126 L234 144 L268 114 Z" fill="${c[1]}"/>
-  <path d="M52 114 L86 144 L82 152 L48 122 Z" fill="${c[2]}" opacity=".6"/>
-  <path d="M268 114 L234 144 L238 152 L272 122 Z" fill="${c[2]}" opacity=".6"/>
-  <path d="M128 56 Q160 90 192 56 Q160 44 128 56 Z" fill="${c[2]}" opacity=".85"/>
-  <path d="M134 58 Q160 84 186 58 Q160 50 134 58 Z" fill="${c[0]}"/>
-  <rect x="132" y="138" width="56" height="30" rx="5" fill="${c[2]}" opacity=".18"/>
-  <rect x="140" y="146" width="40" height="4" rx="2" fill="${c[0]}" opacity=".7"/>
-  <rect x="140" y="156" width="26" height="4" rx="2" fill="${c[0]}" opacity=".5"/>`; }
-
-function mJacket(g, c){ return `
-  <path d="M112 58 L140 46 L160 62 L180 46 L208 58 L248 112 L216 134 L210 204 Q160 214 110 204 L104 134 L72 112 Z" fill="url(#${g}m)"/>
-  <path d="M72 112 L104 134 L94 170 L60 146 Z" fill="${c[1]}"/>
-  <path d="M248 112 L216 134 L226 170 L260 146 Z" fill="${c[1]}"/>
-  ${[78, 100, 122, 144, 166, 188].map(y => `<path d="M112 ${y} L208 ${y}" stroke="${c[2]}" stroke-width="2.6" opacity=".45"/>`).join('')}
-  ${[128, 160, 192].map(x => `<path d="M${x} 66 L${x} 204" stroke="${c[2]}" stroke-width="2.2" opacity=".32"/>`).join('')}
-  <rect x="154" y="62" width="12" height="142" fill="${c[2]}" opacity=".7"/>
-  <rect x="158" y="62" width="4" height="142" fill="${c[0]}" opacity=".85"/>
-  <circle cx="160" cy="76" r="5" fill="${c[0]}"/>
-  <rect x="118" y="156" width="30" height="20" rx="4" fill="${c[2]}" opacity=".5"/>
-  <rect x="172" y="156" width="30" height="20" rx="4" fill="${c[2]}" opacity=".5"/>
-  <path d="M140 46 L160 62 L180 46 L170 38 L160 48 L150 38 Z" fill="${c[2]}" opacity=".9"/>`; }
-
-function mDress(g, c){ return `
-  <path d="M124 58 L146 48 L160 60 L174 48 L196 58 L206 92 L214 204 Q160 214 106 204 L114 92 Z" fill="url(#${g}m)"/>
-  <path d="M146 48 L160 60 L174 48 L166 42 L160 48 L154 42 Z" fill="${c[0]}" opacity=".9"/>
-  <path d="M158 60 L162 60 L166 204 L154 204 Z" fill="${c[2]}" opacity=".3"/>
-  <rect x="116" y="112" width="88" height="9" rx="4" fill="${c[2]}" opacity=".5"/>
-  <circle cx="160" cy="116" r="5" fill="${c[0]}" opacity=".8"/>`; }
-
-/* ---------- footwear ---------- */
-function mSneaker(g, c){ return `
-  <path d="M62 178 Q66 150 96 146 L130 112 Q142 104 152 116 L176 142 Q212 148 240 160 Q258 168 256 180 L254 190 Q160 196 64 190 Z" fill="url(#${g}m)"/>
-  <path d="M60 188 Q160 198 256 188 L256 200 Q160 210 60 200 Z" fill="${c[2]}" opacity=".85"/>
-  <path d="M60 194 L256 194" stroke="${c[0]}" stroke-width="2.4" opacity=".55"/>
-  <path d="M112 132 L142 154 M124 122 L154 146 M136 114 L164 138" stroke="${c[0]}" stroke-width="3.4" opacity=".75" fill="none"/>
-  <path d="M176 142 Q206 150 232 160" stroke="${c[2]}" stroke-width="3" opacity=".4" fill="none"/>
-  <rect x="236" y="150" width="16" height="22" rx="7" fill="${c[0]}" opacity=".6"/>`; }
-
-function mBoot(g, c){ return `
-  <path d="M104 70 Q104 62 116 62 L166 62 Q178 62 178 72 L178 148 Q214 154 240 166 Q254 172 252 184 L250 192 Q160 198 100 192 L100 96 Z" fill="url(#${g}m)"/>
-  <path d="M96 190 Q160 200 252 190 L252 202 Q160 212 96 202 Z" fill="${c[2]}" opacity=".9"/>
-  <path d="M110 84 Q140 78 170 84 L170 132 Q140 126 110 132 Z" fill="${c[2]}" opacity=".3"/>
-  <rect x="168" y="60" width="12" height="24" rx="5" fill="${c[0]}" opacity=".7"/>
-  <path d="M96 196 L252 196" stroke="${c[0]}" stroke-width="2" opacity=".45"/>`; }
-
-function mLoafer(g, c){ return `
-  <path d="M70 180 Q72 152 106 148 L146 130 Q168 124 192 132 Q228 144 248 162 Q260 172 256 184 L254 190 Q160 196 72 190 Z" fill="url(#${g}m)"/>
-  <path d="M68 188 Q160 196 256 188 L256 198 Q160 208 68 198 Z" fill="${c[2]}" opacity=".85"/>
-  <path d="M120 146 Q152 134 186 142" stroke="${c[2]}" stroke-width="3" opacity=".45" fill="none"/>
-  <rect x="136" y="142" width="34" height="9" rx="4" fill="${c[0]}" opacity=".75"/>`; }
-
-function mPlimsoll(g, c){ return `
-  <path d="M68 176 Q72 150 102 146 L138 118 Q150 110 160 120 L182 144 Q218 150 242 162 Q256 170 254 180 L252 188 Q160 194 70 188 Z" fill="url(#${g}m)"/>
-  <path d="M66 184 Q160 194 254 184 L254 200 Q160 210 66 200 Z" fill="${c[0]}" opacity=".95"/>
-  <path d="M66 192 L254 192" stroke="${c[2]}" stroke-width="1.8" opacity=".4"/>
-  <path d="M66 184 Q80 166 100 162 L104 186 Z" fill="${c[0]}" opacity=".9"/>
-  <path d="M118 138 L146 158 M130 128 L158 150" stroke="${c[0]}" stroke-width="3" opacity=".8" fill="none"/>`; }
-
-function mHiker(g, c){ return `
-  <path d="M98 74 Q98 64 112 64 L164 64 Q176 64 176 76 L176 146 Q214 152 242 166 Q258 174 256 186 L254 192 Q160 198 94 192 L94 98 Z" fill="url(#${g}m)"/>
-  <path d="M88 188 Q160 200 258 188 L258 204 Q160 214 88 204 Z" fill="${c[2]}"/>
-  ${[100, 124, 148, 172, 196, 220, 244].map(x => `<rect x="${x}" y="198" width="10" height="7" rx="2" fill="${c[0]}" opacity=".45"/>`).join('')}
-  <path d="M108 92 L166 92 M108 110 L166 110 M108 128 L166 128" stroke="${c[0]}" stroke-width="3" opacity=".55" fill="none"/>
-  ${[90, 108, 126].map(y => `<circle cx="112" cy="${y}" r="3.4" fill="${c[0]}" opacity=".8"/><circle cx="162" cy="${y}" r="3.4" fill="${c[0]}" opacity=".8"/>`).join('')}
-  <path d="M232 170 Q250 176 254 186 L236 186 Z" fill="${c[0]}" opacity=".5"/>`; }
-
-/* ---------- mobiles ---------- */
-function mPhone(g, c){ return `
-  <rect x="118" y="34" width="84" height="172" rx="16" fill="url(#${g}m)"/>
-  <rect x="124" y="41" width="72" height="158" rx="11" fill="${c[2]}" opacity=".92"/>
-  <rect x="128" y="45" width="64" height="150" rx="9" fill="${c[0]}" opacity=".22"/>
-  <rect x="148" y="46" width="24" height="7" rx="3.5" fill="${c[2]}"/>
-  <rect x="134" y="66" width="52" height="5" rx="2.5" fill="${c[0]}" opacity=".5"/>
-  <rect x="134" y="80" width="34" height="5" rx="2.5" fill="${c[0]}" opacity=".32"/>
-  <rect x="134" y="98" width="52" height="34" rx="5" fill="${c[0]}" opacity=".26"/>
-  <rect x="134" y="140" width="52" height="5" rx="2.5" fill="${c[0]}" opacity=".32"/>
-  <rect x="204" y="70" width="3" height="20" rx="1.5" fill="${c[2]}" opacity=".7"/>
-  <rect x="204" y="98" width="3" height="14" rx="1.5" fill="${c[2]}" opacity=".7"/>`; }
-
-function mPhonePro(g, c){ return `
-  <rect x="116" y="30" width="88" height="180" rx="18" fill="url(#${g}m)"/>
-  <rect x="130" y="44" width="52" height="52" rx="14" fill="${c[2]}" opacity=".8"/>
-  <circle cx="146" cy="60" r="9" fill="${c[0]}" opacity=".55"/><circle cx="146" cy="60" r="4" fill="${c[2]}"/>
-  <circle cx="168" cy="60" r="9" fill="${c[0]}" opacity=".55"/><circle cx="168" cy="60" r="4" fill="${c[2]}"/>
-  <circle cx="146" cy="82" r="9" fill="${c[0]}" opacity=".55"/><circle cx="146" cy="82" r="4" fill="${c[2]}"/>
-  <circle cx="170" cy="82" r="5" fill="${c[0]}" opacity=".7"/>
-  <rect x="132" y="150" width="56" height="4" rx="2" fill="${c[0]}" opacity=".3"/>
-  <rect x="206" y="66" width="3" height="24" rx="1.5" fill="${c[2]}" opacity=".7"/>`; }
-
-function mTablet(g, c){ return `
-  <rect x="78" y="46" width="164" height="150" rx="14" fill="url(#${g}m)"/>
-  <rect x="86" y="54" width="148" height="134" rx="8" fill="${c[2]}" opacity=".92"/>
-  <rect x="92" y="60" width="136" height="122" rx="6" fill="${c[0]}" opacity=".2"/>
-  <rect x="100" y="70" width="60" height="6" rx="3" fill="${c[0]}" opacity=".5"/>
-  ${[0,1,2].map(i => `<rect x="${100 + i*44}" y="88" width="36" height="36" rx="6" fill="${c[0]}" opacity=".3"/>`).join('')}
-  ${[0,1,2].map(i => `<rect x="${100 + i*44}" y="132" width="36" height="36" rx="6" fill="${c[0]}" opacity=".22"/>`).join('')}`; }
-
-function mCase(g, c){ return `
-  <rect x="112" y="36" width="96" height="176" rx="20" fill="url(#${g}m)"/>
-  <rect x="122" y="46" width="76" height="156" rx="14" fill="${c[2]}" opacity=".35"/>
-  <rect x="132" y="56" width="44" height="44" rx="12" fill="${c[2]}" opacity=".75"/>
-  <circle cx="146" cy="70" r="7" fill="${c[0]}" opacity=".5"/>
-  <circle cx="164" cy="70" r="7" fill="${c[0]}" opacity=".5"/>
-  <circle cx="146" cy="88" r="7" fill="${c[0]}" opacity=".5"/>
-  <path d="M112 100 L112 150" stroke="${c[0]}" stroke-width="5" opacity=".55"/>
-  <path d="M208 96 L208 128" stroke="${c[0]}" stroke-width="5" opacity=".55"/>`; }
-
-/* ---------- electronics ---------- */
-function mHeadphones(g, c){ return `
-  <path d="M84 150 L84 112 Q84 50 160 50 Q236 50 236 112 L236 150" stroke="url(#${g}m)" stroke-width="17" fill="none" stroke-linecap="round"/>
-  <rect x="62" y="130" width="46" height="70" rx="20" fill="url(#${g}m)"/>
-  <rect x="212" y="130" width="46" height="70" rx="20" fill="url(#${g}m)"/>
-  <ellipse cx="85" cy="165" rx="14" ry="24" fill="${c[2]}" opacity=".55"/>
-  <ellipse cx="235" cy="165" rx="14" ry="24" fill="${c[2]}" opacity=".55"/>
-  <path d="M96 60 Q160 40 224 60" stroke="${c[0]}" stroke-width="4" opacity=".5" fill="none"/>`; }
-
-function mEarbuds(g, c){ return `
-  <rect x="92" y="96" width="136" height="90" rx="22" fill="url(#${g}m)"/>
-  <rect x="100" y="104" width="120" height="30" rx="12" fill="${c[2]}" opacity=".35"/>
-  <path d="M124 116 Q124 96 138 96 Q152 96 150 118 L146 146 Q138 154 130 146 Z" fill="${c[0]}" opacity=".95"/>
-  <path d="M170 116 Q170 96 184 96 Q198 96 196 118 L192 146 Q184 154 176 146 Z" fill="${c[0]}" opacity=".95"/>
-  <circle cx="136" cy="112" r="5" fill="${c[2]}" opacity=".5"/>
-  <circle cx="182" cy="112" r="5" fill="${c[2]}" opacity=".5"/>
-  <circle cx="160" cy="172" r="4" fill="${c[0]}" opacity=".6"/>`; }
-
-function mLaptop(g, c){ return `
-  <path d="M84 62 L236 62 L236 158 L84 158 Z" fill="url(#${g}m)"/>
-  <rect x="92" y="70" width="136" height="80" rx="4" fill="${c[2]}" opacity=".92"/>
-  <rect x="98" y="76" width="124" height="68" rx="3" fill="${c[0]}" opacity=".22"/>
-  <rect x="106" y="86" width="52" height="5" rx="2.5" fill="${c[0]}" opacity=".5"/>
-  <rect x="106" y="98" width="86" height="4" rx="2" fill="${c[0]}" opacity=".3"/>
-  <rect x="106" y="108" width="72" height="4" rx="2" fill="${c[0]}" opacity=".3"/>
-  <rect x="106" y="120" width="40" height="14" rx="4" fill="${c[0]}" opacity=".4"/>
-  <path d="M64 158 L256 158 L266 178 Q160 184 54 178 Z" fill="url(#${g}m)"/>
-  <rect x="132" y="166" width="56" height="5" rx="2.5" fill="${c[2]}" opacity=".45"/>`; }
-
-function mSpeaker(g, c){ return `
-  <rect x="104" y="62" width="112" height="140" rx="26" fill="url(#${g}m)"/>
-  ${[0,1,2,3,4,5,6].map(row => [0,1,2,3,4,5].map(col =>
-    `<circle cx="${124 + col*15}" cy="${92 + row*15}" r="3.1" fill="${c[2]}" opacity=".38"/>`).join('')).join('')}
-  <rect x="124" y="68" width="72" height="8" rx="4" fill="${c[2]}" opacity=".3"/>
-  <circle cx="140" cy="190" r="6" fill="${c[0]}" opacity=".7"/>
-  <circle cx="160" cy="190" r="6" fill="${c[0]}" opacity=".55"/>
-  <circle cx="180" cy="190" r="6" fill="${c[0]}" opacity=".7"/>`; }
-
-function mWatch(g, c){ return `
-  <rect x="132" y="30" width="56" height="52" rx="14" fill="${c[2]}" opacity=".75"/>
-  <rect x="132" y="162" width="56" height="52" rx="14" fill="${c[2]}" opacity=".75"/>
-  <rect x="112" y="72" width="96" height="104" rx="26" fill="url(#${g}m)"/>
-  <rect x="122" y="82" width="76" height="84" rx="19" fill="${c[2]}" opacity=".94"/>
-  <rect x="128" y="88" width="64" height="72" rx="15" fill="${c[0]}" opacity=".2"/>
-  <rect x="138" y="100" width="44" height="7" rx="3.5" fill="${c[0]}" opacity=".55"/>
-  <rect x="138" y="114" width="30" height="5" rx="2.5" fill="${c[0]}" opacity=".35"/>
-  <circle cx="160" cy="140" r="12" fill="${c[0]}" opacity=".3"/>
-  <rect x="206" y="104" width="7" height="18" rx="3.5" fill="${c[0]}" opacity=".8"/>`; }
-
-/* ---------- home ---------- */
-function mRug(g, c){ return `
-  <path d="M46 168 L120 88 L200 88 L274 168 Z" fill="url(#${g}m)"/>
-  <path d="M70 160 L128 98 L192 98 L250 160 Z" fill="${c[0]}" opacity=".35"/>
-  <path d="M96 150 L138 110 L182 110 L224 150 Z" fill="${c[2]}" opacity=".3"/>
-  <path d="M124 140 L152 122 L168 122 L196 140 Z" fill="${c[0]}" opacity=".5"/>
-  ${[0,1,2,3,4,5,6,7,8,9,10,11].map(i => `<rect x="${48 + i*20}" y="168" width="4" height="12" fill="${c[2]}" opacity=".45"/>`).join('')}`; }
-
-function mBedding(g, c){ return `
-  <rect x="56" y="118" width="208" height="76" rx="10" fill="url(#${g}m)"/>
-  <rect x="56" y="112" width="208" height="20" rx="9" fill="${c[0]}" opacity=".7"/>
-  <rect x="76" y="70" width="76" height="48" rx="12" fill="${c[0]}" opacity=".85"/>
-  <rect x="168" y="70" width="76" height="48" rx="12" fill="${c[0]}" opacity=".62"/>
-  <path d="M96 140 Q160 152 224 140 M96 162 Q160 174 224 162" stroke="${c[2]}" stroke-width="2" opacity=".22" fill="none"/>`; }
-
-function mTable(g, c){ return `
-  <rect x="86" y="82" width="148" height="92" rx="7" fill="url(#${g}m)"/>
-  <rect x="80" y="74" width="160" height="14" rx="5" fill="${c[0]}" opacity=".8"/>
-  <rect x="98" y="100" width="124" height="30" rx="4" fill="${c[2]}" opacity=".25"/>
-  <rect x="142" y="112" width="36" height="7" rx="3.5" fill="${c[0]}" opacity=".85"/>
-  <rect x="98" y="140" width="124" height="24" rx="4" fill="${c[2]}" opacity=".18"/>
-  <rect x="94" y="174" width="13" height="32" fill="${c[2]}" opacity=".65"/>
-  <rect x="213" y="174" width="13" height="32" fill="${c[2]}" opacity=".65"/>`; }
-
-function mThrow(g, c){ return `
-  <path d="M46 176 Q108 122 160 156 Q212 190 274 140 L274 200 L46 200 Z" fill="url(#${g}m)"/>
-  <path d="M46 150 Q108 96 160 130 Q212 164 274 114" stroke="${c[2]}" stroke-width="11" fill="none" opacity=".55"/>
-  <path d="M46 124 Q108 70 160 104 Q212 138 274 88" stroke="${c[0]}" stroke-width="9" fill="none" opacity=".75"/>
-  ${[0,1,2,3,4,5,6,7].map(i => `<rect x="${52 + i*30}" y="196" width="3" height="14" fill="${c[2]}" opacity=".4"/>`).join('')}`; }
-
-function mLamp(g, c){ return `
-  <path d="M116 138 L204 138 L184 78 L136 78 Z" fill="url(#${g}m)"/>
-  <ellipse cx="160" cy="138" rx="44" ry="8" fill="${c[0]}" opacity=".55"/>
-  <ellipse cx="160" cy="78" rx="24" ry="5" fill="${c[2]}" opacity=".5"/>
-  <rect x="155" y="138" width="10" height="56" fill="${c[2]}" opacity=".7"/>
-  <ellipse cx="160" cy="198" rx="38" ry="9" fill="${c[2]}" opacity=".85"/>
-  <ellipse cx="160" cy="150" rx="30" ry="14" fill="#fff8e1" opacity=".3"/>`; }
-
-/* ---------- kitchen ---------- */
-function mKettle(g, c){ return `
-  <path d="M106 118 Q106 106 118 106 L196 106 Q208 106 208 118 L204 186 Q202 198 188 198 L124 198 Q110 198 108 186 Z" fill="url(#${g}m)"/>
-  <path d="M208 124 Q252 112 256 78 Q258 62 244 58" stroke="url(#${g}m)" stroke-width="11" fill="none" stroke-linecap="round"/>
-  <path d="M106 130 Q66 136 66 158 Q66 178 104 182" stroke="${c[2]}" stroke-width="9" fill="none" opacity=".75"/>
-  <rect x="140" y="94" width="36" height="14" rx="6" fill="${c[2]}" opacity=".7"/>
-  <circle cx="158" cy="90" r="7" fill="${c[0]}" opacity=".9"/>
-  <ellipse cx="157" cy="122" rx="42" ry="7" fill="#ffffff" opacity=".3"/>`; }
-
-function mPlates(g, c){ return `
-  <ellipse cx="160" cy="176" rx="86" ry="20" fill="${c[2]}" opacity=".4"/>
-  <ellipse cx="160" cy="166" rx="86" ry="20" fill="url(#${g}m)"/>
-  <ellipse cx="160" cy="156" rx="78" ry="18" fill="${c[0]}" opacity=".8"/>
-  <ellipse cx="160" cy="146" rx="70" ry="16" fill="url(#${g}m)"/>
-  <ellipse cx="160" cy="138" rx="60" ry="14" fill="${c[0]}" opacity=".85"/>
-  <ellipse cx="160" cy="132" rx="40" ry="9" fill="${c[2]}" opacity=".3"/>
-  <ellipse cx="250" cy="176" rx="34" ry="12" fill="url(#${g}m)"/>
-  <ellipse cx="250" cy="171" rx="26" ry="9" fill="${c[0]}" opacity=".8"/>`; }
-
-function mBoard(g, c){ return `
-  <rect x="58" y="94" width="204" height="86" rx="14" fill="url(#${g}m)"/>
-  <circle cx="240" cy="116" r="8" fill="${c[2]}" opacity=".6"/>
-  ${[0,1,2,3,4].map(i => `<path d="M74 ${106 + i*16} Q160 ${100 + i*16} 246 ${108 + i*16}" stroke="${c[2]}" stroke-width="2" opacity=".2" fill="none"/>`).join('')}
-  <rect x="58" y="170" width="204" height="10" rx="5" fill="${c[2]}" opacity=".35"/>`; }
-
-function mGlasses(g, c){ return `
-  <path d="M96 92 L106 174 Q108 188 122 188 L146 188 Q160 188 162 174 L172 92 Z" fill="url(#${g}m)" opacity=".85"/>
-  <path d="M104 100 L112 168 Q113 178 122 178 L146 178 Q155 178 156 168 L164 100 Z" fill="${c[0]}" opacity=".45"/>
-  <path d="M176 104 L185 172 Q187 184 199 184 L219 184 Q231 184 233 172 L242 104 Z" fill="url(#${g}m)" opacity=".85"/>
-  <path d="M183 112 L190 166 Q191 174 199 174 L219 174 Q227 174 228 166 L235 112 Z" fill="${c[0]}" opacity=".45"/>
-  <ellipse cx="134" cy="96" rx="38" ry="7" fill="${c[2]}" opacity=".35"/>
-  <ellipse cx="209" cy="108" rx="33" ry="6" fill="${c[2]}" opacity=".35"/>`; }
-
-function mVase(g, c){ return `
-  <path d="M92 196 L92 130 Q92 104 112 104 Q132 104 132 130 L132 196 Z" fill="url(#${g}m)"/>
-  <path d="M142 196 L142 96 Q142 62 166 62 Q190 62 190 96 L190 196 Z" fill="url(#${g}m)" opacity=".85"/>
-  <path d="M200 196 L200 148 Q200 126 220 126 Q240 126 240 148 L240 196 Z" fill="${c[0]}" opacity=".9"/>
-  <ellipse cx="112" cy="104" rx="20" ry="5" fill="${c[2]}" opacity=".45"/>
-  <ellipse cx="166" cy="62" rx="24" ry="6" fill="${c[2]}" opacity=".45"/>
-  <ellipse cx="220" cy="126" rx="20" ry="5" fill="${c[2]}" opacity=".45"/>`; }
-
-const MOTIF = {
-  shirt:mShirt, jumper:mJumper, tshirt:mTshirt, jacket:mJacket, dress:mDress,
-  sneaker:mSneaker, boot:mBoot, loafer:mLoafer, plimsoll:mPlimsoll, hiker:mHiker,
-  phone:mPhone, phonePro:mPhonePro, tablet:mTablet, case:mCase,
-  headphones:mHeadphones, earbuds:mEarbuds, laptop:mLaptop, speaker:mSpeaker, watch:mWatch,
-  rug:mRug, bedding:mBedding, table:mTable, throw:mThrow, lamp:mLamp,
-  kettle:mKettle, plates:mPlates, board:mBoard, glasses:mGlasses, vase:mVase
-};
-
-/* Three views per product: the full product, a close detail, and the product
-   on a deeper backdrop. Real listings show a strip like this. */
-const VIEW_TINT = [["#ffffff", "#f1f4f8"], ["#f7f9fc", "#e7ecf3"], ["#eef2f8", "#dde4ee"]];
-
-function productArt(p, cls, view){
-  const v = Math.max(0, Math.min(2, Number(view) || 0));
-  const c = p.art;
-  const id = "a" + p.sku.replace(/[^A-Za-z0-9]/g, "") + v;
-  const draw = MOTIF[p.motif] || MOTIF.vase;
-  const body = draw(id, c);
-  const inner = v === 1
-    ? `<g transform="translate(160 118) scale(1.7) translate(-160 -118)">${body}</g>`
-    : v === 2
-      ? `<g transform="rotate(-8 160 120) translate(160 120) scale(.9) translate(-160 -120)">${body}</g>`
-      : `<g transform="translate(160 118) scale(1.08) translate(-160 -118)">${body}</g>`;
-  return `<svg class="${cls || "prod-art"}" viewBox="0 0 320 240" role="img"
-      aria-label="${esc(p.name)}${v ? ", view " + (v + 1) : ""}" preserveAspectRatio="xMidYMid slice">
-    ${artStage(id, c, VIEW_TINT[v])}
-    ${inner}
-    <rect width="320" height="240" fill="url(#${id}s)"/>
-  </svg>`;
-}
-
-/* star rating, drawn rather than typed, so no glyph can break a text match */
-function stars(rating){
-  const pct = Math.max(0, Math.min(100, (Number(rating) / 5) * 100));
-  const pts = "10,1.2 12.5,7 18.8,7.6 14,11.9 15.4,18.1 10,14.9 4.6,18.1 6,11.9 1.2,7.6 7.5,7";
-  const one = f => `<polygon points="${pts}" fill="${f}"/>`;
-  return `<svg class="stars" viewBox="0 0 104 20" aria-hidden="true" focusable="false">
-    <defs><clipPath id="sc${String(rating).replace('.','')}"><rect x="0" y="0" width="${pct}%" height="20"/></clipPath></defs>
-    <g fill="none">${[0,1,2,3,4].map(i => `<g transform="translate(${i * 21} 0)">${one("#d8dee8")}</g>`).join("")}</g>
-    <g clip-path="url(#sc${String(rating).replace('.','')})">${[0,1,2,3,4].map(i => `<g transform="translate(${i * 21} 0)">${one("#f59e0b")}</g>`).join("")}</g>
-  </svg>`;
-}
-
-/* ============================================================
-   PRODUCT PHOTOGRAPHY
-   Files live in assets/products/<sku in lower case>/<n>.jpg and are
-   referenced with a RELATIVE path, so the application works at any
-   deployment base path without configuration.
-
-   Only the products listed here have a photograph. Everything else
-   falls back to the vector artwork above, and so does any photograph
-   that fails to load: the failure is recorded in IMG_FAILURES so it
-   can be reported rather than hidden.
-
-   Alt text describes OUR product. The photographs come from a third
-   party dataset whose own brand names are deliberately not repeated
-   to the user or to a screen reader. See assets/image-manifest.json
-   and IMAGE-CREDITS.md for provenance.
-   ============================================================ */
-/* Photography ships for five products only. Every other product draws the
-   vector artwork above. The set was cut from ten to five deliberately: each
-   discarded view carried a visible third party brand mark, a stitched brand
-   label or borrowed marketing copy, none of which belongs on a product page
-   for an invented brand. Nothing here has any of that. */
-const PRODUCT_IMAGES = {
-  "HM-1001": { n:3, alt:["White cotton Oxford shirt worn open at the collar", "White Oxford shirt, cuff and button detail", "White Oxford shirt worn with the sleeves rolled"] },
-  "HM-1002": { n:3, alt:["Black crew neck merino jumper worn by a model", "Black merino jumper, three quarter view", "Black merino jumper, back view"] },
-  "HM-1005": { n:4, alt:["Olive linen shirt dress with a tied self belt", "Olive shirt dress, chest pockets and button placket", "Olive shirt dress, back view", "Olive shirt dress, full length view"] },
-  "HM-1008": { n:4, alt:["Navy suede penny loafer, side profile", "Navy penny loafer, three quarter front", "Navy penny loafer, saddle and apron detail", "Navy penny loafer, heel and side"] },
-  "HM-1021": { n:3, alt:["Grey and white geometric rug on a wooden floor", "Grey and white geometric rug, full length", "Grey and white geometric rug, weave close up"] },
-};
-const IMG_FAILURES = [];
-
-const imgPath = (sku, i) => "assets/products/" + sku.toLowerCase() + "/" + i + ".jpg";
-const hasPhotos = p => !!(p && PRODUCT_IMAGES[p.sku]);
-const viewCount = p => (p && PRODUCT_IMAGES[p.sku]) ? PRODUCT_IMAGES[p.sku].n : 3;
-
-/* The single entry point every screen uses, so one product looks the
-   same on the listing, the product page, the basket, the checkout
-   summary and the order confirmation. */
-function productMedia(p, cls, view){
-  const m = PRODUCT_IMAGES[p.sku];
-  if(!m) return productArt(p, cls, view);
-  const v = Math.max(0, Math.min(m.n - 1, Number(view) || 0));
-  const alt = m.alt[v] || (p.brand + " " + p.name);
-  return `<img class="${cls || "prod-art"}" src="${imgPath(p.sku, v + 1)}" alt="${esc(alt)}"
-    width="675" height="900" loading="eager" decoding="async"
-    data-sku="${esc(p.sku)}" data-view="${v}">`;
-}
-
-/* A photograph that cannot be fetched or decoded is replaced by the
-   vector artwork in place, with no layout movement, and recorded. */
-document.addEventListener("error", function(ev){
-  const el = ev.target;
-  if(!el || el.tagName !== "IMG" || !el.hasAttribute("data-sku")) return;
-  const sku = el.getAttribute("data-sku");
-  if(IMG_FAILURES.indexOf(sku) < 0) IMG_FAILURES.push(sku);
-  const p = productBySku(sku);
-  if(!p) return;
-  const holder = document.createElement("div");
-  holder.innerHTML = productArt(p, el.getAttribute("class"), el.getAttribute("data-view"));
-  const svg = holder.firstElementChild;
-  if(svg && el.parentNode) el.parentNode.replaceChild(svg, el);
-}, true);
-/* ============================================================
    REFERENCE DATA
-   Marketplace catalogue, promotions, delivery, countries,
-   customers, payment test cards, carriers.
-
-   Every brand and product here is invented. Nothing is modelled on,
-   named after or illustrated from a real product or retailer.
+   Catalogue, promotions, delivery options, countries, customers,
+   payment test cards, carriers.
    ============================================================ */
 
-/* Variants are the cartesian product of the axes. Each axis value carries a
-   short code so the variant id stays stable and readable: MID-256, WHT-M.
-   Stock is the default unless a variant is listed in the overrides. The
-   allocatable figure is what the ERP can reserve and is the same as the web
-   figure unless stated: the divergence is what makes the stock hold
-   reachable. */
-const CATALOGUE_RAW = [
-
-  /* ---------------- FASHION ---------------- */
-  { sku:"HM-1001", name:"Oxford Cotton Shirt", brand:"Northvale", cat:"Fashion",
-    price:48.00, rating:4.4, reviews:1284, weight:0.5, motif:"shirt", art:["#f2f6fb","#b9cbe3","#3f5a80"],
-    blurb:"A button down Oxford in washed cotton, cut a little longer in the body so it stays tucked.",
-    bullets:["Washed 140gsm cotton Oxford","Button down collar, single chest pocket","Longer body, straight hem","Machine wash at 30 degrees"],
-    axes:[ { name:"Colour", values:[ {label:"White", code:"WHT", swatch:"#f8fafc"},
-                                     {label:"Sky", code:"SKY", swatch:"#9fc2e8"},
-                                     {label:"Navy", code:"NVY", swatch:"#25385f"} ] },
-           { name:"Size", values:[ {label:"S",code:"S"},{label:"M",code:"M"},{label:"L",code:"L"},{label:"XL",code:"XL"} ] } ],
-    stockDefault:14 },
-
-  { sku:"HM-1002", name:"Merino Crew Neck Jumper", brand:"Northvale", cat:"Fashion",
-    price:72.00, was:90.00, rating:4.6, reviews:842, weight:0.6, motif:"jumper", art:["#efe9df","#c3b6a2","#6b5f4c"],
-    blurb:"Fine gauge extra fine merino, knitted in a single piece so there is no shoulder seam to rub.",
-    bullets:["100 per cent extra fine merino wool","Fully fashioned, no shoulder seam","Ribbed collar, cuffs and hem","Hand wash or wool cycle"],
-    axes:[ { name:"Colour", values:[ {label:"Charcoal", code:"CHR", swatch:"#3a3f45"},
-                                     {label:"Oatmeal", code:"OAT", swatch:"#ddd2be"},
-                                     {label:"Forest", code:"FOR", swatch:"#2f4f3e"} ] },
-           { name:"Size", values:[ {label:"S",code:"S"},{label:"M",code:"M"},{label:"L",code:"L"},{label:"XL",code:"XL"} ] } ],
-    stockDefault:11, stock:{ "CHR-L":{stock:6, alloc:2} } },
-
-  { sku:"HM-1003", name:"Cotton T Shirt Three Pack", brand:"Ashgrove", cat:"Fashion",
-    price:26.00, rating:4.2, reviews:3109, weight:0.45, motif:"tshirt", art:["#f6f7f9","#c7cdd6","#4c5563"],
-    blurb:"Three heavyweight tees with a ribbed neck that keeps its shape past the first wash.",
-    bullets:["Pack of three","200gsm combed cotton","Twin needle hem and sleeve","Ribbed crew neck with taped shoulders"],
-    axes:[ { name:"Colour", values:[ {label:"White", code:"WHT", swatch:"#fafafa"},
-                                     {label:"Black", code:"BLK", swatch:"#24262b"},
-                                     {label:"Grey Marl", code:"GRY", swatch:"#b4b8bf"} ] },
-           { name:"Size", values:[ {label:"S",code:"S"},{label:"M",code:"M"},{label:"L",code:"L"},{label:"XL",code:"XL"} ] } ],
-    stockDefault:22 },
-
-  { sku:"HM-1004", name:"Quilted Field Jacket", brand:"Ashgrove", cat:"Fashion",
-    price:129.00, rating:4.5, reviews:517, weight:1.1, motif:"jacket", art:["#e8ecdf","#9fae88","#3f4a34"],
-    blurb:"Diamond quilted with a corduroy collar and a proper two way zip. Showerproof, not waterproof.",
-    bullets:["Diamond quilted showerproof shell","Corduroy collar, two way zip","Four outer pockets","Recycled wadding"],
-    axes:[ { name:"Colour", values:[ {label:"Olive", code:"OLV", swatch:"#6b7a4f"},
-                                     {label:"Navy", code:"NVY", swatch:"#2a3550"} ] },
-           { name:"Size", values:[ {label:"S",code:"S"},{label:"M",code:"M"},{label:"L",code:"L"},{label:"XL",code:"XL"} ] } ],
-    stockDefault:8 },
-
-  { sku:"HM-1005", name:"Linen Shirt Dress", brand:"Northvale", cat:"Fashion",
-    price:89.00, rating:4.3, reviews:396, weight:0.55, motif:"dress", art:["#f7f1e6","#dcc9ab","#7c6749"],
-    blurb:"Mid weight European flax with a removable belt and deep side pockets.",
-    bullets:["100 per cent European flax linen","Removable self belt","Deep side seam pockets","Softens with every wash"],
-    axes:[ { name:"Colour", values:[ {label:"Sand", code:"SND", swatch:"#dfcaa8"},
-                                     {label:"Sage", code:"SGE", swatch:"#a7b49a"} ] },
-           { name:"Size", values:[ {label:"8",code:"D8"},{label:"10",code:"D10"},{label:"12",code:"D12"},{label:"14",code:"D14"} ] } ],
-    stockDefault:7 },
-
-  /* ---------------- FOOTWEAR ---------------- */
-  { sku:"HM-1006", name:"Fell Trail Running Shoe", brand:"Trailhead", cat:"Footwear",
-    price:115.00, rating:4.7, reviews:2244, weight:0.9, motif:"sneaker", art:["#e6edf5","#8aa4c4","#2c3f5c"],
-    blurb:"A 6mm drop trail shoe with a sticky rubber outsole and a rock plate under the forefoot.",
-    bullets:["6mm heel to toe drop","Sticky rubber lugged outsole","Forefoot rock plate","Drains and dries quickly"],
-    axes:[ { name:"Colour", values:[ {label:"Slate Lime", code:"SLM", swatch:"#6d7f96"},
-                                     {label:"Black Grey", code:"BGY", swatch:"#33373d"} ] },
-           { name:"Size", values:[ {label:"6",code:"S6"},{label:"7",code:"S7"},{label:"8",code:"S8"},
-                                   {label:"9",code:"S9"},{label:"10",code:"S10"},{label:"11",code:"S11"} ] } ],
-    stockDefault:9, stock:{ "BGY-S11":{stock:0, alloc:0} } },
-
-  { sku:"HM-1007", name:"Leather Chelsea Boot", brand:"Stridewell", cat:"Footwear",
-    price:145.00, rating:4.4, reviews:688, weight:1.2, motif:"boot", art:["#f0e2cf","#c09562","#5c3d1f"],
-    blurb:"Goodyear welted on a leather sole, with twin elastic gussets and a heel pull tab.",
-    bullets:["Goodyear welted, resoleable","Full grain leather upper","Twin elastic gussets","Leather sole with rubber insert"],
-    axes:[ { name:"Colour", values:[ {label:"Tan", code:"TAN", swatch:"#b07a44"},
-                                     {label:"Black", code:"BLK", swatch:"#2b2723"} ] },
-           { name:"Size", values:[ {label:"6",code:"S6"},{label:"7",code:"S7"},{label:"8",code:"S8"},
-                                   {label:"9",code:"S9"},{label:"10",code:"S10"},{label:"11",code:"S11"} ] } ],
-    stockDefault:6 },
-
-  { sku:"HM-1008", name:"Suede Penny Loafer", brand:"Stridewell", cat:"Footwear",
-    price:98.00, was:120.00, rating:4.1, reviews:302, weight:0.85, motif:"loafer", art:["#e9e6ee","#a9a2bd","#474160"],
-    blurb:"Unlined suede on a flexible rubber sole. Wear them in barefoot for a week and they mould.",
-    bullets:["Unlined calf suede","Flexible rubber sole","Hand stitched apron","Comes with a dust bag"],
-    axes:[ { name:"Colour", values:[ {label:"Navy", code:"NVY", swatch:"#374063"},
-                                     {label:"Stone", code:"STN", swatch:"#b9ae9c"} ] },
-           { name:"Size", values:[ {label:"6",code:"S6"},{label:"7",code:"S7"},{label:"8",code:"S8"},
-                                   {label:"9",code:"S9"},{label:"10",code:"S10"},{label:"11",code:"S11"} ] } ],
-    stockDefault:5 },
-
-  { sku:"HM-1009", name:"Canvas Plimsoll", brand:"Trailhead", cat:"Footwear",
-    price:42.00, rating:4.0, reviews:1517, weight:0.7, motif:"plimsoll", art:["#f4f7fa","#c2ced9","#4a5866"],
-    blurb:"Twelve ounce canvas over a vulcanised rubber sole. The plainest shoe we make.",
-    bullets:["12oz cotton canvas","Vulcanised rubber sole","Cotton laces, metal eyelets","Machine washable at 30 degrees"],
-    axes:[ { name:"Colour", values:[ {label:"White", code:"WHT", swatch:"#f7f8fa"},
-                                     {label:"Navy", code:"NVY", swatch:"#2c3a55"} ] },
-           { name:"Size", values:[ {label:"6",code:"S6"},{label:"7",code:"S7"},{label:"8",code:"S8"},
-                                   {label:"9",code:"S9"},{label:"10",code:"S10"},{label:"11",code:"S11"} ] } ],
-    stockDefault:16 },
-
-  { sku:"HM-1010", name:"Waterproof Hiking Boot", brand:"Trailhead", cat:"Footwear",
-    price:168.00, rating:4.6, reviews:921, weight:1.6, motif:"hiker", art:["#ece3d6","#b09070","#4c3826"],
-    blurb:"A four season boot with a waterproof membrane, a full rubber rand and a shank stiff enough for a loaded pack.",
-    bullets:["Waterproof and breathable membrane","Full rubber toe and heel rand","Three quarter length shank","Deep lugged outsole"],
-    axes:[ { name:"Colour", values:[ {label:"Brown", code:"BRN", swatch:"#7a5636"} ] },
-           { name:"Size", values:[ {label:"6",code:"S6"},{label:"7",code:"S7"},{label:"8",code:"S8"},
-                                   {label:"9",code:"S9"},{label:"10",code:"S10"},{label:"11",code:"S11"} ] } ],
-    stockDefault:7 },
-
-  /* ---------------- MOBILES ---------------- */
-  { sku:"HM-1011", name:"Pulse 7 Smartphone", brand:"Zenith", cat:"Mobiles",
-    price:649.00, rating:4.5, reviews:4872, weight:0.3, restricted:true, motif:"phone", art:["#e4e9f1","#8d9bb2","#2b3444"],
-    blurb:"A 6.4 inch panel at 120Hz, three cameras and a battery that genuinely lasts the day.",
-    bullets:["6.4 inch 120Hz display","Triple camera, 50MP main","Two day battery in light use","Five years of security updates"],
-    axes:[ { name:"Colour", values:[ {label:"Midnight", code:"MID", swatch:"#23293a"},
-                                     {label:"Silver", code:"SLV", swatch:"#ccd2dc"},
-                                     {label:"Cobalt", code:"COB", swatch:"#2f5ba8"} ] },
-           { name:"Storage", values:[ {label:"128GB",code:"128"},{label:"256GB",code:"256"},{label:"512GB",code:"512"} ] } ],
-    stockDefault:10, stock:{ "MID-256":{stock:4, alloc:1} } },
-
-  { sku:"HM-1012", name:"Pulse 7 Pro Smartphone", brand:"Zenith", cat:"Mobiles",
-    price:949.00, rating:4.7, reviews:2110, weight:0.32, restricted:true, motif:"phonePro", art:["#e7e9ec","#9aa0a8","#34383e"],
-    blurb:"The Pulse with a periscope telephoto, a titanium frame and the brighter panel.",
-    bullets:["6.7 inch 120Hz display, 2600 nits","Periscope telephoto, five times optical","Titanium frame","Seven years of security updates"],
-    axes:[ { name:"Colour", values:[ {label:"Graphite", code:"GRA", swatch:"#43474d"},
-                                     {label:"Silver", code:"SLV", swatch:"#d2d6dc"} ] },
-           { name:"Storage", values:[ {label:"256GB",code:"256"},{label:"512GB",code:"512"},{label:"1TB",code:"1TB"} ] } ],
-    stockDefault:6 },
-
-  { sku:"HM-1013", name:"Lite 5 Smartphone", brand:"Corvid", cat:"Mobiles",
-    price:229.00, was:269.00, rating:3.9, reviews:6430, weight:0.29, restricted:true, motif:"phone", art:["#e6f1ec","#8fb8a6","#2c5044"],
-    blurb:"The sensible one. A big battery, a clean interface and no features you will never open.",
-    bullets:["6.6 inch 90Hz display","Dual camera, 48MP main","5000mAh battery","Headphone socket and memory card slot"],
-    axes:[ { name:"Colour", values:[ {label:"Black", code:"BLK", swatch:"#2a2d31"},
-                                     {label:"Mint", code:"MNT", swatch:"#9fcbb8"} ] },
-           { name:"Storage", values:[ {label:"64GB",code:"64"},{label:"128GB",code:"128"} ] } ],
-    stockDefault:24 },
-
-  { sku:"HM-1014", name:"Tab 11 Tablet", brand:"Zenith", cat:"Mobiles",
-    price:399.00, rating:4.4, reviews:1033, weight:0.6, restricted:true, motif:"tablet", art:["#e9ecf2","#97a1b4","#303747"],
-    blurb:"An 11 inch tablet that takes the same stylus as the Pulse and charges over the same cable.",
-    bullets:["11 inch 2400 by 1600 display","Stylus and keyboard support","Twelve hour video playback","Expandable storage"],
-    axes:[ { name:"Colour", values:[ {label:"Space", code:"SPC", swatch:"#3b4150"},
-                                     {label:"Silver", code:"SLV", swatch:"#ced3db"} ] },
-           { name:"Storage", values:[ {label:"128GB",code:"128"},{label:"256GB",code:"256"} ] } ],
-    stockDefault:9 },
-
-  { sku:"HM-1015", name:"Rugged Phone Case", brand:"Corvid", cat:"Mobiles",
-    price:24.00, rating:4.2, reviews:2905, weight:0.1, motif:"case", art:["#eceff3","#9aa3b0","#333a45"],
-    blurb:"A two part case rated to a three metre drop, with a raised lip around the camera and the screen.",
-    bullets:["Three metre drop rating","Raised camera and screen lip","Wireless charging compatible","Fits the Pulse 7 and Pulse 7 Pro"],
-    axes:[ { name:"Colour", values:[ {label:"Black", code:"BLK", swatch:"#2c2f34"},
-                                     {label:"Blue", code:"BLU", swatch:"#3d63a8"},
-                                     {label:"Red", code:"RED", swatch:"#b5382f"} ] } ],
-    stockDefault:35 },
-
-  /* ---------------- ELECTRONICS ---------------- */
-  { sku:"HM-1016", name:"Studio Over Ear Headphones", brand:"Aurio", cat:"Electronics",
-    price:199.00, rating:4.6, reviews:3781, weight:0.35, restricted:true, motif:"headphones", art:["#eceef2","#98a0ad","#31363f"],
-    blurb:"Closed back, actively cancelling, and light enough to forget about after an hour.",
-    bullets:["Adaptive noise cancelling","Forty hour battery with cancelling on","Memory foam lambskin pads","Folds flat into a hard case"],
-    axes:[ { name:"Colour", values:[ {label:"Black", code:"BLK", swatch:"#2e3137"},
-                                     {label:"Ivory", code:"IVY", swatch:"#e9e3d8"} ] } ],
-    stockDefault:13 },
-
-  { sku:"HM-1017", name:"Air Wireless Earbuds", brand:"Aurio", cat:"Electronics",
-    price:89.00, was:109.00, rating:4.3, reviews:8204, weight:0.08, restricted:true, motif:"earbuds", art:["#f1f3f7","#aeb6c2","#3a4048"],
-    blurb:"Six hours in the bud, twenty four in the case, and a fit test that tells you if you have the right tips.",
-    bullets:["Six hours, twenty four with the case","In app fit test","Sweat and splash resistant","Wireless charging case"],
-    axes:[ { name:"Colour", values:[ {label:"White", code:"WHT", swatch:"#f5f6f8"},
-                                     {label:"Black", code:"BLK", swatch:"#2c2f35"} ] } ],
-    stockDefault:31 },
-
-  { sku:"HM-1018", name:"Meridian 14 Laptop", brand:"Lumenworks", cat:"Electronics",
-    price:749.00, rating:4.4, reviews:1466, weight:1.6, restricted:true, motif:"laptop", art:["#e8eaee","#9ba2ac","#343941"],
-    blurb:"A 14 inch aluminium machine that runs silent under ordinary load and charges over USB C.",
-    bullets:["14 inch 2240 by 1400 display","Fanless under ordinary load","Sixteen hour battery","Two USB C, one USB A, card reader"],
-    axes:[ { name:"Colour", values:[ {label:"Silver", code:"SLV", swatch:"#ccd1d8"},
-                                     {label:"Graphite", code:"GRA", swatch:"#454a52"} ] },
-           { name:"Memory", values:[ {label:"8GB",code:"8"},{label:"16GB",code:"16"} ] } ],
-    stockDefault:7 },
-
-  { sku:"HM-1019", name:"Compact Bluetooth Speaker", brand:"Aurio", cat:"Electronics",
-    price:59.00, rating:4.2, reviews:5120, weight:0.7, restricted:true, motif:"speaker", art:["#eef1f4","#a4acb8","#363c45"],
-    blurb:"Palm sized, properly waterproof, and loud enough to annoy a neighbouring tent.",
-    bullets:["IP67 waterproof and dustproof","Eighteen hour battery","Pair two for stereo","Floats"],
-    axes:[ { name:"Colour", values:[ {label:"Charcoal", code:"CHR", swatch:"#3b4048"},
-                                     {label:"Coral", code:"COR", swatch:"#e06a55"},
-                                     {label:"Teal", code:"TEA", swatch:"#2f8f8a"} ] } ],
-    stockDefault:27 },
-
-  { sku:"HM-1020", name:"Pace Smart Watch", brand:"Lumenworks", cat:"Electronics",
-    price:179.00, rating:4.1, reviews:2673, weight:0.12, restricted:true, motif:"watch", art:["#eaedf1","#9ea6b2","#333942"],
-    blurb:"Tracks the usual things, lasts a week, and does not need its own phone plan.",
-    bullets:["Seven day battery","Heart rate and blood oxygen","Built in GPS","Swim proof to fifty metres"],
-    axes:[ { name:"Colour", values:[ {label:"Black", code:"BLK", swatch:"#2d3138"},
-                                     {label:"Rose", code:"ROS", swatch:"#d8a1a3"} ] },
-           { name:"Size", values:[ {label:"40mm",code:"40"},{label:"44mm",code:"44"} ] } ],
-    stockDefault:12 },
-
-  /* ---------------- HOME ---------------- */
-  { sku:"HM-1021", name:"Hand Knotted Wool Rug", brand:"Fernway", cat:"Home",
-    price:320.00, rating:4.5, reviews:412, weight:16.5, bulky:true, motif:"rug", art:["#f0ece2","#c2b49a","#6a5c46"],
-    blurb:"Highland wool on a cotton warp, knotted by hand. Expect gentle shedding for the first month.",
-    bullets:["Hand knotted highland wool","Cotton warp","Natural undyed yarn","Professional clean only"],
-    axes:[ { name:"Colour", values:[ {label:"Natural", code:"NAT", swatch:"#d8cbb4"},
-                                     {label:"Indigo", code:"IND", swatch:"#3c4a75"} ] },
-           { name:"Size", values:[ {label:"120 by 170 cm",code:"SM"},{label:"160 by 230 cm",code:"MD"},{label:"200 by 300 cm",code:"LG"} ] } ],
-    stockDefault:6, stock:{ "NAT-LG":{stock:2, alloc:0}, "IND-LG":{stock:1, alloc:1} } },
-
-  { sku:"HM-1022", name:"Washed Linen Bedding Set", brand:"Halcyon Home", cat:"Home",
-    price:145.00, rating:4.6, reviews:1890, weight:3.1, motif:"bedding", art:["#f4efe6","#cfc3ad","#7a6e58"],
-    blurb:"Stonewashed European flax. One duvet cover and two pillowcases, softening with every wash.",
-    bullets:["Stonewashed European flax","One duvet cover, two pillowcases","Button closure","Machine wash at 40 degrees"],
-    axes:[ { name:"Colour", values:[ {label:"Oatmeal", code:"OAT", swatch:"#ddd1ba"},
-                                     {label:"Slate", code:"SLA", swatch:"#6e7783"},
-                                     {label:"Sage", code:"SGE", swatch:"#a3b096"} ] },
-           { name:"Size", values:[ {label:"Double",code:"DBL"},{label:"King",code:"KNG"} ] } ],
-    stockDefault:13, stock:{ "SLA-KNG":{stock:6, alloc:2}, "SGE-KNG":{stock:0, alloc:0} } },
-
-  { sku:"HM-1023", name:"Oak Bedside Table", brand:"Fernway", cat:"Home",
-    price:240.00, rating:4.3, reviews:228, weight:19.0, bulky:true, motif:"table", art:["#f2e3c9","#c49d6a","#6d4c28"],
-    blurb:"Solid oak with a single soft close drawer and a routed finger pull. Arrives fully assembled.",
-    bullets:["Solid European oak","Soft close drawer runner","Routed finger pull, no handle","Arrives fully assembled"],
-    axes:[ { name:"Finish", values:[ {label:"Natural Oak", code:"NAT", swatch:"#c9a06a"},
-                                     {label:"Smoked Oak", code:"SMK", swatch:"#6d5540"} ] } ],
-    stockDefault:5 },
-
-  { sku:"HM-1024", name:"Cashmere Throw", brand:"Halcyon Home", cat:"Home",
-    price:165.00, rating:4.7, reviews:654, weight:1.2, motif:"throw", art:["#f8ece4","#dcb9a3","#8a5f46"],
-    blurb:"Two ply Mongolian cashmere, woven on a narrow loom with a hand knotted fringe.",
-    bullets:["Two ply Mongolian cashmere","Hand knotted fringe","130 by 180 cm","Dry clean only"],
-    axes:[ { name:"Colour", values:[ {label:"Ivory", code:"IVY", swatch:"#efe6d9"},
-                                     {label:"Charcoal", code:"CHR", swatch:"#43474d"},
-                                     {label:"Rust", code:"RST", swatch:"#a85a36"} ] } ],
-    stockDefault:9 },
-
-  { sku:"HM-1025", name:"Aurora Table Lamp", brand:"Fernway", cat:"Home",
-    price:89.00, rating:4.2, reviews:771, weight:2.4, motif:"lamp", art:["#fdf0d4","#e0b45c","#77501a"],
+/* Variant stock is what the storefront shows. Allocatable stock is what the
+   ERP can reserve, and it is deliberately lower on some variants: the web
+   figure is an available to promise number refreshed on a cycle, the ERP
+   figure is live. The divergence is what makes the stock hold reachable. */
+const CATALOGUE = [
+  { sku:"LC-1001", name:"Aurora Table Lamp", cat:"Lighting", price:89.00, weight:2.4, bulky:false, restricted:false,
     blurb:"A turned metal base with a hand rolled linen shade. Dimmable, with a fabric braided flex.",
-    bullets:["Turned solid metal base","Hand rolled linen shade","Inline dimmer switch","Braided fabric flex, two metres"],
-    axes:[ { name:"Finish", values:[ {label:"Brushed Brass", code:"BRS", swatch:"#c79b4e"},
-                                     {label:"Matte Black", code:"BLK", swatch:"#33363a"},
-                                     {label:"Polished Chrome", code:"CHM", swatch:"#c8ccd2"} ] } ],
-    stockDefault:12, stock:{ "CHM":{stock:3, alloc:1} } },
+    axes:["Finish"],
+    variants:[ {id:"BRASS", Finish:"Brushed Brass", stock:24, alloc:24},
+               {id:"BLACK", Finish:"Matte Black",   stock:12, alloc:12},
+               {id:"CHROME",Finish:"Polished Chrome",stock:3, alloc:1} ],
+    art:["#ffe9b0","#f59e0b","#7c2d12"] },
 
-  /* ---------------- KITCHEN ---------------- */
-  { sku:"HM-1026", name:"Copper Pour Over Kettle", brand:"Coppersmith", cat:"Kitchen",
-    price:74.50, rating:4.5, reviews:1204, weight:1.1, motif:"kettle", art:["#fbe6d2","#d9945c","#7d4620"],
-    blurb:"Hammered copper with a gooseneck spout weighted for a slow, even pour.",
-    bullets:["Hammered copper body","Weighted gooseneck spout","One litre capacity","Suitable for induction"],
-    axes:[], stockDefault:28 },
+  { sku:"LC-1002", name:"Washed Linen Bedding Set", cat:"Bedding", price:145.00, weight:3.1, bulky:false, restricted:false,
+    blurb:"Stonewashed European flax. One duvet cover and two pillowcases, softening with every wash.",
+    axes:["Colour","Size"],
+    variants:[ {id:"OAT-D", Colour:"Oatmeal", Size:"Double", stock:18, alloc:18},
+               {id:"OAT-K", Colour:"Oatmeal", Size:"King", stock:9, alloc:9},
+               {id:"SLA-D", Colour:"Slate",   Size:"Double", stock:14, alloc:14},
+               {id:"SLA-K", Colour:"Slate",   Size:"King", stock:6, alloc:2},
+               {id:"SAG-D", Colour:"Sage",    Size:"Double", stock:11, alloc:11},
+               {id:"SAG-K", Colour:"Sage",    Size:"King", stock:0, alloc:0} ],
+    art:["#e0e7ff","#818cf8","#312e81"] },
 
-  { sku:"HM-1027", name:"Stoneware Dinner Set", brand:"Coppersmith", cat:"Kitchen",
-    price:118.00, rating:4.4, reviews:883, weight:6.8, motif:"plates", art:["#e9f0f3","#a6bfc9","#3f5b66"],
+  { sku:"LC-1003", name:"Stoneware Dinner Set", cat:"Tableware", price:118.00, weight:6.8, bulky:false, restricted:false,
     blurb:"Reactive glaze stoneware thrown in small batches, so no two pieces carry the same shading.",
-    bullets:["Reactive glaze stoneware","Dishwasher and microwave safe","Small batch, shading varies","Replacement pieces available"],
-    axes:[ { name:"Size", values:[ {label:"Four place setting", code:"P4"},
-                                   {label:"Eight place setting", code:"P8"} ] } ],
-    stockDefault:14 },
+    axes:["Size"],
+    variants:[ {id:"P4", Size:"Four place setting", stock:21, alloc:21},
+               {id:"P8", Size:"Eight place setting", stock:7, alloc:7} ],
+    art:["#ccfbf1","#2dd4bf","#115e59"] },
 
-  { sku:"HM-1028", name:"Walnut Serving Board", brand:"Fernway", cat:"Kitchen",
-    price:42.00, rating:4.6, reviews:1655, weight:1.8, motif:"board", art:["#eddcbe","#b4844d","#543718"],
+  { sku:"LC-1004", name:"Cashmere Throw", cat:"Living", price:165.00, weight:1.2, bulky:false, restricted:false,
+    blurb:"Two ply Mongolian cashmere, woven on a narrow loom with a hand knotted fringe.",
+    axes:["Colour"],
+    variants:[ {id:"IVORY", Colour:"Ivory", stock:15, alloc:15},
+               {id:"CHAR",  Colour:"Charcoal", stock:8, alloc:8},
+               {id:"RUST",  Colour:"Rust", stock:4, alloc:4} ],
+    art:["#ffe4e6","#fb7185","#9f1239"] },
+
+  { sku:"LC-1005", name:"Copper Pour Over Kettle", cat:"Kitchen", price:74.50, weight:1.1, bulky:false, restricted:false,
+    blurb:"Hammered copper with a gooseneck spout weighted for a slow, even pour.",
+    axes:[], variants:[ {id:"STD", stock:33, alloc:33} ],
+    art:["#ffedd5","#fb923c","#9a3412"] },
+
+  { sku:"LC-1006", name:"Walnut Serving Board", cat:"Kitchen", price:42.00, weight:1.8, bulky:false, restricted:false,
     blurb:"End grain American black walnut, finished with a food safe hardwax oil.",
-    bullets:["End grain American black walnut","Food safe hardwax oil finish","Hanging hole and juice groove","Hand wash and re oil twice a year"],
-    axes:[ { name:"Size", values:[ {label:"Small 30 cm", code:"SM"},
-                                   {label:"Large 45 cm", code:"LG"} ] } ],
-    stockDefault:19 },
+    axes:["Size"],
+    variants:[ {id:"SM", Size:"Small, 30 cm", stock:26, alloc:26},
+               {id:"LG", Size:"Large, 45 cm", stock:13, alloc:13} ],
+    art:["#fef3c7","#f59e0b","#78350f"] },
 
-  { sku:"HM-1029", name:"Espresso Glass Set", brand:"Coppersmith", cat:"Kitchen",
-    price:29.00, rating:4.3, reviews:2318, weight:1.0, motif:"glasses", art:["#edf5f8","#b6d3de","#456a78"],
-    blurb:"Double walled borosilicate, set of four. Keeps the crema intact and the outside cool.",
-    bullets:["Set of four","Double walled borosilicate","80ml capacity","Dishwasher safe"],
-    axes:[], stockDefault:33 },
-
-  { sku:"HM-1030", name:"Ceramic Vase Trio", brand:"Fernway", cat:"Kitchen",
-    price:56.00, rating:4.0, reviews:497, weight:2.2, motif:"vase", art:["#eaf1e8","#adc4a6","#4f6a49"],
+  { sku:"LC-1007", name:"Ceramic Vase Trio", cat:"Decor", price:56.00, weight:2.2, bulky:false, restricted:false,
     blurb:"Three matt glazed vessels in graduated heights, sold as a set.",
-    bullets:["Set of three","Matt glaze, watertight","Heights 14, 22 and 18 cm","Wipe clean"],
-    axes:[], stockDefault:15 }
-];
+    axes:[], variants:[ {id:"STD", stock:19, alloc:19} ],
+    art:["#dcfce7","#4ade80","#14532d"] },
 
-/* ---------- build the variant list from the axes ---------- */
-function buildCatalogue(raw){
-  return raw.map(p => {
-    const axes = (p.axes || []).map(a => a.name);
-    const combos = (p.axes && p.axes.length)
-      ? p.axes.reduce((acc, a) => {
-          const out = [];
-          acc.forEach(row => a.values.forEach(v => out.push(row.concat([{ axis:a.name, v:v }]))));
-          return out;
-        }, [[]])
-      : [[]];
-    const variants = combos.map(row => {
-      const id = row.length ? row.map(x => x.v.code).join("-") : "STD";
-      const ov = (p.stock || {})[id] || {};
-      const v = { id: id,
-                  stock: ov.stock === undefined ? p.stockDefault : ov.stock,
-                  alloc: ov.alloc === undefined ? (ov.stock === undefined ? p.stockDefault : ov.stock) : ov.alloc };
-      row.forEach(x => { v[x.axis] = x.v.label; });
-      return v;
-    });
-    return Object.assign({}, p, { axes: axes, axisDefs: p.axes || [], variants: variants,
-                                  bulky: !!p.bulky, restricted: !!p.restricted });
-  });
-}
-const CATALOGUE = buildCatalogue(CATALOGUE_RAW);
+  { sku:"LC-1008", name:"Hand Knotted Wool Rug", cat:"Living", price:320.00, weight:16.5, bulky:true, restricted:false,
+    blurb:"Highland wool on a cotton warp, knotted by hand. Expect gentle shedding for the first month.",
+    axes:["Colour","Size"],
+    variants:[ {id:"NAT-S", Colour:"Natural", Size:"120 by 170 cm", stock:10, alloc:10},
+               {id:"NAT-M", Colour:"Natural", Size:"160 by 230 cm", stock:5, alloc:5},
+               {id:"NAT-L", Colour:"Natural", Size:"200 by 300 cm", stock:2, alloc:0},
+               {id:"IND-S", Colour:"Indigo",  Size:"120 by 170 cm", stock:8, alloc:8},
+               {id:"IND-M", Colour:"Indigo",  Size:"160 by 230 cm", stock:4, alloc:4},
+               {id:"IND-L", Colour:"Indigo",  Size:"200 by 300 cm", stock:1, alloc:1} ],
+    art:["#f3e8ff","#a855f7","#581c87"] },
+
+  { sku:"LC-1009", name:"Scented Candle Set", cat:"Decor", price:38.00, weight:1.4, bulky:false, restricted:false,
+    blurb:"Three soy wax candles in cedar, fig leaf and sea salt. Forty hours of burn time each.",
+    axes:[], variants:[ {id:"STD", stock:41, alloc:41} ],
+    art:["#fce7f3","#f472b6","#9d174d"] },
+
+  { sku:"LC-1010", name:"Lithium Power Bank", cat:"Technology", price:65.00, weight:0.5, bulky:false, restricted:true,
+    blurb:"A 20,000 mAh cell in an anodised shell. Contains a lithium ion battery.",
+    axes:[], variants:[ {id:"STD", stock:28, alloc:28} ],
+    art:["#cffafe","#22d3ee","#155e75"] },
+
+  { sku:"LC-1011", name:"Espresso Glass Set", cat:"Kitchen", price:29.00, weight:1.0, bulky:false, restricted:false,
+    blurb:"Double walled borosilicate, set of four. Keeps the crema intact and the outside cool.",
+    axes:[], variants:[ {id:"STD", stock:37, alloc:37} ],
+    art:["#dbeafe","#60a5fa","#1e3a8a"] },
+
+  { sku:"LC-1012", name:"Oak Bedside Table", cat:"Furniture", price:240.00, weight:19.0, bulky:true, restricted:false,
+    blurb:"Solid oak with a single soft close drawer and a routed finger pull. Arrives fully assembled.",
+    axes:["Finish"],
+    variants:[ {id:"NAT", Finish:"Natural Oak", stock:9, alloc:9},
+               {id:"SMK", Finish:"Smoked Oak", stock:4, alloc:4} ],
+    art:["#fee2e2","#f87171","#991b1b"] }
+];
 
 const productBySku = sku => CATALOGUE.find(p => p.sku === sku) || null;
 function variantOf(p, vid){ return (p && p.variants.find(v => v.id === vid)) || null; }
@@ -1661,37 +943,77 @@ function variantLabel(p, v){
   if(!p.axes.length) return "Standard";
   return p.axes.map(a => v[a]).join(", ");
 }
-const swatchFor = (p, axis, label) => {
-  const a = p.axisDefs.find(x => x.name === axis);
-  const v = a && a.values.find(x => x.label === label);
-  return (v && v.swatch) || "";
-};
 
-const CATEGORIES = ["Fashion", "Footwear", "Mobiles", "Electronics", "Home", "Kitchen"];
-const BRANDS = Array.from(new Set(CATALOGUE.map(p => p.brand))).sort();
+/* Inline art. There is no network, so every product image is drawn here.
+   Each category gets its own motif so that the grid reads as a catalogue
+   rather than twelve variations of the same rectangle. */
+function artMotif(cat, c){
+  switch(cat){
+    case "Lighting": return `
+      <path d="M118 150 L202 150 L182 92 L138 92 Z" fill="${c[2]}" opacity=".72"/>
+      <rect x="156" y="150" width="8" height="52" fill="${c[2]}" opacity=".6"/>
+      <rect x="128" y="200" width="64" height="9" rx="4" fill="${c[2]}" opacity=".78"/>
+      <ellipse cx="160" cy="150" rx="42" ry="7" fill="#ffffff" opacity=".35"/>`;
+    case "Bedding": return `
+      <rect x="62" y="118" width="196" height="74" rx="10" fill="${c[2]}" opacity=".24"/>
+      <rect x="62" y="98" width="196" height="30" rx="10" fill="${c[2]}" opacity=".42"/>
+      <rect x="82" y="66" width="70" height="40" rx="9" fill="#ffffff" opacity=".55"/>
+      <rect x="168" y="66" width="70" height="40" rx="9" fill="#ffffff" opacity=".4"/>`;
+    case "Tableware": return `
+      <circle cx="160" cy="132" r="62" fill="${c[2]}" opacity=".2"/>
+      <circle cx="160" cy="132" r="44" fill="#ffffff" opacity=".45"/>
+      <circle cx="160" cy="132" r="22" fill="${c[2]}" opacity=".3"/>
+      <circle cx="252" cy="188" r="26" fill="${c[2]}" opacity=".22"/>`;
+    case "Living": return `
+      <path d="M40 176 C 100 138, 220 214, 288 160 L288 214 L40 214 Z" fill="${c[2]}" opacity=".3"/>
+      <path d="M40 146 C 104 108, 216 184, 288 130" stroke="${c[2]}" stroke-width="9" fill="none" opacity=".45"/>
+      <path d="M40 112 C 104 74, 216 150, 288 96" stroke="#ffffff" stroke-width="7" fill="none" opacity=".5"/>`;
+    case "Kitchen": return `
+      <rect x="104" y="112" width="112" height="86" rx="18" fill="${c[2]}" opacity=".55"/>
+      <path d="M216 132 C 258 118, 268 88, 250 70" stroke="${c[2]}" stroke-width="10" fill="none" opacity=".55"/>
+      <rect x="140" y="92" width="40" height="22" rx="8" fill="${c[2]}" opacity=".7"/>
+      <ellipse cx="160" cy="128" rx="46" ry="9" fill="#ffffff" opacity=".4"/>`;
+    case "Decor": return `
+      <path d="M94 200 L94 136 C 94 112, 122 112, 122 136 L122 200 Z" fill="${c[2]}" opacity=".55"/>
+      <path d="M142 200 L142 108 C 142 78, 178 78, 178 108 L178 200 Z" fill="${c[2]}" opacity=".38"/>
+      <path d="M198 200 L198 150 C 198 130, 228 130, 228 150 L228 200 Z" fill="#ffffff" opacity=".55"/>`;
+    case "Technology": return `
+      <rect x="112" y="76" width="96" height="140" rx="16" fill="${c[2]}" opacity=".62"/>
+      <rect x="128" y="100" width="64" height="8" rx="4" fill="#ffffff" opacity=".6"/>
+      <rect x="128" y="120" width="42" height="8" rx="4" fill="#ffffff" opacity=".4"/>
+      <circle cx="160" cy="184" r="14" fill="#ffffff" opacity=".35"/>`;
+    case "Furniture": return `
+      <rect x="86" y="96" width="148" height="86" rx="8" fill="${c[2]}" opacity=".55"/>
+      <rect x="100" y="118" width="120" height="6" rx="3" fill="#ffffff" opacity=".55"/>
+      <rect x="146" y="140" width="28" height="7" rx="3" fill="#ffffff" opacity=".7"/>
+      <rect x="94" y="182" width="12" height="34" fill="${c[2]}" opacity=".7"/>
+      <rect x="214" y="182" width="12" height="34" fill="${c[2]}" opacity=".7"/>`;
+    default: return `<circle cx="160" cy="130" r="56" fill="${c[2]}" opacity=".3"/>`;
+  }
+}
 
-const PRICE_BANDS = [
-  { id:"All",   label:"Any price",       min:0,    max:Infinity },
-  { id:"B1",    label:"Under 50.00",     min:0,    max:50 },
-  { id:"B2",    label:"50.00 to 100.00", min:50,   max:100 },
-  { id:"B3",    label:"100.00 to 200.00",min:100,  max:200 },
-  { id:"B4",    label:"200.00 to 500.00",min:200,  max:500 },
-  { id:"B5",    label:"Over 500.00",     min:500,  max:Infinity }
-];
-const RATING_BANDS = [
-  { id:"All", label:"Any rating", min:0 },
-  { id:"R4",  label:"4 stars and up", min:4 },
-  { id:"R3",  label:"3 stars and up", min:3 },
-  { id:"R2",  label:"2 stars and up", min:2 }
-];
-const PAGE_SIZE = 12;
-
-const totalStock = p => p.variants.reduce((a, v) => a + v.stock, 0);
-const savingPct = p => p.was ? Math.round((1 - p.price / p.was) * 100) : 0;
+function productArt(p, cls){
+  const c = p.art;
+  const id = "g" + p.sku.replace(/[^A-Za-z0-9]/g, "");
+  return `<svg class="${cls || "prod-art"}" viewBox="0 0 320 240" role="img" aria-label="${esc(p.name)}" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="${id}" x1="0" y1="0" x2=".6" y2="1">
+        <stop offset="0%" stop-color="${c[0]}"/><stop offset="100%" stop-color="${c[1]}"/>
+      </linearGradient>
+      <radialGradient id="${id}s" cx="28%" cy="18%" r="72%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity=".55"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="320" height="240" fill="url(#${id})"/>
+    ${artMotif(p.cat, c)}
+    <rect width="320" height="240" fill="url(#${id}s)"/>
+  </svg>`;
+}
 
 /* ---------- promotions ---------- */
 const PROMOS = [
-  { code:"HALCYON10", kind:"percent", value:10,  minSpend:50,  validTo:"2026-12-31", label:"10 per cent off your order" },
+  { code:"LUMEN10",   kind:"percent", value:10,  minSpend:50,  validTo:"2026-12-31", label:"10 per cent off your order" },
   { code:"FREESHIP",  kind:"freeship",value:0,   minSpend:75,  validTo:"2026-12-31", label:"Free standard delivery" },
   { code:"WELCOME25", kind:"amount",  value:25,  minSpend:200, validTo:"2026-12-31", label:"25.00 off orders over 200.00" },
   { code:"SPRING20",  kind:"percent", value:20,  minSpend:0,   validTo:"2026-04-30", label:"20 per cent off, spring event" }
@@ -1716,7 +1038,7 @@ const COUNTRIES = [
 const countryByCode = c => COUNTRIES.find(x => x.code === c) || null;
 const zoneOf = c => (countryByCode(c) || {}).zone || "ROW";
 
-/* ---------- delivery ---------- */
+/* ---------- delivery options ---------- */
 const DELIVERY = [
   { id:"standard", name:"Standard delivery",     desc:"Three to five working days", price:4.95,  freeOver:75,   zones:["UK"],        bulkyOk:true,  days:5 },
   { id:"express",  name:"Express delivery",      desc:"Next working day, order before noon", price:9.95, freeOver:null, zones:["UK"], bulkyOk:false, days:1 },
@@ -1778,21 +1100,22 @@ const CARRIERS = [
 ];
 const carrierById = id => CARRIERS.find(c => c.id === id) || null;
 
+/* ---------- VAT ---------- */
 const VAT_RATE = 0.20;
 
+/* ---------- warehouse bins ---------- */
 function binFor(sku, vid){
   const n = (sku + vid).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const aisle = String.fromCharCode(65 + (n % 6));
   return aisle + "-" + pad((n % 24) + 1, 2) + "-" + pad((n % 9) + 1, 2);
 }
 /* ============================================================
-   STOREFRONT - Halcyon Market
-   Marketplace browse, filters, product detail, basket, three step
-   checkout, confirmation. Decision codes EC-*.
+   STOREFRONT - Lumen and Co.
+   Browse, product detail, basket, three step checkout, confirmation.
+   Decision codes EC-*.
    ============================================================ */
 
-let shopFilter = { cat:"All", sort:"featured", brands:[], price:"All", rating:"All",
-                   inStock:false, q:"", qApplied:"", page:1 };
+let shopFilter = { cat:"All", sort:"featured" };
 let shopStep = 1;
 let shopErrors = {};
 let shopBanner = null;   /* {kind, code, text} */
@@ -1838,7 +1161,8 @@ function basketTotals(deliveryId){
   }
   const taxable = +(net - discount + delivery).toFixed(2);
   const vat = +(taxable * VAT_RATE / (1 + VAT_RATE)).toFixed(2);
-  return { lines, net, discount, delivery, vat, gross:taxable, weight, bulky, restricted, promo, freeship };
+  const gross = taxable;
+  return { lines, net, discount, delivery, vat, gross, weight, bulky, restricted, promo, freeship };
 }
 
 function availableDelivery(country, bulky){
@@ -1851,249 +1175,108 @@ function shopTop(active){
   const n = basketCount();
   return `
   <div class="shop-top"><div class="shop-top-in">
-    <button class="shop-brand" data-act="nav" data-href="#/shop" data-testid="shop-brand">Halcyon <span>Market</span></button>
-    <div class="searchbar">
-      <label class="sr-only" for="shop-search">Search the marketplace</label>
-      <input type="search" id="shop-search" value="${esc(shopFilter.q)}" data-sfield="q"
-             data-testid="input-search" placeholder="Search Halcyon Market">
-      <button class="btn btn-primary" data-act="do-search" data-testid="btn-search">Search</button>
-    </div>
+    <button class="shop-brand" data-act="nav" data-href="#/shop" data-testid="shop-brand">Lumen <span>and Co.</span></button>
     <nav class="shop-nav">
       <button class="navlink" data-act="nav" data-href="#/shop" data-testid="nav-shop"${active === "shop" ? ' aria-current="page"' : ""}>Shop</button>
       <button class="navlink" data-act="nav" data-href="#/shop/basket" data-testid="nav-basket"${active === "basket" ? ' aria-current="page"' : ""}>Basket</button>
     </nav>
+    <div class="spacer"></div>
     <button class="btn btn-sm basket-btn" data-act="nav" data-href="#/shop/basket" data-testid="btn-basket">
       Basket${n ? `<span class="basket-count" data-testid="basket-count">${n}</span>` : ""}
     </button>
     <button class="btn btn-sm" data-act="apps" data-testid="btn-apps">Applications</button>
     <button class="btn btn-sm" data-act="theme" data-testid="btn-theme">${state.theme === "dark" ? "Light" : "Dark"}</button>
     <button class="btn btn-sm" data-act="signout" data-testid="btn-signout">Sign out</button>
-  </div>
-  <div class="cat-rail" data-testid="category-rail">
-    ${["All"].concat(CATEGORIES).map(c => `<button class="cat-chip" data-act="filter-cat" data-cat="${esc(c)}"
-       data-testid="cat-${esc(c.toLowerCase())}"${shopFilter.cat === c ? ' aria-current="true"' : ""}>${esc(c)}</button>`).join("")}
   </div></div>`;
 }
-
-const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 /* A scarcity flag, derived from the variant stock rather than invented. */
 function scarcityTag(p){
   const stocks = p.variants.map(v => v.stock);
-  if(stocks.every(n => n === 0)) return `<span class="tag tag-out">Out of stock</span>`;
-  if(stocks.some(n => n === 0 || (n >= 1 && n <= 5))) return `<span class="tag tag-low">Low stock</span>`;
-  if(p.was) return `<span class="tag tag-deal">Save ${savingPct(p)} per cent</span>`;
+  if(stocks.every(n => n === 0)) return `<span class="tag tag-out">Sold out</span>`;
+  if(stocks.some(n => n >= 1 && n <= 5)) return `<span class="tag tag-low">Low stock</span>`;
+  if(stocks.some(n => n === 0)) return `<span class="tag tag-low">Low stock</span>`;
   return "";
 }
 
-/* ---------- the result set ---------- */
-function shopResults(){
-  let list = CATALOGUE.slice();
-  const f = shopFilter;
-  if(f.cat !== "All") list = list.filter(p => p.cat === f.cat);
-  if(f.qApplied){
-    const q = f.qApplied.toLowerCase();
-    list = list.filter(p => (p.name + " " + p.brand + " " + p.cat).toLowerCase().indexOf(q) >= 0);
-  }
-  if(f.brands.length) list = list.filter(p => f.brands.indexOf(p.brand) >= 0);
-  if(f.price !== "All"){
-    const b = PRICE_BANDS.find(x => x.id === f.price);
-    if(b) list = list.filter(p => p.price >= b.min && p.price < b.max);
-  }
-  if(f.rating !== "All"){
-    const b = RATING_BANDS.find(x => x.id === f.rating);
-    if(b) list = list.filter(p => p.rating >= b.min);
-  }
-  if(f.inStock) list = list.filter(p => totalStock(p) > 0);
-
-  if(f.sort === "priceLow")  list.sort((a, b) => a.price - b.price);
-  if(f.sort === "priceHigh") list.sort((a, b) => b.price - a.price);
-  if(f.sort === "rating")    list.sort((a, b) => b.rating - a.rating);
-  if(f.sort === "newest")    list.sort((a, b) => b.sku.localeCompare(a.sku));
-  return list;
-}
-
-function filterSidebar(){
-  const f = shopFilter;
-  const active = f.brands.length + (f.price !== "All" ? 1 : 0) + (f.rating !== "All" ? 1 : 0) +
-                 (f.inStock ? 1 : 0) + (f.qApplied ? 1 : 0) + (f.cat !== "All" ? 1 : 0);
-  return `
-  <aside class="facets" data-testid="filter-sidebar">
-    <div class="facet-head">
-      <h3>Refine</h3>
-      ${active ? `<button class="btn btn-ghost btn-sm" data-act="clear-filters" data-testid="btn-clear-filters">Clear all</button>` : ""}
-    </div>
-
-    <div class="facet">
-      <h4 id="facet-brand">Brand</h4>
-      <div role="group" aria-labelledby="facet-brand">
-        ${BRANDS.map(b => `<div class="check">
-          <input type="checkbox" id="brand-${slug(b)}" data-sfield="brand" data-brand="${esc(b)}"
-                 ${f.brands.indexOf(b) >= 0 ? "checked" : ""} data-testid="check-brand-${slug(b)}">
-          <label for="brand-${slug(b)}">${esc(b)}</label>
-        </div>`).join("")}
-      </div>
-    </div>
-
-    <div class="facet">
-      <h4 id="facet-price">Price</h4>
-      <div role="group" aria-labelledby="facet-price">
-        ${PRICE_BANDS.map(b => `<div class="check">
-          <input type="radio" name="priceband" id="price-${b.id}" value="${b.id}" data-sfield="price"
-                 ${f.price === b.id ? "checked" : ""} data-testid="radio-price-${b.id.toLowerCase()}">
-          <label for="price-${b.id}">${esc(b.label)}</label>
-        </div>`).join("")}
-      </div>
-    </div>
-
-    <div class="facet">
-      <h4 id="facet-rating">Customer rating</h4>
-      <div role="group" aria-labelledby="facet-rating">
-        ${RATING_BANDS.map(b => `<div class="check">
-          <input type="radio" name="ratingband" id="rating-${b.id}" value="${b.id}" data-sfield="rating"
-                 ${f.rating === b.id ? "checked" : ""} data-testid="radio-rating-${b.id.toLowerCase()}">
-          <label for="rating-${b.id}">${esc(b.label)}</label>
-        </div>`).join("")}
-      </div>
-    </div>
-
-    <div class="facet">
-      <h4>Availability</h4>
-      <div class="check">
-        <input type="checkbox" id="instock" data-sfield="inStock"${f.inStock ? " checked" : ""} data-testid="check-instock">
-        <label for="instock">In stock only</label>
-      </div>
-    </div>
-  </aside>`;
-}
-
-function resultRow(p){
-  const v0 = p.variants.find(v => v.stock > 0) || p.variants[0];
-  const out = p.variants.every(v => v.stock === 0);
-  const eta = isoToUK(addWorkingDays(nowISO(), 5).slice(0, 10));
-  return `
-  <article class="res" data-testid="row-${p.sku}">
-    <button class="res-art" data-act="open-product" data-sku="${p.sku}" data-testid="img-${p.sku}"
-            aria-label="View ${esc(p.name)}">
-      ${scarcityTag(p)}
-      ${productMedia(p, "prod-art", 0)}
-    </button>
-    <div class="res-body">
-      <div class="res-brand">${esc(p.brand)}</div>
-      <button class="res-title" data-act="open-product" data-sku="${p.sku}" data-testid="link-${p.sku}">${esc(p.name)}</button>
-      <div class="res-rate">
-        ${stars(p.rating)}
-        <span class="res-rate-n" data-testid="rating-${p.sku}">${p.rating.toFixed(1)}</span>
-        <span class="muted small">${p.reviews.toLocaleString("en-GB")} reviews</span>
-      </div>
-      <div class="res-price">
-        <span class="price-now" data-testid="price-${p.sku}">${money(p.price)}</span>
-        ${p.was ? `<span class="price-was">${money(p.was)}</span><span class="badge badge-risk">Save ${savingPct(p)} per cent</span>` : ""}
-      </div>
-      <div class="small muted">${esc(p.blurb)}</div>
-      <div class="res-eta">${out ? `<span style="color:var(--risk); font-weight:700">Currently unavailable</span>`
-        : `Free standard delivery over 75.00. Get it by <b>${eta}</b>.`}</div>
-    </div>
-    <div class="res-buy">
-      <div class="price-now">${money(p.price)}</div>
-      <button class="btn btn-accent btn-block" data-act="quick-add" data-sku="${p.sku}" data-vid="${v0.id}"
-              data-testid="btn-add-${p.sku}"${out ? " disabled" : ""}>Add to Basket</button>
-      <button class="btn btn-block btn-sm" data-act="open-product" data-sku="${p.sku}"
-              data-testid="btn-options-${p.sku}">See options</button>
-    </div>
-  </article>`;
-}
-
-function pager(total){
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const cur = Math.min(Math.max(1, shopFilter.page), pages);
-  if(pages === 1) return "";
-  const btns = [];
-  for(let i = 1; i <= pages; i++){
-    btns.push(`<button class="pg${i === cur ? " on" : ""}" data-act="page-go" data-page="${i}"
-      data-testid="btn-page-${i}"${i === cur ? ' aria-current="page"' : ""}>${i}</button>`);
-  }
-  return `<nav class="pager" data-testid="pager" aria-label="Result pages">
-    <button class="pg" data-act="page-go" data-page="${cur - 1}" data-testid="btn-page-prev"${cur === 1 ? " disabled" : ""}>Previous</button>
-    ${btns.join("")}
-    <button class="pg" data-act="page-go" data-page="${cur + 1}" data-testid="btn-page-next"${cur === pages ? " disabled" : ""}>Next</button>
-  </nav>`;
-}
-
+/* ---------- catalogue listing ---------- */
 function viewShopHome(){
-  const all = shopResults();
-  const pages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
-  if(shopFilter.page > pages) shopFilter.page = pages;
-  if(shopFilter.page < 1) shopFilter.page = 1;
-  const from = (shopFilter.page - 1) * PAGE_SIZE;
-  const list = all.slice(from, from + PAGE_SIZE);
+  const cats = ["All"].concat(Array.from(new Set(CATALOGUE.map(p => p.cat))).sort());
+  let list = CATALOGUE.slice();
+  if(shopFilter.cat !== "All") list = list.filter(p => p.cat === shopFilter.cat);
+  if(shopFilter.sort === "priceLow") list.sort((a, b) => a.price - b.price);
+  if(shopFilter.sort === "priceHigh") list.sort((a, b) => b.price - a.price);
+  if(shopFilter.sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
 
   $("#app").innerHTML = `
   <div class="shopbody">
     ${shopTop("shop")}
-    <div class="wrap-wide market">
-      ${filterSidebar()}
-      <section class="results">
-        <div class="res-head">
-          <div>
-            <h1 data-testid="results-heading">${shopFilter.cat === "All" ? "All departments" : esc(shopFilter.cat)}</h1>
-            <div class="muted small" data-testid="result-count">
-              ${all.length === 0 ? "No results" :
-                "Showing " + (from + 1) + " to " + Math.min(from + PAGE_SIZE, all.length) + " of " + all.length + " results"}
-              ${shopFilter.qApplied ? ` for <b>${esc(shopFilter.qApplied)}</b>` : ""}
-            </div>
-          </div>
-          <div class="spacer"></div>
-          <div class="field" style="margin:0; min-width:210px">
-            <label for="sort-by">Sort by</label>
-            <select id="sort-by" data-sfield="sort" data-testid="select-sort">
-              <option value="featured"${shopFilter.sort === "featured" ? " selected" : ""}>Featured</option>
-              <option value="priceLow"${shopFilter.sort === "priceLow" ? " selected" : ""}>Price, low to high</option>
-              <option value="priceHigh"${shopFilter.sort === "priceHigh" ? " selected" : ""}>Price, high to low</option>
-              <option value="rating"${shopFilter.sort === "rating" ? " selected" : ""}>Average customer review</option>
-              <option value="newest"${shopFilter.sort === "newest" ? " selected" : ""}>Newest arrivals</option>
-            </select>
-          </div>
-        </div>
-
-        ${!all.length ? `
-          <div class="card card-pad center" data-testid="no-results">
-            <h3>No results match those filters</h3>
-            <p class="muted">Try removing a filter or searching for something else.</p>
-            <button class="btn btn-primary" data-act="clear-filters" data-testid="btn-clear-empty">Clear all filters</button>
-          </div>` : `
-          <div class="res-list" data-testid="product-list">${list.map(resultRow).join("")}</div>
-          ${pager(all.length)}`}
+    <div class="wrap">
+      <section class="hero">
+        <div class="hero-pill">Autumn collection</div>
+        <h1>Things made to be kept</h1>
+        <p>Small batch homeware from workshops we have visited. Free standard delivery on United Kingdom orders over 75.00.</p>
+        <button class="btn btn-accent btn-lg" data-act="scroll-products" data-testid="btn-shop-now">Shop the collection</button>
       </section>
+
+      <div class="promise" data-testid="promise-strip">
+        <div class="p1"><b>Free delivery</b>On United Kingdom orders over 75.00</div>
+        <div class="p2"><b>30 day returns</b>No questions, no restocking fee</div>
+        <div class="p3"><b>Small batch</b>Made by workshops we have visited</div>
+        <div class="p4"><b>Click and collect</b>Ready in two working days</div>
+      </div>
+
+      <div class="row" style="margin-bottom:1.1rem" id="products">
+        <div class="field" style="margin:0; min-width:190px">
+          <label for="filter-cat">Category</label>
+          <select id="filter-cat" data-act="filter-cat" data-testid="select-category">
+            ${cats.map(c => `<option value="${esc(c)}"${c === shopFilter.cat ? " selected" : ""}>${esc(c)}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field" style="margin:0; min-width:190px">
+          <label for="filter-sort">Sort by</label>
+          <select id="filter-sort" data-act="filter-sort" data-testid="select-sort">
+            <option value="featured"${shopFilter.sort === "featured" ? " selected" : ""}>Featured</option>
+            <option value="priceLow"${shopFilter.sort === "priceLow" ? " selected" : ""}>Price, low to high</option>
+            <option value="priceHigh"${shopFilter.sort === "priceHigh" ? " selected" : ""}>Price, high to low</option>
+            <option value="name"${shopFilter.sort === "name" ? " selected" : ""}>Name</option>
+          </select>
+        </div>
+        <div class="spacer"></div>
+        <div class="muted small" data-testid="result-count">${list.length} product${list.length === 1 ? "" : "s"}</div>
+      </div>
+
+      <div class="prod-grid" data-testid="product-grid">
+        ${list.map(p => `
+          <button class="prod-card" data-act="open-product" data-sku="${p.sku}" data-testid="card-${p.sku}">
+            ${scarcityTag(p)}
+            ${productArt(p)}
+            <div class="prod-body">
+              <div class="prod-cat">${esc(p.cat)}</div>
+              <div class="prod-name">${esc(p.name)}</div>
+              <div class="prod-price">${money(p.price)}</div>
+            </div>
+          </button>`).join("")}
+      </div>
     </div>
   </div>`;
 }
 
 /* ---------- product detail ---------- */
-let pdpSel = {};      /* axis -> label */
-let pdpSku = "";      /* the product those selections belong to */
+let pdpSel = {};   /* axis -> value */
 let pdpQty = 1;
-let pdpView = 0;
 
 function pdpVariant(p){
   if(!p.axes.length) return p.variants[0];
   return p.variants.find(v => p.axes.every(a => v[a] === pdpSel[a])) || null;
 }
-const isSwatchAxis = name => name === "Colour" || name === "Finish";
 
 function viewProduct(sku){
   const p = productBySku(sku);
   if(!p){ go("#/shop"); return; }
 
-  /* Selections belong to one product. Arriving at a different product, by a
-     link or by typing the address, must not carry a colour or a size over:
-     two products can share an axis name and not a single value, which would
-     leave an impossible combination selected and the button dead. */
-  if(pdpSku !== p.sku){
-    pdpSel = {}; pdpSku = p.sku; pdpQty = 1; pdpView = 0;
-  }
-  if(p.axes.length && !p.axes.every(a => (p.axisDefs.find(x => x.name === a) || {values:[]})
-                                          .values.some(v => v.label === pdpSel[a]))){
+  /* default the axis selections to the first variant that has stock */
+  if(p.axes.length && !p.axes.every(a => pdpSel[a])){
     const first = p.variants.find(v => v.stock > 0) || p.variants[0];
     pdpSel = {};
     p.axes.forEach(a => pdpSel[a] = first[a]);
@@ -2101,65 +1284,32 @@ function viewProduct(sku){
   const v = pdpVariant(p);
   const stock = v ? v.stock : 0;
   const err = shopErrors.pdp;
-  const eta = isoToUK(addWorkingDays(nowISO(), 5).slice(0, 10));
 
   $("#app").innerHTML = `
   <div class="shopbody">
-    ${shopTop("")}
+    ${shopTop("shop")}
     <div class="wrap">
-      <nav class="crumbs" data-testid="breadcrumbs">
-        <button data-act="filter-cat" data-cat="All" data-testid="crumb-home">Halcyon Market</button>
-        <span>/</span>
-        <button data-act="filter-cat" data-cat="${esc(p.cat)}" data-testid="crumb-cat">${esc(p.cat)}</button>
-        <span>/</span>
-        <span class="muted">${esc(p.name)}</span>
-      </nav>
-
+      <div style="padding-top:1rem">
+        <button class="btn btn-ghost btn-sm" data-act="nav" data-href="#/shop" data-testid="btn-back-shop">Back to shop</button>
+      </div>
       <div class="pdp">
+        <div class="pdp-art">${productArt(p, "prod-art")}</div>
         <div>
-          <div class="pdp-art" data-testid="pdp-image">${productMedia(p, "prod-art", pdpView)}</div>
-          <div class="thumbs" data-testid="thumb-strip">
-            ${Array.from({length: viewCount(p)}, (_, i) => i).map(i => `<button class="thumb${i === pdpView ? " on" : ""}"
-               data-act="pdp-view" data-view="${i}" data-testid="thumb-${i}"
-               aria-label="View ${i + 1} of ${viewCount(p)}, ${esc(p.name)}"${i === pdpView ? ' aria-current="true"' : ""}>
-               ${productMedia(p, "prod-art", i)}</button>`).join("")}
-          </div>
-        </div>
-
-        <div>
-          <div class="prod-cat">${esc(p.brand)}</div>
+          <div class="prod-cat">${esc(p.cat)}</div>
           <h1 data-testid="pdp-name">${esc(p.name)}</h1>
-          <div class="res-rate" style="margin:.3rem 0 .2rem">
-            ${stars(p.rating)}
-            <span class="res-rate-n" data-testid="pdp-rating">${p.rating.toFixed(1)}</span>
-            <span class="muted small" data-testid="pdp-reviews">${p.reviews.toLocaleString("en-GB")} reviews</span>
-          </div>
           <div class="mono muted small" data-testid="pdp-sku">${esc(p.sku)}</div>
           <div class="price-lg" data-testid="pdp-price">${money(p.price)}</div>
-          ${p.was ? `<div style="margin:-.7rem 0 1rem"><span class="price-was">${money(p.was)}</span>
-             <span class="badge badge-risk" data-testid="pdp-saving">Save ${savingPct(p)} per cent</span></div>` : ""}
           <p class="muted">${esc(p.blurb)}</p>
 
-          <ul class="bullets" data-testid="pdp-bullets">
-            ${p.bullets.map(b => `<li>${esc(b)}</li>`).join("")}
-          </ul>
-
-          ${p.axisDefs.map(a => isSwatchAxis(a.name) ? `
-            <div class="field">
-              <span class="lbl" id="axis-${slug(a.name)}">${esc(a.name)}: <b data-testid="chosen-${slug(a.name)}">${esc(pdpSel[a.name] || "")}</b></span>
-              <div class="swatches" role="group" aria-labelledby="axis-${slug(a.name)}">
-                ${a.values.map(val => `<button class="swatch${pdpSel[a.name] === val.label ? " on" : ""}"
-                   style="background:${val.swatch}" data-act="pdp-swatch" data-axis="${esc(a.name)}" data-value="${esc(val.label)}"
-                   data-testid="swatch-${slug(val.label)}" aria-label="${esc(a.name)} ${esc(val.label)}"
-                   ${pdpSel[a.name] === val.label ? ' aria-pressed="true"' : ' aria-pressed="false"'}></button>`).join("")}
-              </div>
-            </div>` : `
-            <div class="field">
-              <label for="pdp-${slug(a.name)}">${esc(a.name)}</label>
-              <select id="pdp-${slug(a.name)}" data-act="pdp-axis" data-axis="${esc(a.name)}" data-testid="select-${slug(a.name)}">
-                ${a.values.map(val => `<option value="${esc(val.label)}"${pdpSel[a.name] === val.label ? " selected" : ""}>${esc(val.label)}</option>`).join("")}
+          ${p.axes.map(axis => {
+            const vals = Array.from(new Set(p.variants.map(x => x[axis])));
+            return `<div class="field">
+              <label for="pdp-${esc(axis)}">${esc(axis)}</label>
+              <select id="pdp-${esc(axis)}" data-act="pdp-axis" data-axis="${esc(axis)}" data-testid="select-${esc(axis.toLowerCase())}">
+                ${vals.map(val => `<option value="${esc(val)}"${pdpSel[axis] === val ? " selected" : ""}>${esc(val)}</option>`).join("")}
               </select>
-            </div>`).join("")}
+            </div>`;
+          }).join("")}
 
           <div class="stock-line" data-testid="pdp-stock">
             ${!v ? `<span style="color:var(--risk)">That combination is not made.</span>`
@@ -2167,24 +1317,21 @@ function viewProduct(sku){
                  : stock <= 5 ? `<span style="color:var(--warn)">Only ${stock} left</span>`
                  : `<span style="color:var(--ok)">In stock</span>`}
           </div>
-          <div class="small muted" data-testid="pdp-eta">Get it by <b>${eta}</b> with standard delivery.</div>
 
-          <div class="row" style="margin:1rem 0 .5rem">
+          <div class="row" style="margin:1rem 0">
             <div class="qty">
               <button type="button" data-act="pdp-minus" data-testid="btn-qty-minus" aria-label="Decrease quantity">-</button>
               <input type="number" id="pdp-qty" value="${pdpQty}" min="1" max="10" data-act="pdp-qty" data-testid="input-qty" aria-label="Quantity">
               <button type="button" data-act="pdp-plus" data-testid="btn-qty-plus" aria-label="Increase quantity">+</button>
             </div>
-            <button class="btn btn-accent btn-lg" data-act="add-basket" data-sku="${p.sku}" data-testid="btn-add-basket"${stock === 0 || !v ? " disabled" : ""}>Add to Basket</button>
-            <button class="btn btn-primary btn-lg" data-act="buy-now" data-sku="${p.sku}" data-testid="btn-buy-now"${stock === 0 || !v ? " disabled" : ""}>Buy Now</button>
+            <button class="btn btn-accent btn-lg" data-act="add-basket" data-sku="${p.sku}" data-testid="btn-add-basket"${stock === 0 || !v ? " disabled" : ""}>Add to basket</button>
           </div>
 
           ${err ? `<div class="banner banner-risk" data-testid="pdp-error"><b>${esc(err.code)}</b> ${esc(err.text)}</div>` : ""}
 
-          <div class="panel small" style="margin-top:1rem">
-            <div><b>Weight</b> ${p.weight.toFixed(2)} kg${p.bulky ? " (bulky item, express delivery not available)" : ""}</div>
+          <div class="panel small" style="margin-top:1.2rem">
+            <div><b>Weight</b> ${p.weight.toFixed(1)} kg${p.bulky ? " (bulky item, express delivery not available)" : ""}</div>
             ${p.restricted ? `<div style="margin-top:.3rem"><b>Shipping note</b> Contains a lithium ion battery. Deliveries outside the United Kingdom and the European Union are reviewed before despatch.</div>` : ""}
-            <div style="margin-top:.3rem"><b>Sold by</b> ${esc(p.brand)}, dispatched by Halcyon Market</div>
           </div>
         </div>
       </div>
@@ -2192,46 +1339,30 @@ function viewProduct(sku){
   </div>`;
 }
 
-/* ---------- adding to the basket ---------- */
-function addLine(p, v, qty){
-  shopErrors.pdp = null;
-  if(!v){ shopErrors.pdp = { code:"EC-V02", text:"That combination is not available." }; return false; }
-  const existing = state.basket.lines.find(l => l.sku === p.sku && l.vid === v.id);
-  const want = (existing ? existing.qty : 0) + qty;
-  if(want > 10){
-    shopErrors.pdp = { code:"EC-V03", text:"A maximum of 10 units of one item may be bought in a single order." };
-    return false;
-  }
-  if(want > v.stock){
-    shopErrors.pdp = { code:"EC-V02", text:"Only " + v.stock + " of that option are available." };
-    return false;
-  }
-  if(existing) existing.qty = want; else state.basket.lines.push({ sku:p.sku, vid:v.id, qty:qty });
-  save();
-  return true;
-}
-
-function addToBasket(sku, then){
+function addToBasket(sku){
   const p = productBySku(sku);
   const v = pdpVariant(p);
   const qty = Math.max(1, Number(pdpQty) || 1);
-  if(!addLine(p, v, qty)){ render(); return; }
+  shopErrors.pdp = null;
+
+  if(!v){ shopErrors.pdp = { code:"EC-V02", text:"That combination is not available." }; render(); return; }
+  const existing = state.basket.lines.find(l => l.sku === sku && l.vid === v.id);
+  const want = (existing ? existing.qty : 0) + qty;
+
+  if(want > 10){
+    shopErrors.pdp = { code:"EC-V03", text:"A maximum of 10 units of one item may be bought in a single order." };
+    render(); return;
+  }
+  if(want > v.stock){
+    shopErrors.pdp = { code:"EC-V02", text:"Only " + v.stock + " of that option are available." };
+    render(); return;
+  }
+  if(existing) existing.qty = want;
+  else state.basket.lines.push({ sku:sku, vid:v.id, qty:qty });
+  save();
   toast(p.name + " added to your basket.");
   pdpQty = 1;
-  go(then === "checkout" ? "#/shop/checkout" : "#/shop/basket");
-}
-
-/* Add straight from a result row, using the first variant that has stock. */
-function quickAdd(sku, vid){
-  const p = productBySku(sku);
-  const v = variantOf(p, vid) || p.variants.find(x => x.stock > 0);
-  if(!addLine(p, v, 1)){
-    toast(shopErrors.pdp ? shopErrors.pdp.text : "That item could not be added.");
-    shopErrors.pdp = null;
-    return;
-  }
-  toast(p.name + " added to your basket.");
-  render();
+  go("#/shop/basket");
 }
 
 /* ---------- basket ---------- */
@@ -2254,7 +1385,7 @@ function viewBasket(){
             <div class="card card-pad">
               ${t.lines.map((l, i) => `
                 <div class="basket-line" data-testid="line-${l.sku}-${l.vid}">
-                  <div class="basket-art">${productMedia(l.product, "prod-art", 0)}</div>
+                  <div class="basket-art">${productArt(l.product, "prod-art")}</div>
                   <div>
                     <div style="font-weight:700">${esc(l.product.name)}</div>
                     <div class="small muted mono">${esc(l.sku)} ${esc(l.vid)}</div>
@@ -2593,8 +1724,7 @@ function viewCheckout(){
             <h3>Order summary</h3>
             <table class="tbl small" data-testid="summary-lines">
               <tbody>
-                ${t.lines.map(l => `<tr data-testid="sum-line-${esc(l.sku)}">
-                  <td class="sum-thumb">${productMedia(l.product, "line-thumb", 0)}</td>
+                ${t.lines.map(l => `<tr>
                   <td>${esc(l.product.name)}<div class="muted">${esc(variantLabel(l.product, l.variant))} x ${l.qty}</div></td>
                   <td class="right nowrap">${money(l.lineNet)}</td>
                 </tr>`).join("")}
@@ -2778,10 +1908,9 @@ function viewConfirm(ref){
         <div class="card card-pad">
           <h3>What you ordered</h3>
           <table class="tbl" data-testid="confirm-lines">
-            <thead><tr><th class="sum-thumb"><span class="sr-only">Image</span></th><th>Item</th><th>Option</th><th class="right">Qty</th><th class="right">Total</th></tr></thead>
+            <thead><tr><th>Item</th><th>Option</th><th class="right">Qty</th><th class="right">Total</th></tr></thead>
             <tbody>
               ${o.lines.map(l => `<tr data-testid="confirm-line-${l.sku}">
-                <td class="sum-thumb">${productBySku(l.sku) ? productMedia(productBySku(l.sku), "line-thumb", 0) : ""}</td>
                 <td>${esc(l.name)}<div class="muted small mono">${esc(l.sku)}</div></td>
                 <td>${esc(l.variant)}</td>
                 <td class="right">${l.qty}</td>
@@ -4036,22 +3165,6 @@ function writeField(el){
     return true;
   }
 
-  if(el.hasAttribute("data-sfield")){
-    const k = el.getAttribute("data-sfield");
-    if(k === "brand"){
-      const b = el.getAttribute("data-brand");
-      const i = shopFilter.brands.indexOf(b);
-      if(el.checked && i < 0) shopFilter.brands.push(b);
-      if(!el.checked && i >= 0) shopFilter.brands.splice(i, 1);
-      shopFilter.page = 1;
-      return "render";
-    }
-    if(k === "q"){ shopFilter.q = val; return true; }   /* applied on Search, never mid keystroke */
-    shopFilter[k] = val;
-    shopFilter.page = 1;
-    return "render";
-  }
-
   if(el.hasAttribute("data-cfield")){
     const k = el.getAttribute("data-cfield");
     const c = ensureCheckout();
@@ -4119,6 +3232,8 @@ document.addEventListener("change", ev => {
 function handleLooseInput(el){
   const act = el.getAttribute && el.getAttribute("data-act");
   if(!act) return;
+  if(act === "filter-cat"){ shopFilter.cat = el.value; render(); return; }
+  if(act === "filter-sort"){ shopFilter.sort = el.value; render(); return; }
   if(act === "pdp-axis"){ pdpSel[el.getAttribute("data-axis")] = el.value; render(); return; }
   if(act === "pdp-qty"){ pdpQty = Math.max(1, Math.min(10, Number(el.value) || 1)); return; }
   if(act === "promo-typed"){ state.basket.promo = el.value; save(); return; }
@@ -4142,7 +3257,6 @@ function handleLooseInput(el){
    of a double carries detail 2. A tool driving the page issues independent
    single clicks with detail 1, so nothing legitimate is dropped. */
 const GUARDED_ACTS = ["place-order", "erp-release", "erp-cancel", "line-remove",
-  "add-basket", "quick-add", "buy-now",
   "line-minus", "line-plus", "promo-apply", "promo-remove", "wms-confirm-pick",
   "wms-cancel-pick", "wms-damage", "wms-pack", "wms-despatch", "wms-delivered",
   "wms-failed", "wms-return", "wms-return-received"];
@@ -4164,7 +3278,7 @@ document.addEventListener("click", ev => {
     case "theme":    toggleTheme(); break;
     case "reset":
       resetDemo();
-      shopFilter = { cat:"All", sort:"featured", brands:[], price:"All", rating:"All", inStock:false, q:"", qApplied:"", page:1 };
+      shopFilter = { cat:"All", sort:"featured" };
       shopStep = 1; shopErrors = {}; shopBanner = null;
       erpFilters = { q:"", status:"All", hold:"All", country:"All", from:"", to:"", fromRaw:"", toRaw:"" };
       erpForm = { cancelReason:"", partial:false }; erpBanner = null; erpTab = "header";
@@ -4176,23 +3290,7 @@ document.addEventListener("click", ev => {
 
     /* storefront */
     case "scroll-products": { const t = $("#products"); if(t) t.scrollIntoView({ behavior:"smooth", block:"start" }); break; }
-    case "open-product": pdpSel = {}; pdpSku = ""; pdpQty = 1; pdpView = 0; shopErrors = {};
-      go("#/shop/product/" + el.getAttribute("data-sku")); break;
-    case "do-search": shopFilter.qApplied = String(shopFilter.q || "").trim(); shopFilter.page = 1;
-      if(routeParts()[1] !== undefined && routeParts()[1] !== "") go("#/shop"); else render(); break;
-    case "filter-cat": shopFilter.cat = el.getAttribute("data-cat"); shopFilter.page = 1;
-      if((routeParts()[1] || "") !== "") go("#/shop"); else render(); break;
-    case "clear-filters":
-      /* clears the facets and the keyword, keeps the chosen sort order */
-      shopFilter = { cat:"All", sort:shopFilter.sort, brands:[], price:"All", rating:"All",
-                     inStock:false, q:"", qApplied:"", page:1 };
-      render(); break;
-    case "page-go": { const n = Number(el.getAttribute("data-page"));
-      if(n >= 1){ shopFilter.page = n; window.scrollTo(0, 0); render(); } break; }
-    case "quick-add": quickAdd(el.getAttribute("data-sku"), el.getAttribute("data-vid")); break;
-    case "buy-now": addToBasket(el.getAttribute("data-sku"), "checkout"); break;
-    case "pdp-view": pdpView = Number(el.getAttribute("data-view")) || 0; render(); break;
-    case "pdp-swatch": pdpSel[el.getAttribute("data-axis")] = el.getAttribute("data-value"); render(); break;
+    case "open-product": pdpSel = {}; pdpQty = 1; shopErrors = {}; go("#/shop/product/" + el.getAttribute("data-sku")); break;
     case "pdp-minus": pdpQty = Math.max(1, pdpQty - 1); render(); break;
     case "pdp-plus":  pdpQty = Math.min(10, pdpQty + 1); render(); break;
     case "add-basket": addToBasket(el.getAttribute("data-sku")); break;
@@ -4251,7 +3349,6 @@ document.addEventListener("submit", ev => {
 
 /* ---------- router ---------- */
 function render(){
-  markRendered();
   applyTheme();
   if(!state.session){ renderLogin(); return; }
 
@@ -4291,10 +3388,7 @@ function render(){
   return renderLauncher();
 }
 
-window.addEventListener("hashchange", () => {
-  if(hashAlreadyRendered()) return;   /* the echo of a hash this code set itself */
-  render();
-});
+window.addEventListener("hashchange", () => { render(); });
 
 /* ---------- boot ---------- */
 load();
