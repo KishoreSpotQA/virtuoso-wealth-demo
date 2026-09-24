@@ -457,7 +457,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.19";
+const BUILD = "2026.09.24";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -650,16 +650,60 @@ function load(){
   }catch(e){/* ignore */}
   return defaultState();
 }
-function resetState(){
-  const keep = state && state.session ? state.session : null;
-  state = defaultState();
-  state.session = keep;
-  if(keep) state.actor = keep.actorId;
-  save();
-  toast("Demo data reset — seeded clients, quotes and retirement instructions restored.");
+/* ---------------- demo data reset, scoped per application ----------------
+   The three applications share one stored state object. This reset used to
+   replace all of it, so resetting in Private Wealth also wiped the Motor
+   Insurance quotes and the Pensions instructions. It now replaces only the
+   keys belonging to the application whose route you are on. The Applications
+   launcher still resets all three, and its confirmation says so.
+   The sign in lockout is deliberately cleared by every reset: it is not demo
+   data, and the login message tells people to reset in order to clear it. */
+const RESET_SCOPES = {
+  wealth: {
+    label: "Private Wealth",
+    keys: ["clients", "draft", "nextId"],
+    home: "#/dashboard",
+    detail: f => f.clients.length + " seeded client records, any onboarding draft and the client id counter"
+  },
+  insurance: {
+    label: "Motor Insurance",
+    keys: ["quotes", "draftQuote", "nextQuoteId", "nextPolicyId"],
+    home: "#/insurance",
+    detail: f => f.quotes.length + " seeded quotes and policies, any quote draft and the quote and policy counters"
+  },
+  pensions: {
+    label: "Pensions",
+    keys: ["cases", "draftCase", "nextCaseId", "nextPaymentId", "members", "finds", "findDraft", "nextFindId"],
+    home: "#/pensions",
+    detail: f => f.cases.length + " seeded retirement instructions, the member register, find requests, any draft and the case, payment and find counters"
+  }
+};
+const RESET_ORDER = ["wealth", "insurance", "pensions"];
+
+/* Which application the current route belongs to, or "all" on the launcher.
+   Mirrors navRoutes() so the two can never disagree. */
+function currentApp(){
   const cur = currentRoute();
-  go(cur.startsWith("#/insurance") ? "#/insurance" : cur.startsWith("#/pensions") ? "#/pensions" : "#/dashboard");
+  if(cur === "#/apps") return "all";
+  if(cur.startsWith("#/insurance")) return "insurance";
+  if(cur.startsWith("#/pensions")) return "pensions";
+  return "wealth";
 }
+
+function resetApp(which){
+  const fresh = defaultState();
+  const scopes = which === "all" ? RESET_ORDER.slice() : [which];
+  scopes.forEach(id => RESET_SCOPES[id].keys.forEach(k => { state[k] = fresh[k]; }));
+  state.attempts = {};
+  state.locked = [];
+  save();
+  toast(which === "all"
+    ? "Demo data reset — Private Wealth, Motor Insurance and Pensions all restored."
+    : "Demo data reset — " + RESET_SCOPES[which].label + " restored. The other applications are untouched.");
+  go(which === "all" ? "#/apps" : RESET_SCOPES[which].home);
+}
+
+function resetState(){ resetApp(currentApp()); }
 function actor(){ return ACTORS.find(a=>a.id===state.actor) || ACTORS[0]; }
 function audit(client, text){
   client.audit = client.audit || [];
@@ -2033,10 +2077,20 @@ function renderListOnly(){
 }
 
 $("#reset-btn").addEventListener("click", ()=>{
-  modal("Reset demo data", `<p>This restores the 12 seeded client records, clears any draft and returns every stage counter to its original state. Useful before a scripted run.</p>`,
+  const which = currentApp();
+  const f = defaultState();
+  const body = which === "all"
+    ? `<p>You are on the Applications launcher, so this resets <b>all three applications</b>.</p>
+       <ul style="margin:.4rem 0 .6rem 1.1rem">
+         ${RESET_ORDER.map(id => `<li><b>${esc(RESET_SCOPES[id].label)}</b>: ${esc(RESET_SCOPES[id].detail(f))}.</li>`).join("")}
+       </ul>
+       <p>Useful for a clean slate before a scripted run. To reset a single application, open it first and reset from inside it.</p>`
+    : `<p>This resets <b>${esc(RESET_SCOPES[which].label)}</b> only: ${esc(RESET_SCOPES[which].detail(f))}.</p>
+       <p>The other two applications are left exactly as they are.</p>`;
+  modal("Reset demo data", body,
     `<button class="btn btn-primary" data-act="modal-close" id="confirm-reset" data-testid="reset-confirm">Reset now</button>
      <button class="btn" data-act="modal-close">Cancel</button>`);
-  setTimeout(()=>{ const b = $("#confirm-reset"); if(b) b.addEventListener("click", resetState); }, 0);
+  setTimeout(()=>{ const b = $("#confirm-reset"); if(b) b.addEventListener("click", ()=>resetApp(which)); }, 0);
 });
 
 $("#login-form").addEventListener("submit", ev => { ev.preventDefault(); attemptLogin(); });
@@ -2045,7 +2099,7 @@ $("#login-reset-btn").addEventListener("click", ()=>{
   state = defaultState(); save();
   loginUI = { errors:{}, banner:null };
   renderLogin();
-  toast("Demo data reset \u2014 12 seeded clients restored.");
+  toast("Demo data reset \u2014 Private Wealth, Motor Insurance and Pensions all restored.");
 });
 
 window.addEventListener("hashchange", ()=>{ wiz.errors = {}; clientTab = "overview"; render(); });
