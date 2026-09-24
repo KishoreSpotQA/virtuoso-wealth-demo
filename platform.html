@@ -457,7 +457,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.26";
+const BUILD = "2026.09.27";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -2291,7 +2291,7 @@ function viewApps(){
   <div class="launch-wrap" data-testid="app-picker">
     <div class="page-head"><div style="flex:1;min-width:260px">
       <h1>Choose an application</h1>
-      <p>Signed in as ${esc(actor().name)}. All three applications share this sign-in, these users and the same demo data reset.</p>
+      <p>Signed in as ${esc(actor().name)}. All three applications share this sign-in and these users. Demo data is reset from inside each application and affects only that one.</p>
     </div></div>
     <div class="launch-grid">
       <button class="launch-card" data-qact="open-app" data-app="wam" data-testid="app-wam">
