@@ -334,8 +334,45 @@ td.right,th.right{text-align:right}
 
 /* ---- sign-in ---- */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;background:var(--ground)}
+/* Sign in carries a little more presence than the workspace behind it. The bloom
+   is built from the accent and the primary already in the palette, so no new
+   colour is introduced. The card stays opaque, which is what keeps every piece of
+   text on it at the contrast it had before. */
+.login-wrap{background:
+  radial-gradient(880px 520px at 84% 12%, rgba(47,111,143,.60), transparent 62%),
+  radial-gradient(760px 520px at 8% 92%, rgba(38,60,110,.75), transparent 60%),
+  linear-gradient(140deg,#0b1526 0%,#16253f 52%,#1e3255 100%);}
+.login-wrap .login-card{
+  box-shadow:0 34px 64px -24px rgba(4,9,20,.66), 0 1px 0 rgba(255,255,255,.85) inset;
+  border-color:rgba(255,255,255,.35);}
+@media (prefers-reduced-motion:no-preference){ .login-wrap{background-attachment:fixed} }
 .login-card{width:100%;max-width:424px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:30px 28px}
-.login-brand{margin-bottom:22px}
+.login-brand{margin-bottom:22px;display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.login-brand .brand-text{min-width:0}
+.login-brand .brand-text .sub{white-space:nowrap}
+/* The other demo platform, set in the wordmark's own face and ink so it reads as
+   a sibling brand rather than as a control. Sized down because this is the
+   Cavendish sign in: the two names must not carry equal weight. A quiet rule
+   underneath is what marks it as something you can follow. */
+.login-brand .brand-cross{flex:none;text-align:right;text-decoration:none;color:inherit}
+.login-brand .brand-cross .mark{
+  display:inline-block;font-family:Newsreader,Georgia,serif;font-size:19px;font-weight:600;
+  color:var(--ink);letter-spacing:-.01em;border-bottom:1px solid var(--line);padding-bottom:2px;
+}
+.login-brand .brand-cross .sub{
+  display:block;white-space:nowrap;font-size:10px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);margin-top:4px;
+}
+.login-brand .brand-cross:hover .mark,
+.login-brand .brand-cross:focus-visible .mark{color:var(--accent);border-bottom-color:var(--accent)}
+.login-brand .brand-cross:hover .sub,
+.login-brand .brand-cross:focus-visible .sub{color:var(--accent)}
+/* Both descriptors are held on one line each, so on a narrow card there is not
+   room for them side by side and they used to overlap. Stack instead. */
+@media (max-width:430px){
+  .login-brand{flex-direction:column;align-items:flex-start;gap:12px}
+  .login-brand .brand-cross{text-align:left}
+}
 .login-brand .mark{display:block;font-family:Newsreader,Georgia,serif;font-size:27px;font-weight:600;color:var(--ink);letter-spacing:-.01em}
 .login-brand .sub{display:block;font-size:11px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
 .login-card h1{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:5px}
@@ -376,6 +413,19 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
 .demo-note{font-size:10.5px;line-height:1.5;color:var(--ink-2);margin-top:10px}
 .demo-note b{font-weight:600}
 .sidefoot .demo-note{margin-top:8px;color:inherit;opacity:.8}
+
+/* A quiet way across to the other demo platform. Deliberately a text link and
+   not a card or a button: the retail storefront is a different client brand and
+   must not read as a fourth Cavendish application. */
+.cross-link{
+  margin-top:.9rem; padding-top:.75rem; border-top:1px solid var(--line,#e2e8f0);
+  font-size:.82rem; text-align:center; opacity:.85;
+}
+.cross-link a{ font-weight:600; }
+/* The other platform's name is set in the heading face so it reads as a brand
+   rather than as running text, matching the Cavendish wordmark above it. */
+.cross-link .xbrand{ font-family:Newsreader,Georgia,serif; font-weight:500; font-size:1.18em; letter-spacing:-.01em; }
+.launch-wrap .cross-link{ max-width:none; margin-top:1.4rem; }
 </style>
 
 </head>
@@ -383,8 +433,15 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
 <div class="login-wrap" id="login-wrap" data-testid="login-view" hidden>
   <div class="login-card">
     <div class="login-brand" data-testid="login-brand">
-      <span class="mark">Cavendish</span>
-      <span class="sub">Financial Services · Client Ops</span>
+      <div class="brand-text">
+        <span class="mark">Cavendish</span>
+        <span class="sub">Financial Services · Client Ops</span>
+      </div>
+      <a class="brand-cross" href="commerce.html" data-testid="cross-link-retail-login" aria-label="Lumen and Co. retail demo"
+         title="Lumen and Co. retail demo - separate sign-in, separate demo data">
+        <span class="mark">Lumen &amp; Co.</span>
+        <span class="sub">Retail &middot; D2C</span>
+      </a>
     </div>
     <h1>Sign in</h1>
     <p class="intro">Use your Cavendish network credentials. Access is recorded against your user for audit purposes.</p>
@@ -2312,6 +2369,9 @@ function viewApps(){
         <p>Retirement instructions with the protection checks that govern them: safeguarded benefits, guidance and advice, sustainability of income, and a deterministic decision that accepts, refers or declines.</p>
         <div class="meta"><span>${pOpen} instructions</span><span>${pRefs + pAuth} awaiting a decision</span></div>
       </button>
+    </div>
+    <div class="cross-link" data-testid="cross-link-retail-launcher">
+      Also available: <a href="commerce.html" aria-label="Lumen and Co. retail demo"><span class="xbrand">Lumen &amp; Co.</span> retail demo</a> &mdash; separate sign-in, separate demo data.
     </div>
   </div>`;
 }

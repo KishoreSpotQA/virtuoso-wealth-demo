@@ -597,6 +597,23 @@ table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2p
   .thumb{width:60px; height:46px}
   .basket-line > .right{grid-column:2; text-align:left}
 }
+
+/* A quiet way across to the other demo platform. A text link, never a card:
+   Cavendish is a different client brand and must not read as a fourth app here. */
+.cross-link{
+  margin-top:.9rem; padding-top:.75rem; border-top:1px solid var(--line);
+  font-size:.82rem; text-align:center;
+}
+.cross-link a{ font-weight:600; }
+/* This app sets its brand in weight rather than in a second family, so the other
+   platform's name follows the same treatment as the wordmark here. */
+.cross-link .xbrand{ font-family:Georgia,"Times New Roman",serif; font-weight:600; font-size:1.14em; letter-spacing:0; }
+/* The sign in screen and the launcher both sit on the deep violet field, so the
+   link needs the light ink used elsewhere on those surfaces. Inheriting the body
+   colour left it charcoal on violet and effectively unreadable. */
+.cross-link.on-dark{ color:var(--lx-ink-2); border-top-color:var(--lx-line); }
+.cross-link.on-dark a{ color:#f0abfc; }
+.cross-link.on-dark a:hover{ color:#fbcfe8; }
 </style>
 </head>
 <body>
@@ -805,6 +822,9 @@ function renderLogin(){
         </table>
       </div>
       <div class="center small build" style="margin-top:.9rem">Build ${BUILD}</div>
+      <div class="cross-link on-dark" data-testid="cross-link-financial-login">
+        Also available: <a href="platform.html" aria-label="Cavendish financial services demo"><span class="xbrand">Cavendish</span> financial services demo</a>
+      </div>
     </div>
   </div>`;
 }
@@ -902,6 +922,9 @@ function renderLauncher(){
         in Vector WMS, which on despatch is given a carrier tracking number.
         Every system shows the same order from its own point of view.
       </div>
+    </div>
+    <div class="cross-link on-dark" data-testid="cross-link-financial-launcher">
+      Also available: <a href="platform.html" aria-label="Cavendish financial services demo"><span class="xbrand">Cavendish</span> financial services demo</a> &mdash; separate sign-in, separate demo data.
     </div>
   </div>
   </div>`;
