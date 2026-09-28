@@ -631,6 +631,13 @@ table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2p
 .dir-label{font-size:.62rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
 .dir-link{font-size:.76rem; font-weight:700; color:var(--shop); text-decoration:none; border-bottom:1px solid transparent}
 .dir-link:hover,.dir-link:focus-visible{border-bottom-color:currentColor}
+/* Leaves the application, so outlined with an outward arrow rather than filled. */
+.btn-goal{display:inline-flex; align-items:center; gap:.35rem; flex:none;
+  background:transparent; color:#1E65F0; border:1px solid #1E65F0; border-radius:8px;
+  padding:.35rem .7rem; font-size:.76rem; font-weight:700; line-height:1.2;
+  text-decoration:none; white-space:nowrap;}
+.btn-goal:hover,.btn-goal:focus-visible{background:#1E65F0; color:#fff}
+.btn-goal[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -641,6 +648,32 @@ table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2p
 /* ============================================================
    CORE - clock, storage, helpers, auth, launcher, routing
    ============================================================ */
+
+let GOAL_LINK = "";   /* Halcyon Virtuoso goal; may be overridden by links.json */
+
+/* The Virtuoso goal for this platform. Recorded in links.json beside this file so
+   that a goal finished in Touchstone is published by editing one line rather than
+   rebuilding the application. A missing file, an unreachable host, or opening this
+   file from disk all behave as no goal: the control simply is not shown. */
+function applyGoalLink(){
+  document.querySelectorAll('[data-testid="goal-link"]').forEach(a => {
+    const u = (GOAL_LINK || "").trim();
+    a.hidden = !u;
+    if(u){ a.setAttribute("href", u);
+           a.setAttribute("title", "Open the Virtuoso goal for this platform in a new tab"); }
+  });
+}
+(function loadLinks(){
+  try{
+    fetch("links.json", { cache: "no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(cfg => {
+        const v = cfg && cfg.halcyon && typeof cfg.halcyon.goal === "string" ? cfg.halcyon.goal.trim() : "";
+        if(v && v !== GOAL_LINK){ GOAL_LINK = v; applyGoalLink(); }
+      })
+      .catch(()=>{});
+  }catch(e){}
+})();
 
 const BUILD = "2026.09.25";
 const STORE_KEY = "halcyon.commerce.v1";
@@ -892,6 +925,8 @@ function renderLauncher(){
       <a class="dir-link" href="directives/analyst.json" download="analyst.json" data-testid="dir-analyst" aria-label="Download Analyst directives">Analyst</a>
       <a class="dir-link" href="directives/architect.json" download="architect.json" data-testid="dir-architect" aria-label="Download Architect directives">Architect</a>
       <a class="dir-link" href="directives/autopilot.json" download="autopilot.json" data-testid="dir-autopilot" aria-label="Download Autopilot directives">Autopilot</a>
+      <a class="btn-goal" href="#" target="_blank" rel="noopener" data-testid="goal-link"
+         aria-label="Open tests in Virtuoso for Halcyon Retail Group" hidden><span class="kb-ic" aria-hidden="true">&#8599;</span>Virtuoso tests</a>
     </span>
     <div class="brandmark">
       <div class="brand-dot" style="background-color:#4c1d95; background-image:linear-gradient(135deg,#7c3aed,#0e7490)">HR</div>
@@ -981,6 +1016,8 @@ function backOfficeTop(sys, links, active){
       <a class="dir-link" href="directives/analyst.json" download="analyst.json" data-testid="dir-analyst" aria-label="Download Analyst directives">Analyst</a>
       <a class="dir-link" href="directives/architect.json" download="architect.json" data-testid="dir-architect" aria-label="Download Architect directives">Architect</a>
       <a class="dir-link" href="directives/autopilot.json" download="autopilot.json" data-testid="dir-autopilot" aria-label="Download Autopilot directives">Autopilot</a>
+      <a class="btn-goal" href="#" target="_blank" rel="noopener" data-testid="goal-link"
+         aria-label="Open tests in Virtuoso for Halcyon Retail Group" hidden><span class="kb-ic" aria-hidden="true">&#8599;</span>Virtuoso tests</a>
     </span>
     <div class="brandmark">
       <div class="brand-dot ${meta.cls}">${meta.chip}</div>
@@ -4412,6 +4449,17 @@ function render(){
 
   return renderLauncher();
 }
+
+/* Every branch of the router above returns directly, so the goal control is
+   re-applied by wrapping the router rather than by a line at its foot. */
+(function wrapRender(){
+  const inner = render;
+  render = function(){
+    const r = inner.apply(this, arguments);
+    if(typeof applyGoalLink === "function") applyGoalLink();
+    return r;
+  };
+})();
 
 window.addEventListener("hashchange", () => {
   if(hashAlreadyRendered()) return;   /* the echo of a hash this code set itself */

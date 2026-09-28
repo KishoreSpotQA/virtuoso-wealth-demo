@@ -179,7 +179,7 @@ button{font-family:inherit;font-size:inherit}
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
 .topbar{
   position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);
-  border-bottom:1px solid var(--line);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding:10px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
 }
 .topbar .crumb{font-size:12px;color:var(--ink-3);letter-spacing:.02em}
 .spacer{flex:1}
@@ -376,24 +376,35 @@ td.right,th.right{text-align:right}
 }
 .login-brand .brand-cross:hover .mark,
 .login-brand .brand-cross:focus-visible .mark{color:var(--accent);border-bottom-color:var(--accent)}
-/* The knowledge base source for the application in scope. First control in the
-   top bar so it reads before the breadcrumb, in the Virtuoso brand blue rather
-   than a Cavendish palette colour: it belongs to the tooling, not to the firm. */
+/* The three resources for the application in scope, kept together in the sidebar
+   footer with the environment and build. They were in the top bar, but three of
+   them plus the breadcrumb, the actor and two controls wrapped it to two rows at
+   1440 and below, which is a common demo width. */
+.res-block{display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin:10px 0 12px}
 .btn-kb{
   display:inline-flex;align-items:center;gap:6px;
   background:#1E65F0;color:#fff;border:1px solid #1E65F0;border-radius:7px;
-  padding:5px 10px;font-size:11.5px;font-weight:700;line-height:1.2;
-  text-decoration:none;letter-spacing:.01em;white-space:nowrap;
+  padding:6px 11px;font-size:11.5px;font-weight:700;line-height:1.2;
+  text-decoration:none;white-space:nowrap;
 }
 .btn-kb:hover,.btn-kb:focus-visible{background:#1550c8;border-color:#1550c8;color:#fff}
 .btn-kb[hidden]{display:none}
-/* Kept tight: the top bar already carries the breadcrumb, the actor and two
-   controls, and at 1280 it wrapped to a second row once these were added. */
-.dir-group{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;margin-left:-4px}
+.kb-ic{font-size:12px;opacity:.95}
+/* Leaves the application, so it is outlined rather than filled and carries an
+   outward arrow. */
+.btn-goal{
+  display:inline-flex;align-items:center;gap:5px;
+  background:transparent;color:#8ab6ff;border:1px solid rgba(138,182,255,.55);border-radius:7px;
+  padding:5px 10px;font-size:11.5px;font-weight:700;line-height:1.2;
+  text-decoration:none;white-space:nowrap;
+}
+.btn-goal:hover,.btn-goal:focus-visible{background:#1E65F0;border-color:#1E65F0;color:#fff}
+.btn-goal[hidden]{display:none}
+.dir-group{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;max-width:100%}
 .dir-group[hidden]{display:none}
-.dir-label{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
-.dir-link{font-size:11.5px;font-weight:600;color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
-.dir-link:hover,.dir-link:focus-visible{border-bottom-color:var(--accent)}
+.dir-label{display:block;width:100%;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.65}
+.dir-link{font-size:11.5px;font-weight:600;color:#8ab6ff;text-decoration:none;border-bottom:1px solid transparent}
+.dir-link:hover,.dir-link:focus-visible{border-bottom-color:currentColor}
 
 .kb-ic{font-size:12px;opacity:.95}
 .login-brand .brand-cross:hover .sub,
@@ -515,16 +526,14 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
     <div class="sidefoot">
       <div>Environment: <span class="mono">UAT</span></div>
       <div style="margin-top:3px">Build <span class="mono" id="build-id">—</span></div>
-      <div class="demo-note" data-testid="sidebar-disclosure">Demo · synthetic data</div>
-    </div>
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <a class="btn-kb" id="kb-link" data-testid="kb-download" href="#" download hidden>
+      <div class="res-block">
+        <a class="btn-kb" id="kb-link" data-testid="kb-download" href="#" download hidden>
         <span class="kb-ic" aria-hidden="true">&#8595;</span><span id="kb-label">Download KB source</span>
-      </a>
-      <span class="dir-group" id="dir-group" data-testid="directives" hidden>
+        </a>
+        <a class="btn-goal" id="goal-link" data-testid="goal-link" href="#" target="_blank" rel="noopener" hidden>
+        <span class="kb-ic" aria-hidden="true">&#8599;</span>Virtuoso tests
+        </a>
+        <span class="dir-group" id="dir-group" data-testid="directives" hidden>
         <span class="dir-label">Directives</span>
         <a class="dir-link" href="directives/analyst.json" download="analyst.json"
            data-testid="dir-analyst" aria-label="Download Analyst directives">Analyst</a>
@@ -532,7 +541,14 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
            data-testid="dir-architect" aria-label="Download Architect directives">Architect</a>
         <a class="dir-link" href="directives/autopilot.json" download="autopilot.json"
            data-testid="dir-autopilot" aria-label="Download Autopilot directives">Autopilot</a>
-      </span>
+        </span>
+      </div>
+      <div class="demo-note" data-testid="sidebar-disclosure">Demo · synthetic data</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
       <span class="crumb" id="crumb" data-testid="breadcrumb">—</span>
       <span class="spacer"></span>
       <div class="row" style="gap:8px" data-testid="current-user">
@@ -760,6 +776,7 @@ function load(){
    data, and the login message tells people to reset in order to clear it. */
 const RESET_SCOPES = {
   wealth: {
+    goal: "",
     kb: "WAM-Cavendish-Onboarding-KB-Source.md",
     label: "Private Wealth",
     keys: ["clients", "draft", "nextId"],
@@ -767,6 +784,7 @@ const RESET_SCOPES = {
     detail: f => f.clients.length + " seeded client records, any onboarding draft and the client id counter"
   },
   insurance: {
+    goal: "https://app2.virtuoso.qa/#/project/12470/goal/18515/v/latest",
     kb: "Cavendish-Motor-Insurance-KB-Source.md",
     label: "Motor Insurance",
     keys: ["quotes", "draftQuote", "nextQuoteId", "nextPolicyId"],
@@ -774,6 +792,7 @@ const RESET_SCOPES = {
     detail: f => f.quotes.length + " seeded quotes and policies, any quote draft and the quote and policy counters"
   },
   pensions: {
+    goal: "",
     kb: "Cavendish-Pensions-KB-Source.md",
     label: "Pensions",
     keys: ["cases", "draftCase", "nextCaseId", "nextPaymentId", "members", "finds", "findDraft", "nextFindId"],
@@ -921,6 +940,19 @@ function renderActor(){
        scope; they simply keep company with the knowledge base control and hide
        with it on the launcher. */
     const dg = $("#dir-group"); if(dg) dg.hidden = !scope;
+
+    /* The goal exists only once the work has been done in Touchstone, so the
+       link is absent until a URL is recorded rather than present and dead. */
+    const gl = $("#goal-link");
+    if(gl){
+      const url = scope && scope.goal ? scope.goal : "";
+      gl.hidden = !url;
+      if(url){
+        gl.setAttribute("href", url);
+        gl.setAttribute("title", "Open the Virtuoso goal for " + scope.label + " in a new tab");
+        gl.setAttribute("aria-label", "Open tests in Virtuoso for " + scope.label);
+      }
+    }
     if(scope){
       kb.setAttribute("href", "kb/" + scope.kb);
       kb.setAttribute("download", scope.kb);
@@ -2234,6 +2266,28 @@ $("#login-reset-btn").addEventListener("click", ()=>{
   renderLogin();
   toast("Demo data reset \u2014 Private Wealth, Motor Insurance and Pensions all restored.");
 });
+
+/* Goal links are recorded in links.json beside this file so that a goal finished
+   in Touchstone can be published by editing four lines rather than rebuilding the
+   application. The values compiled in above are the fallback: if the file is
+   missing, unreachable, or this file is opened from disk, the application behaves
+   exactly as it would without it. */
+(function loadLinks(){
+  try{
+    fetch("links.json", { cache: "no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(cfg => {
+        if(!cfg) return;
+        let changed = false;
+        Object.keys(RESET_SCOPES).forEach(k => {
+          const v = cfg[k] && typeof cfg[k].goal === "string" ? cfg[k].goal.trim() : null;
+          if(v !== null && v !== RESET_SCOPES[k].goal){ RESET_SCOPES[k].goal = v; changed = true; }
+        });
+        if(changed) renderActor();
+      })
+      .catch(()=>{});
+  }catch(e){}
+})();
 
 window.addEventListener("hashchange", ()=>{ wiz.errors = {}; clientTab = "overview"; render(); });
 
