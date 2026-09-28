@@ -347,6 +347,17 @@ td.right,th.right{text-align:right}
   border-color:rgba(255,255,255,.35);}
 @media (prefers-reduced-motion:no-preference){ .login-wrap{background-attachment:fixed} }
 .login-card{width:100%;max-width:424px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:30px 28px}
+/* The sign in card carries the demo's colour. It is set on the card rather than
+   on --surface so that nothing else in the application changes. In dark mode the
+   card keeps the lemon, so the light inks are re-declared on it: without this the
+   pale text of the dark theme would sit on a pale card and disappear. */
+.login-card{background:#FBF8D0; border-color:#e4dda4}
+:root[data-theme="dark"] .login-card{
+  background:#FBF8D0;
+  --ink:#141b26; --ink-2:#48566b; --ink-3:#58657a;
+  --surface:#ffffff; --line:#d4dae4; --line-strong:#b8c1d0;
+  color:var(--ink);
+}
 .login-brand{margin-bottom:22px;display:flex;align-items:baseline;justify-content:space-between;gap:14px}
 .login-brand .brand-text{min-width:0}
 .login-brand .brand-text .sub{white-space:nowrap}
@@ -365,6 +376,18 @@ td.right,th.right{text-align:right}
 }
 .login-brand .brand-cross:hover .mark,
 .login-brand .brand-cross:focus-visible .mark{color:var(--accent);border-bottom-color:var(--accent)}
+/* The knowledge base source for the application in scope. First control in the
+   top bar so it reads before the breadcrumb, in the Virtuoso brand blue rather
+   than a Cavendish palette colour: it belongs to the tooling, not to the firm. */
+.btn-kb{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#1E65F0;color:#fff;border:1px solid #1E65F0;border-radius:7px;
+  padding:6px 12px;font-size:12px;font-weight:700;line-height:1.2;
+  text-decoration:none;letter-spacing:.01em;white-space:nowrap;
+}
+.btn-kb:hover,.btn-kb:focus-visible{background:#1550c8;border-color:#1550c8;color:#fff}
+.btn-kb[hidden]{display:none}
+.kb-ic{font-size:12px;opacity:.95}
 .login-brand .brand-cross:hover .sub,
 .login-brand .brand-cross:focus-visible .sub{color:var(--accent)}
 /* Both descriptors are held on one line each, so on a narrow card there is not
@@ -490,6 +513,9 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
 
   <div class="main">
     <header class="topbar">
+      <a class="btn-kb" id="kb-link" data-testid="kb-download" href="#" download hidden>
+        <span class="kb-ic" aria-hidden="true">&#8595;</span><span id="kb-label">Download KB source</span>
+      </a>
       <span class="crumb" id="crumb" data-testid="breadcrumb">—</span>
       <span class="spacer"></span>
       <div class="row" style="gap:8px" data-testid="current-user">
@@ -717,18 +743,21 @@ function load(){
    data, and the login message tells people to reset in order to clear it. */
 const RESET_SCOPES = {
   wealth: {
+    kb: "WAM-Cavendish-Onboarding-KB-Source.md",
     label: "Private Wealth",
     keys: ["clients", "draft", "nextId"],
     home: "#/dashboard",
     detail: f => f.clients.length + " seeded client records, any onboarding draft and the client id counter"
   },
   insurance: {
+    kb: "Cavendish-Motor-Insurance-KB-Source.md",
     label: "Motor Insurance",
     keys: ["quotes", "draftQuote", "nextQuoteId", "nextPolicyId"],
     home: "#/insurance",
     detail: f => f.quotes.length + " seeded quotes and policies, any quote draft and the quote and policy counters"
   },
   pensions: {
+    kb: "Cavendish-Pensions-KB-Source.md",
     label: "Pensions",
     keys: ["cases", "draftCase", "nextCaseId", "nextPaymentId", "members", "finds", "findDraft", "nextFindId"],
     home: "#/pensions",
@@ -861,6 +890,24 @@ function renderActor(){
      three remains available on the sign in screen. */
   const rb = $("#reset-btn");
   if(rb) rb.hidden = (currentApp() === "all");
+
+  /* The knowledge base source describes one application, so the link follows the
+     same scope rule as reset: it names the application you are in, and on the
+     launcher, where none is in scope, there is nothing to offer. The file is
+     served beside this one rather than embedded, so re-publishing the source
+     updates what this downloads without rebuilding the application. */
+  const kb = $("#kb-link"), kbl = $("#kb-label"), which = currentApp();
+  if(kb){
+    const scope = which === "all" ? null : RESET_SCOPES[which];
+    kb.hidden = !scope;
+    if(scope){
+      kb.setAttribute("href", "kb/" + scope.kb);
+      kb.setAttribute("download", scope.kb);
+      kb.setAttribute("title", "Download the knowledge base source for " + scope.label);
+      kb.setAttribute("aria-label", "Download KB source for " + scope.label);
+      if(kbl) kbl.textContent = "Download KB source";
+    }
+  }
 }
 
 /* ============================================================

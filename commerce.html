@@ -532,7 +532,7 @@ img.prod-art{padding:2px}
    ============================================================ */
 .erp-shell{font-size:13px}
 .erp-shell h1{font-size:1.15rem} .erp-shell h2{font-size:1rem} .erp-shell h3{font-size:.9rem}
-.erp-bar{background:var(--erp); color:var(--erp-ink); padding:.3rem 20px; font-size:.76rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; display:flex; gap:1.2rem; align-items:center}
+.erp-bar{background:var(--erp); color:var(--erp-ink); padding:.3rem 20px; font-size:.76rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; display:flex; gap:1.2rem; align-items:center; flex-wrap:wrap; row-gap:.15rem}
 .erp-fnkeys{display:flex; gap:.3rem; flex-wrap:wrap; padding:.4rem 20px; background:var(--surface-3); border-bottom:1px solid var(--line-2)}
 .fnkey{font-family:var(--mono); font-size:.74rem; font-weight:700; padding:.24rem .5rem; border:1px solid var(--line-2); border-radius:3px; background:var(--surface); color:var(--ink-2); cursor:pointer}
 .fnkey:hover{background:var(--surface-2); color:var(--ink-1); border-color:var(--ink-3)}
@@ -566,7 +566,7 @@ table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2p
 /* ============================================================
    WMS
    ============================================================ */
-.wms-bar{background:var(--wms); color:var(--wms-ink); padding:.3rem 20px; font-size:.76rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; display:flex; gap:1.2rem; align-items:center}
+.wms-bar{background:var(--wms); color:var(--wms-ink); padding:.3rem 20px; font-size:.76rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; display:flex; gap:1.2rem; align-items:center; flex-wrap:wrap; row-gap:.15rem}
 .pick-row{display:grid; grid-template-columns:auto 1fr auto auto; gap:.8rem; align-items:center; padding:.6rem .8rem; border:1px solid var(--line); border-radius:var(--radius-s); background:var(--surface); margin-bottom:.5rem}
 .pick-row.done{background:var(--ok-soft); border-color:var(--ok)}
 .pick-row.short{background:var(--warn-soft); border-color:var(--warn)}
@@ -614,6 +614,19 @@ table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2p
 .cross-link.on-dark{ color:var(--lx-ink-2); border-top-color:var(--lx-line); }
 .cross-link.on-dark a{ color:#f0abfc; }
 .cross-link.on-dark a:hover{ color:#fbcfe8; }
+
+/* The knowledge base source for this platform. First control in the top bar, in
+   the Virtuoso brand blue rather than a Halcyon palette colour: it belongs to
+   the tooling, not to the fictional retailer. Absent from the storefront, which
+   must keep reading as a customer facing shop. */
+.btn-kb{
+  display:inline-flex; align-items:center; gap:.4rem; flex:none;
+  background:#1E65F0; color:#fff; border:1px solid #1E65F0; border-radius:8px;
+  padding:.4rem .75rem; font-size:.78rem; font-weight:700; line-height:1.2;
+  text-decoration:none; white-space:nowrap;
+}
+.btn-kb:hover,.btn-kb:focus-visible{background:#1550c8; border-color:#1550c8; color:#fff}
+.kb-ic{font-size:.85rem; opacity:.95}
 </style>
 </head>
 <body>
@@ -867,6 +880,9 @@ function renderLauncher(){
   app.innerHTML = `
   <div class="launchbody">
   <div class="topbar"><div class="topbar-in">
+    <a class="btn-kb" href="kb/Halcyon-Commerce-KB-Source.md" download="Halcyon-Commerce-KB-Source.md" data-testid="kb-download"
+       aria-label="Download KB source for Halcyon Retail Group"
+       title="Download the knowledge base source for this platform"><span class="kb-ic" aria-hidden="true">&#8595;</span>Download KB source</a>
     <div class="brandmark">
       <div class="brand-dot" style="background-color:#4c1d95; background-image:linear-gradient(135deg,#7c3aed,#0e7490)">HR</div>
       <div><div class="sys-name">Halcyon Retail Group</div><div class="sys-sub">Order to Cash Platform</div></div>
@@ -947,6 +963,9 @@ function backOfficeTop(sys, links, active){
     : { name:"Vector WMS", sub:"Warehouse and Transport", chip:"VW", cls:"chip-wms", bar:"wms-bar" };
   return `
   <div class="topbar"><div class="topbar-in">
+    <a class="btn-kb" href="kb/Halcyon-Commerce-KB-Source.md" download="Halcyon-Commerce-KB-Source.md" data-testid="kb-download"
+       aria-label="Download KB source for Halcyon Retail Group"
+       title="Download the knowledge base source for this platform"><span class="kb-ic" aria-hidden="true">&#8595;</span>Download KB source</a>
     <div class="brandmark">
       <div class="brand-dot ${meta.cls}">${meta.chip}</div>
       <div><div class="sys-name">${meta.name}</div><div class="sys-sub">${meta.sub}</div></div>
