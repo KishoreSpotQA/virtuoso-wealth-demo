@@ -1,0 +1,54 @@
+{
+  "exportedAt": "2026-09-28T03:54:08.071Z",
+  "schemaVersion": 1,
+  "directives": [
+    {
+      "name": "Async Processing & Post-Click Wait Handling",
+      "workflowType": "AUTOPILOT",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "When clicking a button or control that starts an asynchronous or long-running process, do not immediately continue to the next interaction.\n\nAfter the click, wait for the resulting process to complete before continuing.\n\nExamples include actions such as:\n- Run Processing\n- Run Screening\n- Calculate\n- Submit\n- Generate\n- Upload\n- Import\n- Refresh\n- Validate\n- Search\n- Process\n- Save and Continue\n- Any action that displays a loading, processing, pending, spinner, progress, or disabled state.\n\nPrefer condition-based synchronization rather than arbitrary fixed waits.\n\nAfter clicking such an action:\n\n1. Identify an observable indication that processing has started, where available.\n2. Wait until processing has completed.\n3. Wait for the expected resulting element, status, message, screen, or enabled control before continuing.\n4. Add an assertion for the expected completion state when appropriate.\n\nExample:\n\nClick on \"Run Processing\"\nWait for \"Processing completed\"\nAssert \"Processing completed\" exists\n\nOr, if a processing indicator is shown:\n\nClick on \"Run Processing\"\nWait for \"Processing...\"\nWait for \"Processing completed\"\nAssert \"Processing completed\" exists\n\nDo not continue interacting with dependent fields, buttons, or pages while processing is still in progress.\n\nAvoid adding fixed waits such as \"Wait 10 seconds\" unless there is no reliable UI state or element that can be used to determine completion."
+    },
+    {
+      "name": "Structured Raw Comment Handling",
+      "workflowType": "AUTOPILOT",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "When a generated journey contains a large raw comment with multiple business actions, stages, fields, selections, or expected outcomes, do not treat the entire comment as one undifferentiated instruction.\n\nInterpret the comment as multiple logical actions and expand it into structured executable Virtuoso NLP steps during Autopilot execution.\n\nUse the business flow, screen/stage boundaries, and field groupings to separate the actions logically.\n\nFor example:\n- Prospect Details\n- KYC & AML\n- Risk & Suitability\n- Investment Preferences\n- Service & Funding\n\nGenerate individual executable steps such as Write, Pick, Click, Wait, Look for, and Assert as appropriate.\n\nKeep one UI interaction per executable step.\n\nUse comments only as short section headers or business-intent descriptions when generating the final journey structure.\n\nDo not leave required fields, variables, selections, validations, or expected outcomes only inside a long raw comment."
+    },
+    {
+      "name": "KYC & AML – Dependent Dropdown & Screening Handling",
+      "workflowType": "AUTOPILOT",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "For the KYC & AML form, dropdowns may trigger dependent field refreshes.\nAfter selecting Identity document type, Source of wealth, or Source of funds:\n- Wait for the form to stabilise.\n- Verify the selected value remains selected.\n- If another previously completed dropdown resets to \"Select...\", re-select it after the latest dropdown update completes.\nDo not proceed to Run screening until all mandatory dropdowns contain the expected selected values.\nAfter Run screening completes, verify mandatory dropdown values again before clicking Continue."
+    },
+    {
+      "name": "Dropdown Selection Stability & Re-render Handling",
+      "workflowType": "AUTOPILOT",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "When interacting with sequential dropdowns, validate that each selected value remains selected before moving to the next dropdown.\nIf selecting a dropdown causes the page or form section to re-render, wait for the UI to stabilise before continuing.\nAfter each dropdown selection:\n1. Wait briefly for any dependent UI update.\n2. Assert that the selected option is still selected.\n3. If a previously selected dropdown has reset to its default value, re-select it only after the triggering dropdown has finished updating.\nDo not immediately interact with the next dropdown while the previous selection is still causing a page or component refresh."
+    },
+    {
+      "name": "Recover from validation errors",
+      "workflowType": "AUTOPILOT",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "After activating Continue, if the step counter has not advanced, read the validation messages shown on the page, set the fields they name, and activate Continue again. Do not repeat the same Continue without changing a field."
+    },
+    {
+      "name": "Element identification",
+      "workflowType": "AUTOPILOT",
+      "directiveType": "CONVENTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "Identify elements by their data-testid attribute in preference to label text, placeholder or position. The test id index is in the source."
+    }
+  ]
+}

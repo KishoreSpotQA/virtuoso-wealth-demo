@@ -627,6 +627,10 @@ table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2p
 }
 .btn-kb:hover,.btn-kb:focus-visible{background:#1550c8; border-color:#1550c8; color:#fff}
 .kb-ic{font-size:.85rem; opacity:.95}
+.dir-group{display:inline-flex; align-items:center; gap:.5rem; white-space:nowrap; flex:none}
+.dir-label{font-size:.62rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
+.dir-link{font-size:.76rem; font-weight:700; color:var(--shop); text-decoration:none; border-bottom:1px solid transparent}
+.dir-link:hover,.dir-link:focus-visible{border-bottom-color:currentColor}
 </style>
 </head>
 <body>
@@ -883,6 +887,12 @@ function renderLauncher(){
     <a class="btn-kb" href="kb/Halcyon-Commerce-KB-Source.md" download="Halcyon-Commerce-KB-Source.md" data-testid="kb-download"
        aria-label="Download KB source for Halcyon Retail Group"
        title="Download the knowledge base source for this platform"><span class="kb-ic" aria-hidden="true">&#8595;</span>Download KB source</a>
+    <span class="dir-group" data-testid="directives">
+      <span class="dir-label">Directives</span>
+      <a class="dir-link" href="directives/analyst.json" download="analyst.json" data-testid="dir-analyst" aria-label="Download Analyst directives">Analyst</a>
+      <a class="dir-link" href="directives/architect.json" download="architect.json" data-testid="dir-architect" aria-label="Download Architect directives">Architect</a>
+      <a class="dir-link" href="directives/autopilot.json" download="autopilot.json" data-testid="dir-autopilot" aria-label="Download Autopilot directives">Autopilot</a>
+    </span>
     <div class="brandmark">
       <div class="brand-dot" style="background-color:#4c1d95; background-image:linear-gradient(135deg,#7c3aed,#0e7490)">HR</div>
       <div><div class="sys-name">Halcyon Retail Group</div><div class="sys-sub">Order to Cash Platform</div></div>
@@ -966,6 +976,12 @@ function backOfficeTop(sys, links, active){
     <a class="btn-kb" href="kb/Halcyon-Commerce-KB-Source.md" download="Halcyon-Commerce-KB-Source.md" data-testid="kb-download"
        aria-label="Download KB source for Halcyon Retail Group"
        title="Download the knowledge base source for this platform"><span class="kb-ic" aria-hidden="true">&#8595;</span>Download KB source</a>
+    <span class="dir-group" data-testid="directives">
+      <span class="dir-label">Directives</span>
+      <a class="dir-link" href="directives/analyst.json" download="analyst.json" data-testid="dir-analyst" aria-label="Download Analyst directives">Analyst</a>
+      <a class="dir-link" href="directives/architect.json" download="architect.json" data-testid="dir-architect" aria-label="Download Architect directives">Architect</a>
+      <a class="dir-link" href="directives/autopilot.json" download="autopilot.json" data-testid="dir-autopilot" aria-label="Download Autopilot directives">Autopilot</a>
+    </span>
     <div class="brandmark">
       <div class="brand-dot ${meta.cls}">${meta.chip}</div>
       <div><div class="sys-name">${meta.name}</div><div class="sys-sub">${meta.sub}</div></div>

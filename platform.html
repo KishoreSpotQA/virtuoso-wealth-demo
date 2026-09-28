@@ -179,7 +179,7 @@ button{font-family:inherit;font-size:inherit}
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
 .topbar{
   position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);
-  border-bottom:1px solid var(--line);padding:10px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
 }
 .topbar .crumb{font-size:12px;color:var(--ink-3);letter-spacing:.02em}
 .spacer{flex:1}
@@ -382,11 +382,19 @@ td.right,th.right{text-align:right}
 .btn-kb{
   display:inline-flex;align-items:center;gap:6px;
   background:#1E65F0;color:#fff;border:1px solid #1E65F0;border-radius:7px;
-  padding:6px 12px;font-size:12px;font-weight:700;line-height:1.2;
+  padding:5px 10px;font-size:11.5px;font-weight:700;line-height:1.2;
   text-decoration:none;letter-spacing:.01em;white-space:nowrap;
 }
 .btn-kb:hover,.btn-kb:focus-visible{background:#1550c8;border-color:#1550c8;color:#fff}
 .btn-kb[hidden]{display:none}
+/* Kept tight: the top bar already carries the breadcrumb, the actor and two
+   controls, and at 1280 it wrapped to a second row once these were added. */
+.dir-group{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;margin-left:-4px}
+.dir-group[hidden]{display:none}
+.dir-label{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.dir-link{font-size:11.5px;font-weight:600;color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
+.dir-link:hover,.dir-link:focus-visible{border-bottom-color:var(--accent)}
+
 .kb-ic{font-size:12px;opacity:.95}
 .login-brand .brand-cross:hover .sub,
 .login-brand .brand-cross:focus-visible .sub{color:var(--accent)}
@@ -516,6 +524,15 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
       <a class="btn-kb" id="kb-link" data-testid="kb-download" href="#" download hidden>
         <span class="kb-ic" aria-hidden="true">&#8595;</span><span id="kb-label">Download KB source</span>
       </a>
+      <span class="dir-group" id="dir-group" data-testid="directives" hidden>
+        <span class="dir-label">Directives</span>
+        <a class="dir-link" href="directives/analyst.json" download="analyst.json"
+           data-testid="dir-analyst" aria-label="Download Analyst directives">Analyst</a>
+        <a class="dir-link" href="directives/architect.json" download="architect.json"
+           data-testid="dir-architect" aria-label="Download Architect directives">Architect</a>
+        <a class="dir-link" href="directives/autopilot.json" download="autopilot.json"
+           data-testid="dir-autopilot" aria-label="Download Autopilot directives">Autopilot</a>
+      </span>
       <span class="crumb" id="crumb" data-testid="breadcrumb">—</span>
       <span class="spacer"></span>
       <div class="row" style="gap:8px" data-testid="current-user">
@@ -900,6 +917,10 @@ function renderActor(){
   if(kb){
     const scope = which === "all" ? null : RESET_SCOPES[which];
     kb.hidden = !scope;
+    /* One directive set serves every application, so these do not change with the
+       scope; they simply keep company with the knowledge base control and hide
+       with it on the launcher. */
+    const dg = $("#dir-group"); if(dg) dg.hidden = !scope;
     if(scope){
       kb.setAttribute("href", "kb/" + scope.kb);
       kb.setAttribute("download", scope.kb);

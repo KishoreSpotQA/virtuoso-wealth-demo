@@ -1,0 +1,46 @@
+{
+  "exportedAt": "2026-09-28T03:53:45.031Z",
+  "schemaVersion": 1,
+  "directives": [
+    {
+      "name": "Template",
+      "workflowType": "REQUIREMENT",
+      "directiveType": "TEMPLATE",
+      "priority": 100,
+      "enabled": true,
+      "content": "Scope / Rationale / Pre-conditions / Test data / Acceptance criteria / Branches not covered / Source references"
+    },
+    {
+      "name": "Boundary cases",
+      "workflowType": "REQUIREMENT",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "Where the source states a numeric, length or date threshold, produce coverage for the value that just fails and the value that just passes, using the verified boundary values given in the source."
+    },
+    {
+      "name": "Exact messages",
+      "workflowType": "REQUIREMENT",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "Where the source records an exact error or banner message, quote that string verbatim in the acceptance criteria. Reference the field by its label and its data-testid."
+    },
+    {
+      "name": "Advisory versus blocking",
+      "workflowType": "REQUIREMENT",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "The source distinguishes controls that block progress from advisory warnings that do not. For an advisory control, acceptance criteria must assert both that the warning is displayed and that the user can still continue."
+    },
+    {
+      "name": "One branch per requirement",
+      "workflowType": "REQUIREMENT",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "Produce a separate requirement for each branch of a branching control rather than one requirement listing several outcomes. The branching controls are: client classification, screening outcome, risk band, suitability cross-check, portfolio alignment, and the approve/reject decision."
+    }
+  ]
+}

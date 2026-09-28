@@ -1,0 +1,14 @@
+{
+  "exportedAt": "2026-09-28T03:54:00.842Z",
+  "schemaVersion": 1,
+  "directives": [
+    {
+      "name": "Four-eyes",
+      "workflowType": "JOURNEY",
+      "directiveType": "INSTRUCTION",
+      "priority": 100,
+      "enabled": true,
+      "content": "An end-to-end journey that reaches an activated mandate must sign out after submission and sign back in as a different user before approving. A journey that ends at submission is a partial journey and must be named as one."
+    }
+  ]
+}
