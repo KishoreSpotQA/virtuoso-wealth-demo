@@ -1,6 +1,6 @@
 {
-  "wealth":    { "goal": "" },
+  "wealth":    { "goal": "https://app2.virtuoso.qa/#/project/12470/goal/18511/v/latest" },
   "insurance": { "goal": "https://app2.virtuoso.qa/#/project/12470/goal/18515/v/latest" },
-  "pensions":  { "goal": "" },
-  "halcyon":   { "goal": "" }
+  "pensions":  { "goal": "https://app2.virtuoso.qa/#/project/12470/goal/18530/v/latest" },
+  "halcyon":   { "goal": "https://app2.virtuoso.qa/#/project/12470/goal/18534/v/latest" }
 }
