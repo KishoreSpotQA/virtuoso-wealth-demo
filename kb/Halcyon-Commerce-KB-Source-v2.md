@@ -3,7 +3,7 @@
 **Knowledge Base source for Touchstone**
 **Application:** `commerce.html` plus its `assets/` folder
 **Application URL:** `https://kishorespotqa.github.io/virtuoso-wealth-demo/commerce.html`
-**Build:** 2026.09.25
+**Build:** 2026.09.29
 **Release:** 2.1
 **Systems covered:** Halcyon Market Storefront, Axion ERP, Vector WMS
 **Status:** Current - describes the application as deployed

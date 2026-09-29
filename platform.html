@@ -633,7 +633,7 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
    No backend. State in memory + localStorage (best effort).
    ============================================================ */
 
-const BUILD = "2026.09.27";
+const BUILD = "2026.09.29";
 const STORE_KEY = "cavendish.platform.v1";
 
 /* ---------------- reference data ---------------- */
@@ -839,6 +839,13 @@ function load(){
       if(!p.attempts) p.attempts = {};
       if(!Array.isArray(p.locked)) p.locked = [];
       if(!Array.isArray(p.quotes)) p.quotes = seedQuotes();
+      /* Records saved before release 2.1 existed carry no stamp. Without one
+         they would follow the live toggle and be re-rated when the release is
+         turned on, which is exactly what the stamp exists to prevent. Anything
+         already on disk predates 2.1, so stamp it as the previous release. */
+      [p.clients, p.quotes, p.cases].forEach(list => {
+        if(Array.isArray(list)) list.forEach(r => { if(r && !r.release) r.release = "1.0"; });
+      });
       if(!("draftQuote" in p)) p.draftQuote = null;
       if(!p.nextQuoteId) p.nextQuoteId = 40021;
       if(!p.nextPolicyId) p.nextPolicyId = 90014;
