@@ -2,7 +2,7 @@
 
 **System:** Cavendish Client Ops — Motor Insurance module
 **Build:** 2026.09.28
-**Release:** previous (New features off)
+**Release:** 2.1
 **Module:** Motor insurance → Quotes → New quote
 **Application URL:** `https://kishorespotqa.github.io/virtuoso-wealth-demo/platform.html`
 **Document type:** End-to-end process specification
@@ -16,27 +16,66 @@
 
 ---
 
-## 0. Which release this describes
+## 0. Release 2.1
 
-The application carries a **New features** control in the sidebar, `data-testid="release-toggle"`, which switches Motor Insurance to a later release. **This document describes the application with that control off**, which is its default state.
+This document describes the application with **release 2.1 features enabled**. Release 2.1 adds two fields to the quote, one optional block to the driver step, one new referral rule, and **changes how the premium is calculated** when a no-claims discount is protected.
 
-With the release on, the application adds fields to the quote, adds a referral rule and changes how the premium is calculated. None of that is in scope here; it is covered by `Cavendish-Motor-Insurance-KB-Source-v2.md`.
+| # | Change | Kind |
+|---|---|---|
+| 1 | Telematics policy — 15% rating discount, available at 12,000 annual miles or below | New field |
+| 2 | Named additional driver — the driver age band is rated on the **youngest** driver on the policy | New optional block, **changes an existing rating factor** |
+| 3 | Protected no-claims discount — adds **9% to the discounted premium**, available from 4 years NCD | New field, **changes the premium calculation** |
+| 4 | UW-R09 — a named additional driver under 21 refers the quote | New referral rule |
 
-**A journey written against this document must pin the release off** rather than relying on the default, because a browser reused between runs can still carry the release from an earlier one:
+### The release control
+
+The release is switched with a **New features** control in the sidebar, carrying `data-testid="release-toggle"`. It is scoped to Motor Insurance, is **off by default**, and persists independently of demo data: `Reset demo data` restores the records but does **not** turn the release off.
+
+While the release is on, a banner with `data-testid="release-banner"` appears above the page content, and each new field carries a `New` badge with `data-testid="rel-new"`. The badges are on **step 2 and step 3** of the wizard, not step 1, and the id is shared by all of them.
+
+### Setting the release from a journey
+
+The control in the sidebar is a **toggle**, and a toggle is not safe for automation: clicking it is correct on a clean browser and wrong on one where the release is already on. Virtuoso opens a fresh browser for every run, so the state a journey arrives with cannot be assumed either way.
+
+The application therefore accepts an **absolute setter** on the URL, which is what a journey should use:
 
 ```
-platform.html?release=off#/insurance/quote/new
+platform.html?release=on#/insurance/quotes     release on
+platform.html?release=off#/insurance/quotes    release off
 ```
 
-The setter is absolute and idempotent. Do **not** click `release-toggle` from a journey: it is a toggle, so it is only correct from a known starting state.
+It is applied before the first render and is **idempotent**: repeating the same navigation always lands in the same state, whatever the browser arrived with. Any value other than `on` or `off` is ignored and the stored state is left alone.
 
 > **The URL setter is estate-wide.** `?release=on` turns the release on for **every** application in this shell that has one, not only the one you navigate to. The sidebar control is per application; the URL setter is not. A journey that needs one application on its new release and another on its previous one cannot express that with this flag, and should use the sidebar control manually before the run.
 
-While the release is off, no new field is present in the DOM, the rating engine has nine factors, and the last referral rule is UW-R08.
+**A journey testing release 2.1 opens `?release=on` as its first navigation.** A journey testing the previous release opens `?release=off`, which is also worth doing explicitly rather than relying on the default — a browser reused between runs may still carry the release from an earlier one.
 
-**Download KB source** in the sidebar serves this document while the release is off. With the release on the control reads **Download KB source v2** and serves the other document instead, so the application never hands out a source describing behaviour it does not have.
+> **A journey must never click `release-toggle` itself,** and must never operate `reset-data`. Both change the rules underneath a run and invalidate every premium already asserted. Use the URL setter for the release; set up demo data before the run, not during it.
 
-> **Existing records are unaffected either way.** Each quote is stamped with the release it was written under and is rated on those rules permanently, so turning the release on does not reprice or re-render any record described in this document. The seven seeded quotes keep nine rating factors whatever the toggle does.
+**Behaviour with the release off** is exactly as it was: none of the four changes above apply, the new fields are absent from the DOM, and UW-R09 cannot fire.
+
+### The download button follows the release
+
+**Download KB source** in the sidebar serves the document that matches the release on screen. With the release on it reads **Download KB source v2** and serves this file; with it off it reads **Download KB source** and serves `Cavendish-Motor-Insurance-KB-Source.md`.
+
+So the application never hands out a document describing behaviour it does not have. The other three applications are unaffected by this release and always serve their own single source.
+
+### A quote keeps the release it was written under
+
+Each submitted quote is stamped with its release and is rated on those rules for the rest of its life, whatever the toggle does afterwards. Turning the release off does **not** reprice a policy that was already issued.
+
+| Record | Rated on |
+|---|---|
+| A quote submitted with the release on | Release 2.1 rules, permanently |
+| A quote submitted with the release off | Previous release rules, permanently |
+| The seven seeded records | Previous release rules — they predate 2.1 |
+| The draft in the wizard, not yet submitted | Whichever release is on now |
+
+So a policy issued at 270.83 under 2.1 still shows 270.83, its telematics factor and its protection charge when opened with the release off. A seeded record still shows **nine** rating factors with the release on, not ten.
+
+**For a journey this means the stamp, not the toggle, decides what a quote detail screen shows.** A journey asserting a stored premium is stable across release changes. A journey capturing a *new* quote is not, and must pin the release on its opening navigation.
+
+**An important property for testing.** With the release *on* but none of the new options selected, the premium is **unchanged**. The baseline quote below totals **292.32** on both releases. The new factors are inert until chosen, so a journey that does not touch them produces the same figure either way.
 
 ---
 
@@ -179,6 +218,27 @@ None · SP30 - exceeding statutory speed limit · CU80 - using a mobile phone ·
 
 > **Occupation is collected but never used.** It does not appear in the rating engine or the underwriting rules. A requirement asserting that occupation changes the premium is asserting behaviour the application does not have.
 
+### Named additional driver — release 2.1
+
+An optional block at the foot of step 2, introduced by a checkbox.
+
+| Field | Control | `data-testid` | Mandatory | Validation | Exact error message |
+|---|---|---|---|---|---|
+| Add a named driver to this policy | Checkbox | `input-hasAdditionalDriver` | No | — | — |
+| Additional driver first name | Text | `input-addDriverFirst` | Only when the box is ticked | Non-empty | `Additional driver first name is required.` |
+| Additional driver last name | Text | `input-addDriverLast` | Only when the box is ticked | Non-empty | `Additional driver last name is required.` |
+| Additional driver date of birth | Date, `dd-mm-yyyy` | `input-addDriverDob` | Only when the box is ticked | Age 17 to 100 | `Additional driver date of birth is required.` · `An additional driver must be at least 17 years old.` · `Enter a valid date of birth.` |
+| Years licence held | Number | `input-addDriverLicenceYears` | Only when the box is ticked | 0 or more, and not more than age − 17 | `Years licence held is required for the additional driver.` · `Enter a positive number of years.` · `Licence years cannot exceed the time since the additional driver turned 17.` |
+
+The four fields are **not in the DOM** until the checkbox is ticked. A journey must tick the box and wait for the container `data-testid="additional-driver"` before it can address them.
+
+**Two consequences beyond data capture:**
+
+1. **Rating.** Factor 2 is rated on the **youngest** driver on the policy, not the proposer. Where an additional driver is younger, the premium-table line reads `Youngest driver age {n}` instead of `Driver age {n}`. That label change is itself assertable.
+2. **Underwriting.** An additional driver under 21 produces **REFER (UW-R09)**.
+
+Declaring an additional driver aged 30 against the baseline proposer aged 38 leaves the premium **unchanged at 292.32**: the proposer is already in the neutral band, so only a *younger* additional driver moves the figure.
+
 ### The licence-years cap
 
 Years licence held is capped at **age − 17**. For a proposer born `11-02-1988` — age 38 against the fixed clock — the maximum accepted value is **21**; 22 produces the cap error. The cap is evaluated against the proposer's date of birth, so it changes with it.
@@ -193,7 +253,13 @@ The premium is calculated and displayed live on this step.
 |---|---|---|---|---|
 | No-claims discount (years) | Select | Yes | 0 – 9 | `Select the no-claims discount.` |
 | Voluntary excess | Select | Yes | £0 / £250 / £500 / £750 / £1,000 | `Select a voluntary excess.` |
+| Protect the no-claims discount | Checkbox | No | — | `A protected no-claims discount requires at least 4 years.` |
+| Telematics policy | Checkbox | No | — | `A telematics policy is available only where annual mileage is 12,000 or less.` |
 | Optional extras | Checkboxes | No | Three, below | — |
+
+**Protect the no-claims discount** — `data-testid="input-ncdProtected"`. Selectable at any time, but **validated on Continue**: below 4 years the step is blocked with the message above, rendered at `data-testid="qerror-ncdProtected"`. At 4 years or more it adds **9% to the discounted premium**, shown as its own line in the premium table at `data-testid="premium-ncd-protection"`.
+
+**Telematics policy** — `data-testid="input-telematics"`. A **15% rating discount** applied as a tenth rating factor. Validated on Continue against the annual mileage captured on step 1: above 12,000 miles the step is blocked, with the error at `data-testid="qerror-telematics"`. **12,000 exactly is allowed**; 12,001 is not.
 
 ### Optional extras
 
@@ -208,11 +274,15 @@ Each renders with the label `{name} - {price}`, for example `Breakdown cover - �
 ### The rating engine
 
 ```
-gross     = base × (nine factors multiplied together)
-net       = gross × (1 − NCD) × (1 − excess discount) + extras
+gross     = base × (ten factors multiplied together)
+net       = gross × (1 − NCD) × (1 − excess discount)
+            + 9% of that figure, when the NCD is protected
+            + extras
             floored at 180
 total     = net + loading + IPT,   IPT = 12% of (net + loading)
 ```
+
+> **This is the one change to an existing calculation.** On the previous release the discounted premium went straight to the floor check. The protection uplift is applied to the figure *after* NCD and excess discount and *before* extras and the floor, so it scales with the discount rather than with the gross premium — which is why a larger no-claims discount produces a *smaller* protection charge. See the sweep below.
 
 **Base premium by cover type**
 
@@ -222,12 +292,12 @@ total     = net + loading + IPT,   IPT = 12% of (net + loading)
 | Third party, fire and theft | 390 |
 | Third party only | 340 |
 
-**The nine rating factors**
+**The ten rating factors**
 
 | # | Factor | Rule |
 |---|---|---|
 | 1 | Vehicle group | `1 + (group − 10) × 0.045`, rounded to 3 dp. Group 10 is neutral. |
-| 2 | Driver age | under 21 → 2.30 · under 25 → 1.70 · under 30 → 1.25 · under 60 → 1.00 · under 70 → 1.10 · 70+ → 1.35 |
+| 2 | Driver age | Rated on the **youngest driver on the policy**. under 21 → 2.30 · under 25 → 1.70 · under 30 → 1.25 · under 60 → 1.00 · under 70 → 1.10 · 70+ → 1.35 |
 | 3 | Licence held | under 1 yr → 1.45 · under 3 → 1.20 · under 5 → 1.05 · 5+ → 1.00 |
 | 4 | Claims history | `1 + (fault × 0.35) + (non-fault × 0.05)`, rounded to 3 dp |
 | 5 | Motoring convictions | any conviction other than None → 1.25, else 1.00 |
@@ -235,6 +305,7 @@ total     = net + loading + IPT,   IPT = 12% of (net + loading)
 | 7 | Overnight parking | Locked garage 0.92 · Private driveway 0.96 · Off-street 1.00 · On street outside home 1.06 · On street elsewhere 1.12 |
 | 8 | Use class | Social 1.00 · Social + commuting 1.08 · Business class 1 → 1.22 · Business class 2 → 1.38 |
 | 9 | Declared modifications | yes → 1.18, else 1.00 |
+| 10 | Telematics policy | selected → 0.85, else 1.00 |
 
 **No-claims discount** — indexed by years, capped at 9
 
@@ -266,6 +337,30 @@ Comprehensive · group 14 · value 18,500 · social domestic and pleasure · pri
 | Net | 261.00 |
 | IPT at 12% | 31.32 |
 | **Total** | **292.32** |
+
+### Release 2.1 options on that same quote
+
+Every figure below is the same baseline with one option changed.
+
+| Quote | Rated premium | Protection charge | Net | Total |
+|---|---|---|---|---|
+| Baseline, no new options | 543.74 | — | 261.00 | **292.32** |
+| Protected NCD | 543.74 | 23.49 | 284.49 | **318.63** |
+| Telematics | 462.18 | — | 221.85 | **248.47** |
+| Both | 462.18 | 19.97 | 241.81 | **270.83** |
+| Additional driver aged 19 | 1,250.61 | — | 600.29 | **672.33** |
+| Additional driver aged 30 | 543.74 | — | 261.00 | **292.32** |
+
+The additional driver aged 19 also changes the outcome to **REFER (UW-R09)**, and its factor line reads `Youngest driver age 19 ×2.300` in place of `Driver age 38 ×1.000`.
+
+### The protection charge falls as the discount rises
+
+Counter-intuitive and worth a test of its own. The uplift is 9% of the *discounted* premium, so a bigger no-claims discount leaves less to charge 9% of.
+
+| NCD years | 4 | 5 | 9 |
+|---|---|---|---|
+| Protection charge | 25.84 | 23.49 | 16.44 |
+| Total | 350.49 | 318.63 | 223.04 |
 
 ### Discount sweeps on that same quote
 
@@ -328,6 +423,9 @@ Fourteen rules, evaluated in **strict precedence order**. The first rule that ma
 | 11 | UW-R06 | Use class begins `Business` **and** group ≥ 15 | `Business use on a vehicle in group 15 or above requires underwriter review.` |
 | 12 | UW-R07 | Mileage above 30,000 | `Annual mileage above 30,000 requires underwriter review.` |
 | 13 | UW-R08 | Licence type is `Provisional UK` | `A provisional licence requires underwriter review.` |
+| 14 | UW-R09 | A named additional driver is declared **and** is under 21 | `A named additional driver under 21 requires underwriter review.` |
+
+**UW-R09 is release 2.1.** It is evaluated last, after UW-R08, so any earlier referral or decline still takes precedence. An additional driver aged exactly 21 does **not** refer on this rule: the boundary is under 21, the same as UW-R01. With the release off the rule cannot fire, because no additional driver can be captured.
 
 ### Accept
 
@@ -413,6 +511,26 @@ Every interactive element carries a stable `data-testid`. Prefer these over labe
 
 `input-proposerFirst` · `input-proposerLast` · `input-proposerDob` · `calendar-proposerDob` · `input-postcode` · `input-licenceType` · `input-licenceYears` · `input-occupation` · `input-faultClaims` · `input-nonFaultClaims` · `input-convictions`
 
+### Release 2.1 controls
+
+| Element | `data-testid` | Where |
+|---|---|---|
+| New features toggle | `release-toggle` | Sidebar, Motor Insurance only |
+| Release banner | `release-banner` | Above the page content, while the release is on |
+| New badge | `rel-new` | Beside each new field label — **three elements share this id** (the driver block heading and the two step 3 fields), so it identifies a badge, not a specific one. It is decorative; do not target it in a journey. |
+| Additional driver checkbox | `input-hasAdditionalDriver` | Step 2 |
+| Additional driver container | `additional-driver` | Step 2, only once the checkbox is ticked |
+| Additional driver fields | `input-addDriverFirst` · `input-addDriverLast` · `input-addDriverDob` · `input-addDriverLicenceYears` | Step 2 |
+| Protected NCD checkbox | `input-ncdProtected` | Step 3 |
+| Telematics checkbox | `input-telematics` | Step 3 |
+| Protection charge line | `premium-ncd-protection` | Step 3 premium table, only when protection applies |
+| Telematics error | `qerror-telematics` | Step 3, on Continue |
+| Protected NCD error | `qerror-ncdProtected` | Step 3, on Continue |
+| Additional driver on review | `review-additional-driver` | Step 5 |
+| Telematics on review | `review-telematics` | Step 5 |
+
+The release toggle is a **button**, not a checkbox: its state is carried on `aria-pressed`, which reads `"true"` while the release is on.
+
 ### Step 3
 
 `input-ncdYears` · `input-excess` · `extras-list` · `extra-breakdown` · `extra-legal` · `extra-courtesy` · `premium-summary` · `premium-headline` · `premium-table` · `premium-total`
@@ -482,6 +600,15 @@ Note the three rows whose total equals the baseline exactly — UW-R04, UW-R08 a
 ### Premium floor
 
 Group `1` · mileage `4000` · `Locked garage` · proposer born `04-03-1975` · NCD `9` · excess `£1,000` → gross 241.73, net floored at **180.00**, total **201.60**. Raising the NCD further does not move it.
+
+### Release 2.1 boundaries
+
+| Rule | Just inside | Just outside |
+|---|---|---|
+| Telematics available | 12,000 annual miles — allowed | 12,001 — blocked with `A telematics policy is available only where annual mileage is 12,000 or less.` |
+| Protected NCD available | 4 years NCD — allowed | 3 years — blocked with `A protected no-claims discount requires at least 4 years.` |
+| UW-R09 refers | additional driver aged 20 — REFER | aged 21 — no referral on this rule |
+| Additional driver minimum age | 17 — accepted | 16 — `An additional driver must be at least 17 years old.` |
 
 ### Boundaries
 
@@ -598,6 +725,25 @@ The canonical path from a blank quote to an issued policy through a referral —
 ---
 
 ## 14. Notes for automation
+
+### Release 2.1 — before anything else
+
+The release is **off by default**. A journey written against this document will fail on a fresh browser unless the release is on, because the fields it addresses are not in the DOM.
+
+**Open `?release=on` as the journey's first navigation** rather than clicking the toggle:
+
+```
+platform.html?release=on#/insurance/quote/new
+```
+
+- The setter is absolute and idempotent, so the journey lands in the same state on every run regardless of what the browser carried.
+- Do not operate `release-toggle` from a journey. It is a toggle, so it is only correct from a known starting state, and clicking it mid-run invalidates every premium already asserted.
+- Do not operate `reset-data` from a journey, for the same reason.
+- The release survives `Reset demo data` and survives a reload. It is stored separately from the demo records.
+- To assert the release is on before proceeding, check `aria-pressed="true"` on `release-toggle`, or that `release-banner` is present.
+
+A journey written against the **previous** release still passes with the release on, provided it does not select any of the new options: the new factors are inert until chosen, and the baseline quote totals 292.32 on both.
+
 
 ### Select options must match exactly
 

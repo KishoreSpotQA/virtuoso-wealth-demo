@@ -16,6 +16,63 @@ img{max-width:100%}
 .datefield .datebtn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:38px;padding:0;cursor:pointer}
 .datefield .datebtn svg{width:16px;height:16px;display:block}
 .datefield input[type="date"].cal-hidden{position:absolute;right:0;bottom:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none}
+
+/* ---- supporting demo collateral (reference page, no demo data) ---- */
+.launch-card-ref .ic{background:var(--line);color:var(--ink-2)}
+.col-lead{max-width:760px}
+.col-sec{margin-top:34px}
+.col-sec > h2{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.col-sec > .col-why{font-size:12.5px;color:var(--ink-2);margin-bottom:14px;max-width:760px;line-height:1.6}
+.col-steps{counter-reset:cstep;list-style:none;margin:0 0 4px;padding:0}
+.col-steps li{counter-increment:cstep;position:relative;padding:0 0 12px 34px;font-size:13px;color:var(--ink);line-height:1.6}
+.col-steps li::before{content:counter(cstep);position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.col-steps li b{font-weight:600}
+.col-steps li span{display:block;color:var(--ink-2);font-size:12.5px;margin-top:2px}
+.col-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+.col-table th,.col-table td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.col-table th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;border-bottom:1px solid var(--line-strong)}
+.col-table td:first-child{white-space:nowrap}
+.col-table a{color:var(--accent);font-weight:500}
+.col-note{border:1px solid var(--line);border-left:3px solid var(--warn,#b45309);background:var(--surface);
+  padding:12px 16px;border-radius:6px;font-size:12.5px;color:var(--ink-2);line-height:1.6;margin-top:14px;max-width:820px}
+.col-note b{color:var(--ink)}
+.prompt{border:1px solid var(--line);border-radius:8px;background:var(--surface);margin-bottom:16px;overflow:hidden}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--accent-soft)}
+.prompt-head h3{font-size:12.5px;font-weight:600;color:var(--ink);margin:0}
+.prompt-head .stage{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.prompt-body{margin:0;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+  line-height:1.65;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.btn-copy{font:inherit;font-size:11.5px;font-weight:600;color:var(--accent);background:transparent;
+  border:1px solid var(--accent);border-radius:6px;padding:4px 10px;cursor:pointer}
+.btn-copy:hover{background:var(--accent);color:#fff}
+.btn-copy[data-copied="1"]{border-color:var(--ok,#166534);color:var(--ok,#166534);background:transparent}
+.col-tip{font-size:12.5px;color:var(--ink-2);line-height:1.65;margin-top:10px;max-width:820px}
+.col-tip b{color:var(--ink);font-weight:600}
+.col-h3{font-size:13px;font-weight:600;color:var(--ink);margin:20px 0 4px}
+.col-note-calm{border-left-color:var(--accent)}
+/* ---- release toggle (New features) ---- */
+.btn-rel{display:flex;align-items:center;gap:8px;width:100%;font:inherit;font-size:12px;font-weight:600;
+  text-align:left;padding:8px 10px;border-radius:8px;cursor:pointer;
+  background:transparent;color:var(--ink-3);border:1px dashed var(--line-strong);margin-bottom:8px}
+.btn-rel:hover{color:var(--ink-2);border-color:var(--ink-3)}
+.btn-rel .rel-dot{width:8px;height:8px;border-radius:50%;background:var(--line-strong);flex:none}
+.btn-rel[aria-pressed="true"]{background:#1E65F0;border:1px solid #1E65F0;color:#fff}
+.btn-rel[aria-pressed="true"] .rel-dot{background:#fff}
+.rel-banner{display:flex;gap:11px;align-items:flex-start;padding:11px 14px;margin-bottom:16px;
+  border-radius:var(--radius);border:1px solid #1E65F0;background:var(--accent-soft);font-size:12.5px;color:var(--ink)}
+.rel-banner b{font-weight:600}
+.rel-banner .rel-ver{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--ink-2)}
+.rel-new{display:inline-block;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+  color:#1E65F0;border:1px solid #1E65F0;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:1px}
+/* The first column is held on one line for scanning, but a long rule name
+   pushes the table past a phone viewport, so the rule is dropped there. */
+@media (max-width:760px){
+  .col-table td:first-child{white-space:normal}
+  .col-table th,.col-table td{padding:8px 8px}
+  .prompt-body{font-size:11.5px}
+}
+
 </style>
 <title>Cavendish Financial Services</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -527,6 +584,9 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
       <div>Environment: <span class="mono">UAT</span></div>
       <div style="margin-top:3px">Build <span class="mono" id="build-id">—</span></div>
       <div class="res-block">
+        <button class="btn-rel" id="release-btn" data-testid="release-toggle" type="button" hidden aria-pressed="false">
+        <span class="rel-dot" aria-hidden="true"></span><span id="release-label">New features</span>
+        </button>
         <a class="btn-kb" id="kb-link" data-testid="kb-download" href="#" download hidden>
         <span class="kb-ic" aria-hidden="true">&#8595;</span><span id="kb-label">Download KB source</span>
         </a>
@@ -626,11 +686,24 @@ const OBJECTIVE_RISK_FLOOR = {
   "Aggressive growth":"Aggressive"
 };
 const STAGES = ["Draft","KYC in progress","Risk profiled","Documents pending","Awaiting approval","Active","Rejected"];
+/* Release 2.1 option lists. */
+const VULNERABILITY_TYPES = ["None declared","Health","Life event","Financial resilience","Capability"];
+const SUSTAINABILITY_PREFS = ["No preference","Sustainability Focus","Sustainability Improvers","Sustainability Impact","Sustainability Mixed Goals"];
 const FEE_TIERS = [
   {upTo:1_000_000,  bps:95},
   {upTo:5_000_000,  bps:75},
   {upTo:10_000_000, bps:55},
   {upTo:Infinity,   bps:40}
+];
+/* Release 2.1 reprices the schedule: the entry tier comes down, and a fifth
+   tier is added above 25 million. This is the one change to an existing
+   calculation rather than an addition, so every fee figure moves. */
+const FEE_TIERS_V2 = [
+  {upTo:1_000_000,  bps:85},
+  {upTo:5_000_000,  bps:70},
+  {upTo:10_000_000, bps:55},
+  {upTo:25_000_000, bps:40},
+  {upTo:Infinity,   bps:30}
 ];
 
 /* ---------------- helpers ---------------- */
@@ -646,9 +719,15 @@ const slug = s => String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace
 
 function riskBand(score){ return RISK_BANDS.find(b=>score<=b.max).name; }
 function bandIndex(name){ return RISK_BANDS.findIndex(b=>b.name===name); }
-function annualFee(amount){
+/* A client keeps the schedule it was onboarded under, so repricing does not
+   silently change the fee on a mandate that is already active. A draft has no
+   stamp yet and follows the live release. */
+function clientV2(c){ return c && c.release ? c.release === "2.1" : v2("wealth"); }
+
+function annualFee(amount, relV2){
+  const tiers = relV2 ? FEE_TIERS_V2 : FEE_TIERS;
   let remaining = Number(amount||0), prev = 0, fee = 0, lines = [];
-  for(const t of FEE_TIERS){
+  for(const t of tiers){
     const slice = Math.max(0, Math.min(remaining, t.upTo - prev));
     if(slice > 0){ fee += slice * t.bps / 10000; lines.push({slice, bps:t.bps}); remaining -= slice; }
     prev = t.upTo;
@@ -663,6 +742,12 @@ function screeningVerdict(c){
   const jurisdictionFlag = HIGH_RISK_JURISDICTIONS.includes(c.nationality) || HIGH_RISK_JURISDICTIONS.includes(c.taxResidency);
   if(hit) return {result:"Potential match", severity:"risk", detail:`Name similarity against OFAC/UK HMT consolidated list entry “${hit}”. Requires level 2 adjudication.`};
   if(c.pep === "yes") return {result:"PEP confirmed", severity:"warn", detail:"Self-declared politically exposed person. Enhanced due diligence and senior sign-off required."};
+  /* Release 2.1: a declared vulnerability indicator raises the verdict to
+     enhanced due diligence in its own right, below a sanctions or PEP match
+     but above a clear result. */
+  if(clientV2(c) && c.vulnerability && c.vulnerability !== "None declared")
+    return {result:"Enhanced support required", severity:"warn",
+            detail:"A vulnerability indicator has been recorded (" + c.vulnerability + "). Enhanced due diligence and a documented support plan apply before the mandate is approved."};
   if(jurisdictionFlag) return {result:"Elevated risk", severity:"warn", detail:"Nationality or tax residency falls within a high-risk jurisdiction. Enhanced due diligence applies."};
   return {result:"Clear", severity:"ok", detail:"No adverse media, sanctions or PEP matches returned across 4 lists."};
 }
@@ -695,6 +780,7 @@ function seedClients(){
       phone:"+44 20 7946 "+ (1000 + Number(id.slice(-2))),
       createdAt: new Date(Date.parse("2026-01-05T10:00:00Z") + Number(id.slice(-2))*86400000*3).toISOString(),
       screening: screen==="Pending" ? null : {result:screen, severity: screen==="Clear"?"ok":(screen==="Elevated risk"?"warn":"risk"), detail:"Historic screening record retained from onboarding.", at:kycDate||"2026-05-01"},
+      release: "1.0",   /* seeded records predate release 2.1 */
       riskScore: {Conservative:11,Balanced:18,Growth:24,Aggressive:29}[risk],
       objective: {Conservative:"Capital preservation",Balanced:"Balanced growth",Growth:"Capital growth",Aggressive:"Aggressive growth"}[risk],
       fundingAmount: aum,
@@ -722,6 +808,9 @@ function blankClient(){
     registrationNo:"", lei:"", trustee:"", settlor:"", ubos:[],
     introducedBy:"", adviser:"",
     idType:"", idNumber:"", idExpiry:"", pep:"", pepDetail:"",
+    /* Release 2.1 fields. Carried on every draft so a record reads cleanly on
+       either release; only shown, validated and acted on while 2.1 is live. */
+    release:"", vulnerability:"", vulnerabilitySupport:"", sustainability:"",
     sourceOfWealth:"", sourceOfFunds:"", expectedInflow:"",
     screening:null,
     answers:{}, riskScore:null, riskCategory:"", objective:"", horizon:"", liquidity:"", esg:"No preference",
@@ -778,6 +867,7 @@ const RESET_SCOPES = {
   wealth: {
     goal: "",
     kb: "WAM-Cavendish-Onboarding-KB-Source.md",
+    kb2: "WAM-Cavendish-Onboarding-KB-Source-v2.md",
     label: "Private Wealth",
     keys: ["clients", "draft", "nextId"],
     home: "#/dashboard",
@@ -786,6 +876,9 @@ const RESET_SCOPES = {
   insurance: {
     goal: "https://app2.virtuoso.qa/#/project/12470/goal/18515/v/latest",
     kb: "Cavendish-Motor-Insurance-KB-Source.md",
+    /* The later release has its own knowledge base source; the download button
+       follows whichever release the application is running. */
+    kb2: "Cavendish-Motor-Insurance-KB-Source-v2.md",
     label: "Motor Insurance",
     keys: ["quotes", "draftQuote", "nextQuoteId", "nextPolicyId"],
     home: "#/insurance",
@@ -794,6 +887,7 @@ const RESET_SCOPES = {
   pensions: {
     goal: "",
     kb: "Cavendish-Pensions-KB-Source.md",
+    kb2: "Cavendish-Pensions-KB-Source-v2.md",
     label: "Pensions",
     keys: ["cases", "draftCase", "nextCaseId", "nextPaymentId", "members", "finds", "findDraft", "nextFindId"],
     home: "#/pensions",
@@ -802,11 +896,85 @@ const RESET_SCOPES = {
 };
 const RESET_ORDER = ["wealth", "insurance", "pensions"];
 
+/* ------------------------------------------------------------------
+   RELEASE TOGGLE ("New features")
+
+   A release is not demo data. It is the difference between two versions
+   of the application, and the whole point of the change-workflow demo is
+   that the release survives a reset: you turn the features on, reset the
+   data to a clean state, and the new fields are still there.
+
+   So it is stored under its own key rather than in the demo state, and
+   RESET_SCOPES never names it. Default is off, so an application that
+   has never been toggled behaves exactly as it did before this existed.
+   ------------------------------------------------------------------ */
+const RELEASE_KEY = "cavendish.platform.release.v1";
+const RELEASE_APPS = {
+  wealth:    { label: "Private Wealth",  version: "2.1" },
+  insurance: { label: "Motor Insurance", version: "2.1" },
+  pensions:  { label: "Pensions",        version: "2.1" }
+};
+let RELEASE = { wealth: false, insurance: false, pensions: false };
+function loadRelease(){
+  try{
+    const raw = localStorage.getItem(RELEASE_KEY);
+    if(!raw) return;
+    const o = JSON.parse(raw);
+    Object.keys(RELEASE).forEach(k => { if(typeof o[k] === "boolean") RELEASE[k] = o[k]; });
+  }catch(e){}
+}
+function saveRelease(){
+  try{ localStorage.setItem(RELEASE_KEY, JSON.stringify(RELEASE)); }catch(e){}
+}
+/* True when the named application is running its new release. Called from
+   rating, underwriting, validation and every view that shows a new field,
+   so that one expression decides the whole difference between versions. */
+function v2(app){ return RELEASE[app] === true; }
+function toggleRelease(app){
+  if(!RELEASE_APPS[app]) return;
+  RELEASE[app] = !RELEASE[app];
+  saveRelease();
+  render();
+  toast(RELEASE[app]
+    ? RELEASE_APPS[app].label + " release " + RELEASE_APPS[app].version + " is on. New fields are now live."
+    : RELEASE_APPS[app].label + " is back to the previous release.");
+}
+loadRelease();
+
+/* An absolute setter, so an automated run pins the release rather than
+   toggling whatever it happened to arrive with. A toggle is not safe for a
+   journey: clicking it is correct on a clean browser and wrong on a dirty
+   one, and Virtuoso opens a fresh browser for every run.
+
+       platform.html?release=on#/insurance/quotes    release on
+       platform.html?release=off#/insurance/quotes   release off
+
+   Applied before the first render and idempotent, so repeating the same
+   navigation always lands in the same state. Anything other than on or off
+   is ignored rather than guessed at. */
+(function releaseFromUrl(){
+  try{
+    const q = new URLSearchParams(location.search).get("release");
+    if(q !== "on" && q !== "off") return;
+    const want = (q === "on");
+    let changed = false;
+    Object.keys(RELEASE_APPS).forEach(k => { if(RELEASE[k] !== want){ RELEASE[k] = want; changed = true; } });
+    if(changed) saveRelease();
+  }catch(e){}
+})();
+/* Halcyon is the other application; its goal is listed on the collateral
+   page only, and is supplied by links.json like the other three. */
+let HALCYON_GOAL = "";
+
 /* Which application the current route belongs to, or "all" on the launcher.
    Mirrors navRoutes() so the two can never disagree. */
 function currentApp(){
   const cur = currentRoute();
   if(cur === "#/apps") return "all";
+  /* Collateral is a reference page, not an application. Treating it as "all"
+     keeps reset, the knowledge base link, the directives and the goal link
+     hidden there, by the same rule that hides them on the launcher. */
+  if(cur === "#/collateral") return "all";
   if(cur.startsWith("#/insurance")) return "insurance";
   if(cur.startsWith("#/pensions")) return "pensions";
   return "wealth";
@@ -891,6 +1059,7 @@ const PEN_ROUTES = [
 function navRoutes(){
   const cur = currentRoute();
   if(cur === "#/apps") return [APP_SWITCH];
+  if(cur === "#/collateral") return [APP_SWITCH];
   if(cur.startsWith("#/insurance")) return [APP_SWITCH].concat(INS_ROUTES);
   if(cur.startsWith("#/pensions")) return [APP_SWITCH].concat(PEN_ROUTES);
   return [APP_SWITCH].concat(ROUTES);
@@ -927,6 +1096,24 @@ function renderActor(){
   const rb = $("#reset-btn");
   if(rb) rb.hidden = (currentApp() === "all");
 
+  /* The release toggle belongs to one application, like reset and the
+     knowledge base link, and only appears for an application that has a
+     second release to switch to. */
+  const relb = $("#release-btn"), rell = $("#release-label"), relApp = currentApp();
+  if(relb){
+    const rel = RELEASE_APPS[relApp];
+    relb.hidden = !rel;
+    if(rel){
+      const on = v2(relApp);
+      relb.setAttribute("aria-pressed", on ? "true" : "false");
+      relb.setAttribute("title", on
+        ? "Turn off the " + rel.label + " " + rel.version + " features and go back to the previous release"
+        : "Turn on the " + rel.label + " " + rel.version + " features");
+      relb.setAttribute("aria-label", (on ? "Turn off" : "Turn on") + " new features for " + rel.label);
+      if(rell) rell.textContent = on ? "New features on" : "New features";
+    }
+  }
+
   /* The knowledge base source describes one application, so the link follows the
      same scope rule as reset: it names the application you are in, and on the
      launcher, where none is in scope, there is nothing to offer. The file is
@@ -954,11 +1141,22 @@ function renderActor(){
       }
     }
     if(scope){
-      kb.setAttribute("href", "kb/" + scope.kb);
-      kb.setAttribute("download", scope.kb);
-      kb.setAttribute("title", "Download the knowledge base source for " + scope.label);
-      kb.setAttribute("aria-label", "Download KB source for " + scope.label);
-      if(kbl) kbl.textContent = "Download KB source";
+      /* An application with a second release has a second knowledge base source,
+         and the button follows the release. Serving the previous document while
+         the new fields are on screen is the one failure that quietly poisons
+         everything downstream: Touchstone would generate against behaviour the
+         application no longer has. */
+      const rel = RELEASE_APPS[which];
+      const useV2 = !!(rel && scope.kb2 && v2(which));
+      const file = useV2 ? scope.kb2 : scope.kb;
+      const verName = useV2 ? ("release " + rel.version) : "the previous release";
+      kb.setAttribute("href", "kb/" + file);
+      kb.setAttribute("download", file);
+      kb.setAttribute("title", "Download the knowledge base source for " + scope.label
+        + (scope.kb2 ? " (" + verName + ")" : ""));
+      kb.setAttribute("aria-label", "Download KB source for " + scope.label
+        + (scope.kb2 ? ", " + verName : ""));
+      if(kbl) kbl.textContent = useV2 ? "Download KB source v2" : "Download KB source";
     }
   }
 }
@@ -1268,7 +1466,7 @@ function viewClient(id){
         </div>
         <div>
           <h3 style="margin-bottom:10px">Indicative annual fee</h3>
-          ${feeTable(c.fundingAmount, c.currency)}
+          ${feeTable(c.fundingAmount, c.currency, clientV2(c))}
         </div>
       </div>
       <div class="sep"></div>
@@ -1334,8 +1532,8 @@ function suitabilityFlag(c){
   return `<div class="banner b-ok" style="margin-top:12px" data-testid="suitability-ok"><div><b>Objective consistent with risk capacity</b>No suitability exception raised.</div></div>`;
 }
 
-function feeTable(amount, ccy){
-  const {fee, lines} = annualFee(amount);
+function feeTable(amount, ccy, relV2){
+  const {fee, lines} = annualFee(amount, relV2);
   if(!Number(amount)) return `<p class="legend">Enter an initial funding amount to calculate the indicative fee.</p>`;
   return `<div class="table-wrap"><table data-testid="fee-table"><thead><tr><th>Tier</th><th class="right">Amount</th><th class="right">Rate</th><th class="right">Fee</th></tr></thead><tbody>
     ${lines.map(l=>`<tr><td>Tranche @ ${l.bps} bps</td><td class="right mono">${money(l.slice,ccy)}</td><td class="right mono">${l.bps} bps</td><td class="right mono">${money(l.slice*l.bps/10000,ccy)}</td></tr>`).join("")}
@@ -1520,6 +1718,20 @@ function stepBody(d){
       </div>${errFor("pep")}
     </div>
 
+    ${v2("wealth") ? `
+    <div class="sep"></div>
+    <h3 style="margin-bottom:4px">Vulnerability assessment <span class="rel-new" data-testid="rel-new">New</span></h3>
+    <p class="hint" style="margin-bottom:10px">A recorded indicator raises the screening verdict to enhanced due diligence and requires a documented support plan.</p>
+    <div class="field${bad("vulnerability")}" style="margin-bottom:12px">
+      <label for="w-vuln">Vulnerability indicators *</label>
+      <select id="w-vuln" data-field="vulnerability" data-testid="input-vulnerability">${opts(VULNERABILITY_TYPES, d.vulnerability, "Select…")}</select>
+      ${errFor("vulnerability")}</div>
+    ${d.vulnerability && d.vulnerability !== "None declared" ? `
+    <div class="field${bad("vulnerabilitySupport")}" style="margin-bottom:12px" data-testid="vulnerability-support-field">
+      <label for="w-vulns">Support plan *</label>
+      <input type="text" id="w-vulns" data-field="vulnerabilitySupport" data-testid="input-vulnerabilitySupport" value="${esc(d.vulnerabilitySupport)}" placeholder="How the adviser will adjust communication and review frequency">
+      ${errFor("vulnerabilitySupport")}</div>` : ""}` : ""}
+
     ${d.pep==="yes" ? `
       <div class="field${bad("pepDetail")}" style="margin-bottom:14px">
         <label for="w-pepdetail">Position held, jurisdiction and relationship *</label>
@@ -1601,6 +1813,10 @@ function stepBody(d){
         <select id="w-liq" data-field="liquidity" data-testid="input-liquidity">${opts(["Immediate access to all assets","Up to 10% within one month","Up to 25% within one quarter","No near-term requirement"],d.liquidity,"Select…")}</select>${errFor("liquidity")}</div>
       <div class="field"><label for="w-esg">ESG preference</label>
         <select id="w-esg" data-field="esg" data-testid="input-esg">${opts(["No preference","Exclusions only","Article 8 - promotes ESG characteristics","Article 9 - sustainable objective"],d.esg,"")}</select></div>
+      ${v2("wealth") ? `
+      <div class="field${bad("sustainability")}"><label for="w-sust">Sustainability preference <span class="rel-new" data-testid="rel-new">New</span> *</label>
+        <select id="w-sust" data-field="sustainability" data-testid="input-sustainability">${opts(SUSTAINABILITY_PREFS, d.sustainability, "Select…")}</select>
+        <span class="hint">A stated preference restricts the model portfolios that may be recommended.</span>${errFor("sustainability")}</div>` : ""}
     </div>
     ${provisional && d.objective ? suitabilityFlag({...d, riskCategory:provisional}) : ""}`;
   }
@@ -1669,7 +1885,7 @@ function stepBody(d){
 
     <div class="sep"></div>
     <h3 style="margin-bottom:10px">Indicative annual fee</h3>
-    <div id="fee-live" data-testid="fee-live">${feeTable(d.fundingAmount, d.currency)}</div>`;
+    <div id="fee-live" data-testid="fee-live">${feeTable(d.fundingAmount, d.currency, clientV2(d))}</div>`;
 
   case "review": {
     const checks = completeness(d);
@@ -1721,7 +1937,7 @@ function stepBody(d){
           <dt>Model portfolio</dt><dd>${esc(MODEL_PORTFOLIOS.find(m=>m.id===d.modelPortfolio)?.name||"—")}</dd>
           <dt>Initial funding</dt><dd class="mono">${money(d.fundingAmount,d.currency)}</dd>
           <dt>Custodian</dt><dd>${esc(d.custodian||"—")}</dd>
-          <dt>Indicative fee</dt><dd class="mono">${money(annualFee(d.fundingAmount).fee, d.currency)} p.a.</dd>
+          <dt>Indicative fee</dt><dd class="mono" data-testid="review-fee">${money(annualFee(d.fundingAmount, clientV2(d)).fee, d.currency)} p.a.</dd>
         </dl>
       </div>
       <div>
@@ -1817,6 +2033,11 @@ function validateStep(){
       if(!String(d.expectedInflow??"").trim()) e.expectedInflow = "Expected annual inflow is required.";
       else if(Number(d.expectedInflow) < 0) e.expectedInflow = "Enter a positive amount.";
       if(!d.screening) e.screening = "Run sanctions and PEP screening before continuing.";
+      if(v2("wealth")){
+        if(!String(d.vulnerability||"").trim()) e.vulnerability = "Record a vulnerability indicator, or None declared.";
+        else if(d.vulnerability !== "None declared" && !String(d.vulnerabilitySupport||"").trim())
+          e.vulnerabilitySupport = "A support plan is required when a vulnerability indicator is recorded.";
+      }
       else if(d.screening.severity==="risk"){
         if(!d.screeningOverride) e.overrideReason = "A potential match must be adjudicated before continuing.";
         else if(String(d.overrideReason||"").trim().length < 20) e.overrideReason = "Provide an adjudication rationale of at least 20 characters.";
@@ -1827,6 +2048,7 @@ function validateStep(){
       req("objective","Select an investment objective.");
       req("horizon","Select a time horizon.");
       req("liquidity","Select a liquidity requirement.");
+      if(v2("wealth")) req("sustainability","Select a sustainability preference.");
       break;
     case "documents": {
       const mandatory = REQUIRED_DOCS.filter(doc => doc.required || (doc.id==="doc-tax" && d.taxResidency && d.country && d.taxResidency!==d.country));
@@ -1856,6 +2078,9 @@ function submitDraft(){
   if(!validateStep()){ render(); toast("Submission blocked — see the highlighted items."); return; }
   const score = Object.values(d.answers).reduce((a,b)=>a+Number(b),0);
   d.id = "CW-" + state.nextId++;
+  /* Stamp the release so the fee schedule this mandate was priced under
+     stays with it, whatever the toggle does afterwards. */
+  d.release = v2("wealth") ? "2.1" : "1.0";
   d.riskScore = score;
   d.riskCategory = riskBand(score);
   d.stage = "Awaiting approval";
@@ -2009,7 +2234,7 @@ function render(){
   const hash = currentRoute();
   const mod = hash.startsWith("#/insurance") ? "insurance"
     : hash.startsWith("#/pensions") ? "pensions"
-    : hash === "#/apps" ? "" : "wam";
+    : (hash === "#/apps" || hash === "#/collateral") ? "" : "wam";
   document.body.dataset.module = mod;
   /* the sidebar names the business you are actually in, not the group */
   const BRAND_SUB = { wam:"Private Wealth · Client Ops", insurance:"Motor Insurance · Client Ops",
@@ -2021,6 +2246,8 @@ function render(){
   let html = "", crumb = "";
   if(hash === "#/apps"){
     html = viewApps(); crumb = "Applications";
+  }else if(hash === "#/collateral"){
+    html = viewCollateral(); crumb = "Supporting demo collateral";
   }else if(hash.startsWith("#/insurance")){
     const v = insuranceView(hash); html = v[0]; crumb = v[1];
   }else if(hash.startsWith("#/pensions")){
@@ -2036,6 +2263,16 @@ function render(){
       case "#/compliance":     html = viewCompliance();crumb = "Client management / Compliance queue"; break;
       default:                 html = viewDashboard(); crumb = "Overview / Dashboard";
     }
+  }
+  /* A release that is on has to be visible, or someone flips it, forgets, and
+     reads the changed behaviour as a broken application a week later. */
+  const relApp2 = currentApp(), relCfg = RELEASE_APPS[relApp2];
+  if(relCfg && v2(relApp2)){
+    html = `<div class="rel-banner" data-testid="release-banner">
+      <div><b>New features are on.</b> This application is running
+      <span class="rel-ver">${esc(relCfg.label)} release ${esc(relCfg.version)}</span>,
+      which adds fields and changes how the premium is calculated. Turn it off in the sidebar to go back to the previous release.</div>
+    </div>` + html;
   }
   $("#view").innerHTML = html;
   $("#crumb").textContent = crumb;
@@ -2133,9 +2370,12 @@ document.addEventListener("click", ev => {
    input mid-keystroke, so the caret (and an automation driver's element
    handle) is destroyed after the first character. Text fields that drive a
    live region update that region only - see PARTIAL_FIELDS. */
-const LIVE_FIELDS = ["currency","modelPortfolio","objective","clientType","taxResidency","country","pep","screeningOverride","declaration"];
+/* Fields whose value changes what else is on screen, so the step redraws.
+   "vulnerability" is here because recording an indicator reveals the
+   support-plan field beneath it. */
+const LIVE_FIELDS = ["currency","modelPortfolio","objective","clientType","taxResidency","country","pep","screeningOverride","declaration","vulnerability"];
 const PARTIAL_FIELDS = {
-  fundingAmount(d){ const n = document.getElementById("fee-live"); if(n) n.innerHTML = feeTable(d.fundingAmount, d.currency); }
+  fundingAmount(d){ const n = document.getElementById("fee-live"); if(n) n.innerHTML = feeTable(d.fundingAmount, d.currency, clientV2(d)); }
 };
 let _lastFieldRender = { el:null, t:0 };
 
@@ -2241,6 +2481,7 @@ function renderListOnly(){
   if(box){ box.focus(); if(pos!=null) try{ box.setSelectionRange(pos,pos); }catch(e){} }
 }
 
+$("#release-btn").addEventListener("click", ()=>{ toggleRelease(currentApp()); });
 $("#reset-btn").addEventListener("click", ()=>{
   const which = currentApp();
   const f = defaultState();
@@ -2283,7 +2524,15 @@ $("#login-reset-btn").addEventListener("click", ()=>{
           const v = cfg[k] && typeof cfg[k].goal === "string" ? cfg[k].goal.trim() : null;
           if(v !== null && v !== RESET_SCOPES[k].goal){ RESET_SCOPES[k].goal = v; changed = true; }
         });
-        if(changed) renderActor();
+        /* The Halcyon goal belongs to the other application, but the collateral
+           page lists all four, so it is read here as well. */
+        const h = cfg.halcyon && typeof cfg.halcyon.goal === "string" ? cfg.halcyon.goal.trim() : null;
+        if(h !== null && h !== HALCYON_GOAL){ HALCYON_GOAL = h; changed = true; }
+        if(changed){
+          renderActor();
+          /* The collateral page prints these links, so redraw it if it is open. */
+          if(currentRoute() === "#/collateral" && state.session) render();
+        }
       })
       .catch(()=>{});
   }catch(e){}
@@ -2320,13 +2569,22 @@ const UW_REASON = {
   "UW-R06":"Business use on a vehicle in group 15 or above requires underwriter review.",
   "UW-R07":"Annual mileage above 30,000 requires underwriter review.",
   "UW-R08":"A provisional licence requires underwriter review.",
+  "UW-R09":"A named additional driver under 21 requires underwriter review.",
   "UW-A01":"Accepted on standard terms."
 };
 
 function driverAge(dob){ return dob ? Math.floor((today() - new Date(dob))/(365.25*86400000)) : null; }
 function qaudit(q, text){ (q.audit = q.audit || []).push({at:new Date().toISOString(), by:actor().name, text}); }
 
+/* A submitted quote is rated on the release it was written under, not on
+   whichever release happens to be on now. Turning the release off must not
+   silently reprice a policy that was already issued: that is wrong in a real
+   insurer and, in a demo, it shows the customer two different premiums for
+   the same policy. A draft has no stamp yet, so it follows the live toggle. */
+function quoteV2(q){ return q && q.release ? q.release === "2.1" : v2("insurance"); }
+
 function ratePremium(q){
+  const relV2 = quoteV2(q);
   const base = {"Comprehensive":480,"Third party, fire and theft":390,"Third party only":340}[q.cover] || 480;
   const g = Number(q.vehicleGroup||10), age = driverAge(q.proposerDob), ly = Number(q.licenceYears||0);
   const fc = Number(q.faultClaims||0), nf = Number(q.nonFaultClaims||0), mil = Number(q.mileage||0);
@@ -2334,7 +2592,10 @@ function ratePremium(q){
   const lines = []; let m = 1;
   const F = (label, f) => { lines.push({label, factor:f}); m *= f; };
   F("Vehicle group " + g, Number((1 + (g - 10) * 0.045).toFixed(3)));
-  F("Driver age " + (age == null ? "-" : age), age == null ? 1 : age < 21 ? 2.30 : age < 25 ? 1.70 : age < 30 ? 1.25 : age < 60 ? 1.00 : age < 70 ? 1.10 : 1.35);
+  const addAge = (relV2 && q.hasAdditionalDriver) ? driverAge(q.addDriverDob) : null;
+  const rateAge = (addAge != null && (age == null || addAge < age)) ? addAge : age;
+  F((addAge != null && rateAge === addAge ? "Youngest driver age " : "Driver age ") + (rateAge == null ? "-" : rateAge),
+    rateAge == null ? 1 : rateAge < 21 ? 2.30 : rateAge < 25 ? 1.70 : rateAge < 30 ? 1.25 : rateAge < 60 ? 1.00 : rateAge < 70 ? 1.10 : 1.35);
   F("Licence held " + ly + " years", ly < 1 ? 1.45 : ly < 3 ? 1.20 : ly < 5 ? 1.05 : 1.00);
   F("Claims history", Number((1 + fc * 0.35 + nf * 0.05).toFixed(3)));
   F("Motoring convictions", conv ? 1.25 : 1.00);
@@ -2342,17 +2603,31 @@ function ratePremium(q){
   F("Overnight parking", {"Locked garage":0.92,"Private driveway":0.96,"Off-street parking":1.00,"On street outside home":1.06,"On street elsewhere":1.12}[q.parking] || 1.00);
   F("Use class", {"Social, domestic and pleasure":1.00,"Social, domestic, pleasure and commuting":1.08,"Business use - class 1":1.22,"Business use - class 2":1.38}[q.useClass] || 1.00);
   F("Declared modifications", q.modifications === "yes" ? 1.18 : 1.00);
+  /* Release 2.1 adds a telematics factor and rates the driver age band on the
+     youngest driver on the policy rather than the proposer alone. Both are
+     inert on the previous release, so the rated premium is unchanged there. */
+  if(relV2){
+    F("Telematics policy", q.telematics ? 0.85 : 1.00);
+  }
   const gross = base * m;
   const ncd = NCD_TABLE[Math.min(Number(q.ncdYears||0), 9)];
   const ex = EXCESS_DISCOUNT[Number(q.excess||0)] || 0;
   let net = gross * (1 - ncd) * (1 - ex);
+  /* Release 2.1 changes an existing calculation rather than adding to it:
+     a protected no-claims discount carries a 9 per cent uplift on the
+     discounted premium. */
+  let ncdProt = 0;
+  if(relV2 && q.ncdProtected && Number(q.ncdYears||0) >= 4){
+    ncdProt = net * 0.09;
+    net += ncdProt;
+  }
   const extras = EXTRAS.reduce((a,x)=> a + ((q.extras && q.extras[x.id]) ? x.price : 0), 0);
   net += extras;
   let floored = false;
   if(net < 180){ net = 180; floored = true; }
   const loading = net * (Number(q.loading||0) / 100);
   const ipt = (net + loading) * 0.12;
-  return {base, lines, multiplier:Number(m.toFixed(3)), gross, ncd, ex, extras, net, floored, loading, ipt, total: net + loading + ipt};
+  return {base, lines, multiplier:Number(m.toFixed(3)), gross, ncd, ex, ncdProt, extras, net, floored, loading, ipt, total: net + loading + ipt};
 }
 
 function underwrite(q){
@@ -2373,6 +2648,13 @@ function underwrite(q){
   if(String(q.useClass||"").indexOf("Business") === 0 && g >= 15) return out("REFER","UW-R06");
   if(mil > 30000)                                                return out("REFER","UW-R07");
   if(q.licenceType === "Provisional UK")                         return out("REFER","UW-R08");
+  /* Release 2.1 adds one referral rule, for a named additional driver
+     under 21. It cannot fire on the previous release, where no additional
+     driver can be captured. */
+  if(quoteV2(q) && q.hasAdditionalDriver){
+    const aa = driverAge(q.addDriverDob);
+    if(aa !== null && aa < 21)                                   return out("REFER","UW-R09");
+  }
   return out("ACCEPT","UW-A01");
 }
 
@@ -2383,6 +2665,11 @@ function blankQuote(){
     proposerFirst:"", proposerLast:"", proposerDob:"", licenceType:"", licenceYears:"", occupation:"", postcode:"",
     faultClaims:"", nonFaultClaims:"", convictions:"",
     ncdYears:"", excess:"", extras:{}, startDate:"", payment:"",
+    /* Release 2.1 fields. Present on every draft so a quote captured on one
+       release still reads cleanly on the other; they are only shown, rated
+       and validated while the release is on. */
+    release:"", telematics:false, ncdProtected:false,
+    hasAdditionalDriver:false, addDriverFirst:"", addDriverLast:"", addDriverDob:"", addDriverLicenceYears:"",
     declarationAccuracy:false, declarationDisclosure:false,
     premium:null, decision:null, reasonCode:"", reasonText:"", loading:0,
     stage:"Quote", submittedBy:null, submittedAt:null, decidedBy:null, declineReason:"", policyRef:null,
@@ -2407,6 +2694,7 @@ function seedQuotes(){
     q.reasonText = UW_REASON[r[8]] || ""; q.premium = r[9]; q.policyRef = r[10];
     q.decision = r[7] === "Declined" ? "DECLINE" : r[7] === "Referred" ? "REFER" : r[7] === "Policy issued" ? "ACCEPT" : null;
     q.submittedBy = ACTORS.find(a=>a.id==="adviser").name;
+    q.release = "1.0";   /* seeded records predate release 2.1 */
     q.audit = [{at:"2026-09-15T10:00:00Z", by:"System", text:"Record migrated from legacy quote engine."}];
     return q;
   });
@@ -2459,6 +2747,280 @@ function qsel(k,label,list,d,o){ o=o||{};
     <select id="q-${k}" data-qfield="${k}" data-testid="input-${k}">${opts(list,d[k],o.ph||"Select…")}</select>
     ${o.hint?`<span class="hint">${esc(o.hint)}</span>`:""}${qerr(k)}</div>`; }
 
+/* ============================================================
+   SUPPORTING DEMO COLLATERAL
+   A reference page, not an application: it holds no demo data and
+   offers no reset. Everything it links to is served beside this file,
+   so republishing a source updates the page without a rebuild.
+   ============================================================ */
+
+const COLLATERAL_KB = [
+  ["Private Wealth",   "WAM-Cavendish-Onboarding-KB-Source.md", "Client onboarding, KYC and sanctions, risk profiling, mandate, four-eyes approval."],
+  ["Motor Insurance",  "Cavendish-Motor-Insurance-KB-Source.md", "Rating factors, quote capture, and the accept / refer / decline underwriting rules."],
+  ["Pensions",         "Cavendish-Pensions-KB-Source.md",        "Retirement instructions, safeguarded benefits, guidance and advice, payment authorisation."],
+  ["Halcyon Commerce", "Halcyon-Commerce-KB-Source.md",          "Storefront, ERP and warehouse: order to cash across three connected systems."]
+];
+
+const COLLATERAL_DIR = [
+  ["Analyst",   "analyst.json",   "How requirements are analysed and written."],
+  ["Architect", "architect.json", "How journey structures are generated from requirements."],
+  ["Autopilot", "autopilot.json", "How Autopilot implements a journey when it runs."]
+];
+
+const COLLATERAL_DOCS = [
+  ["Insurance",           "Insurance-AI-and-Conduct-Control-Requirements.pdf",                         "EU AI Act; FCA Consumer Duty"],
+  ["Pensions",            "Pensions-Dashboards-and-Disclosure-Control-Requirements.pdf",               "Pensions Dashboards; AS TM1; TPR General Code"],
+  ["Wealth",              "Wealth-Operational-Resilience-and-Conduct-Control-Requirements.pdf",        "DORA; MiFID II; Consumer Duty"],
+  ["Financial Services",  "Financial-Services-Prudential-Data-and-Payments-Control-Requirements.pdf",  "UK GDPR; SOX; Basel 3.1; SM and CR; PSD2"],
+  ["E-commerce",          "Ecommerce-Storefront-Control-Requirements.pdf",                             "PCI DSS 4.0.1; DMCC Act; Consumer Rights Act; EAA"]
+];
+
+/* Prompts are the part a colleague cannot reconstruct from the applications
+   themselves, so they are written out in full and copy to the clipboard. */
+const COLLATERAL_PROMPTS = [
+  {
+    stage: "Requirements",
+    title: "Generate requirements for one feature",
+    body:
+"Generate requirements for the quote-to-policy flow in the Cavendish Motor Insurance application.\n" +
+"\n" +
+"Use this source: Cavendish-Motor-Insurance-KB-Source.md\n" +
+"\n" +
+"Cover:\n" +
+"- the rating factors and how each one moves the premium\n" +
+"- the underwriting decision rules, including the boundary values at which a quote is accepted, referred or declined\n" +
+"- the validation rules on the quote capture form\n" +
+"- what the user sees on each of the three outcome paths\n" +
+"\n" +
+"Write acceptance criteria a test can assert directly: a named field, a named value, a named outcome. Cite the section of the source each requirement came from.\n" +
+"\n" +
+"Do not generate requirements for the Private Wealth or Pensions applications."
+  },
+  {
+    stage: "Requirements",
+    title: "Ask about a source without generating anything",
+    body:
+"Without proposing any requirements, summarise what the source says about the underwriting referral rules: which conditions cause a referral, and what the boundary values are.\n" +
+"\n" +
+"If the source is ambiguous on any of them, say so rather than filling the gap."
+  },
+  {
+    stage: "Journey structure",
+    title: "Turn an approved requirement into a test outline",
+    body:
+"Generate a journey structure for the approved requirement above.\n" +
+"\n" +
+"Starting URL: the Motor Insurance application, opened from the applications launcher.\n" +
+"Sign in with the demo credentials for this environment.\n" +
+"\n" +
+"The journey should:\n" +
+"- sign in and open Motor Insurance\n" +
+"- capture a quote using the scenario values\n" +
+"- submit it for an underwriting decision\n" +
+"- assert the expected outcome and the reason shown with it\n" +
+"\n" +
+"Put the sign-in credentials and the base URL in environment variables, not in the data table.\n" +
+"Put the scenario values in the data table as named columns, one row per scenario, so the same journey covers accept, refer and decline.\n" +
+"\n" +
+"Keep each checkpoint to a single business action, so a failure names the step that failed."
+  },
+  {
+    stage: "Journey structure",
+    title: "Extend an existing journey rather than duplicating it",
+    body:
+"Update the existing journey rather than creating a new one.\n" +
+"\n" +
+"Add a checkpoint after the underwriting decision that asserts the quote now appears in the policies list with the correct status.\n" +
+"\n" +
+"Account for every existing checkpoint explicitly: kept, modified or removed, each with a stated reason, so I can review this as a delta rather than a rewrite."
+  },
+  {
+    stage: "Autopilot",
+    title: "Standing guidance for every run (put this in an Autopilot directive)",
+    body:
+"The application under test is a single-page application driven by the URL hash. After any navigation, wait for the heading of the target screen to be present before acting on the page.\n" +
+"\n" +
+"Every interactive element carries a data-testid attribute. Where both a test id and visible text identify an element, prefer the test id.\n" +
+"\n" +
+"Never operate the Reset demo data control. It restores seed data and will invalidate anything the journey has already done.\n" +
+"\n" +
+"Demo data is scoped per application: work only within the application named in the journey.\n" +
+"\n" +
+"If a control cannot be set to an exact value, stop and ask rather than approximating it."
+  },
+  {
+    stage: "Autopilot",
+    title: "Steer the plan before you approve it",
+    body:
+"Before you start: the quote form reveals additional fields once the vehicle section is complete, so do not look for them on first load.\n" +
+"\n" +
+"The underwriting decision is shown on the quote detail screen, not on the form you submit from.\n" +
+"\n" +
+"Confirm the plan covers all three outcome rows in the data table before you begin."
+  },
+  {
+    stage: "Autopilot",
+    title: "Diagnose a failure before fixing it",
+    body:
+"This journey failed. Before changing anything, tell me which of the two it is: the application changed and the test needs updating, or the application is genuinely broken.\n" +
+"\n" +
+"State the evidence you used to decide, and do not modify a library checkpoint."
+  },
+  {
+    stage: "Coverage",
+    title: "Find the gaps",
+    body:
+"Against the requirements in this project, which ones have no journey yet?\n" +
+"\n" +
+"List them by risk level, highest first, and for each say in one line what a journey covering it would need to do."
+  }
+];
+
+function selectPrompt(i, btn){
+  const pre = document.getElementById("prompt-" + i);
+  if(!pre) return;
+  try{
+    const r = document.createRange();
+    r.selectNodeContents(pre);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+    if(btn){ btn.textContent = "Selected"; setTimeout(()=>{ btn.textContent = "Copy"; }, 1800); }
+  }catch(e){}
+}
+
+function collateralRows(rows, base, why){
+  return rows.map(r =>
+    `<tr><td><a href="${base}${encodeURIComponent(r[1])}" download="${esc(r[1])}">${esc(r[0])}</a></td>` +
+    `<td>${esc(r[2])}</td></tr>`).join("");
+}
+
+function viewCollateral(){
+  const goals = [
+    ["Private Wealth",   RESET_SCOPES.wealth.goal],
+    ["Motor Insurance",  RESET_SCOPES.insurance.goal],
+    ["Pensions",         RESET_SCOPES.pensions.goal],
+    ["Halcyon Commerce", HALCYON_GOAL]
+  ];
+  const goalRows = goals.map(g => `<tr><td>${esc(g[0])}</td><td>${
+    g[1] ? `<a href="${g[1]}" target="_blank" rel="noopener">Open the goal in Virtuoso</a>`
+         : `<span class="muted">Not published yet</span>` }</td></tr>`).join("");
+
+  const promptCards = COLLATERAL_PROMPTS.map((p, i) => `
+    <div class="prompt">
+      <div class="prompt-head">
+        <div><span class="stage">${esc(p.stage)}</span><h3>${esc(p.title)}</h3></div>
+        <button class="btn-copy" data-qact="copy-prompt" data-i="${i}" data-testid="copy-prompt-${i}">Copy</button>
+      </div>
+      <pre class="prompt-body" id="prompt-${i}">${esc(p.body)}</pre>
+    </div>`).join("");
+
+  return `
+  <div data-testid="collateral-page">
+    <div class="page-head"><div style="flex:1;min-width:260px">
+      <h1>Supporting demo collateral</h1>
+      <p class="col-lead">Everything needed to build your own Touchstone project from these applications. Take a knowledge base source, load the directives, work through the prompts below, and compare what you get against the finished goal.</p>
+    </div></div>
+
+    <div class="col-sec">
+      <h2>Start here</h2>
+      <p class="col-why">The order matters more than it looks. Each stage takes the approved output of the one before it.</p>
+      <ol class="col-steps" data-testid="collateral-steps">
+        <li><b>Pick the application closest to your customer.</b><span>Whichever of the four is nearest their domain. The method is the same; the vocabulary is what makes it land.</span></li>
+        <li><b>Upload its knowledge base source to Touchstone.</b><span>Then read the summary Touchstone generates for it. That summary, not the file, is what every later stage works from, so a misreading here quietly degrades everything downstream.</span></li>
+        <li><b>Load the three directives.</b><span>One set serves all four applications. Each targets a different stage and does not reach across.</span></li>
+        <li><b>Generate requirements for one feature.</b><span>Not the whole application. Use the requirements prompt below and name the feature explicitly.</span></li>
+        <li><b>Approve, then generate a journey structure.</b><span>Approving marks it ready; creating it is a separate action that writes it into the project.</span></li>
+        <li><b>Run Autopilot against the live application.</b><span>Review the plan before you approve it. The plan is where you steer a run.</span></li>
+        <li><b>Compare with our finished goal.</b><span>The goals below are what the same source produced for us. A useful sanity check, not a target to match exactly.</span></li>
+      </ol>
+    </div>
+
+    <div class="col-sec">
+      <h2>Knowledge base sources</h2>
+      <p class="col-why">One per application, describing screens, fields, business rules, expected behaviour and edge cases. These are the inputs Touchstone reads. Each is also downloadable from inside its own application.</p>
+      <table class="col-table" data-testid="collateral-kb">
+        <thead><tr><th>Application</th><th>What it covers</th></tr></thead>
+        <tbody>${collateralRows(COLLATERAL_KB, "kb/")}</tbody>
+      </table>
+    </div>
+
+    <div class="col-sec">
+      <h2>Directives</h2>
+      <p class="col-why">Standing rules injected into generation, so conventions are encoded once rather than repeated in every conversation. Directives steer generation; they do not enforce it, so verify on output that matters.</p>
+      <table class="col-table" data-testid="collateral-directives">
+        <thead><tr><th>Directive</th><th>Stage it applies to</th></tr></thead>
+        <tbody>${collateralRows(COLLATERAL_DIR, "directives/")}</tbody>
+      </table>
+    </div>
+
+    <div class="col-sec">
+      <h2>Example compliance documents</h2>
+      <p class="col-why">Authored example documents, one per sector, written in the shape a real client's internal control material takes: a document control block, a regulatory basis table, numbered obligations with citations and testable acceptance criteria. Use one as a second source alongside a knowledge base source to show requirement generation from a compliance document.</p>
+      <table class="col-table" data-testid="collateral-docs">
+        <thead><tr><th>Sector</th><th>Instruments referenced</th></tr></thead>
+        <tbody>${collateralRows(COLLATERAL_DOCS, "docs/")}</tbody>
+      </table>
+      <div class="col-note" data-testid="collateral-docs-warning">
+        <b>Demo inputs only.</b> The firms in these documents are fictional and no official regulatory text is reproduced. Do not send one to a customer as reference material, quote it in a proposal or a statement of work, or put its content on screen in a recording without a compliance review first.
+      </div>
+    </div>
+
+    <div class="col-sec">
+      <h2>Finished Virtuoso goals</h2>
+      <p class="col-why">What the same knowledge base sources produced for us, running against these applications.</p>
+      <table class="col-table" data-testid="collateral-goals">
+        <thead><tr><th>Application</th><th>Goal</th></tr></thead>
+        <tbody>${goalRows}</tbody>
+      </table>
+    </div>
+
+    <div class="col-sec">
+      <h2>Prompts</h2>
+      <p class="col-why">Copy these into Touchstone and edit the application and feature names. They are written against these demo applications, so they work as they stand for a first run.</p>
+      ${promptCards}
+      <p class="col-tip"><b>Four things worth knowing before you start.</b>
+      Generation is not deterministic, so the same prompt twice gives you a different starting point, not a different answer to reproduce.
+      Retrieval works on relevance, so a curated set of sources beats an exhaustive one.
+      Only the text of a document is read, so a screenshot inside a PDF contributes nothing and a scanned PDF cannot be read at all.
+      And requirements are only generated when you ask for them: a plain question about your documents is answered in chat without producing proposals.</p>
+    </div>
+
+    <div class="col-sec" data-testid="collateral-newapp">
+      <h2>Building a new demo application</h2>
+      <p class="col-why">Read the first line before the rest. Most people do not need this section.</p>
+      <div class="col-note col-note-calm" data-testid="collateral-newapp-first">
+        <b>Take the nearest application first.</b> The four cover client onboarding, rules-heavy quoting, long-running case management, and order to cash. For most customers the right move is the closest one plus their vocabulary in your talk track. Build something new only when their domain has a mechanic none of these has, not because the industry label differs.
+      </div>
+
+      <h3 class="col-h3">The method, in order</h3>
+      <p class="col-why">Every time this was taken out of order, the work was redone.</p>
+      <ol class="col-steps">
+        <li><b>Domain first, screens last.</b><span>Entities, their states, and the transitions between them, before anything is drawn. Get this wrong and every screen inherits the mistake.</span></li>
+        <li><b>Write the rules down as rules.</b><span>Thresholds and limits as named conditions with explicit boundaries, not scattered through the code. These become the testable acceptance criteria in the knowledge base, so they have to exist as discrete things before the interface does.</span></li>
+        <li><b>Seed data that sits near those boundaries.</b><span>Not filler. Every seeded record should put some rule close to its edge: a customer just under a limit, an order that will short-pick, a quote that will refer. A demo that only walks the happy path teaches nothing.</span></li>
+        <li><b>Screens over the model.</b><span>One view per screen, and a data-testid on every interactive element as you write it, never retrofitted. Those identifiers are what both the test suites and the Virtuoso journeys hang on.</span></li>
+        <li><b>Then the tests, written against the rules.</b><span>A test that asserts what the screen currently does is worthless. A test that asserts what the rule says catches the screen drifting.</span></li>
+      </ol>
+
+      <h3 class="col-h3">Four things that are not style preferences</h3>
+      <p class="col-why">A journey breaks without these, so they are worth stating plainly.</p>
+      <table class="col-table">
+        <thead><tr><th>Rule</th><th>Why a journey needs it</th></tr></thead>
+        <tbody>
+          <tr><td>A fixed clock</td><td>Every date derives from one constant, never the real clock. A boundary written into the knowledge base stays exactly that, so a rehearsed demo does not drift and break a fortnight later.</td></tr>
+          <tr><td>Reset scoped to one application</td><td>A reset that clears everything destroys a colleague's setup in the next tab, and a generated journey can trip it before it has opened the application under test.</td></tr>
+          <tr><td>Reset hidden, not removed, where nothing is in scope</td><td>The control stays in the DOM carrying the hidden attribute. A journey asserting the element does not exist will fail; asserting it is not visible will pass. Describe it the second way in the knowledge base.</td></tr>
+          <tr><td>Plain ASCII in visible text</td><td>Journeys select elements by visible text. A curly apostrophe or an en dash looks identical on screen and will not match a journey written with a straight one.</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="col-h3">Where the time actually goes</h3>
+      <p class="col-tip">Not where you would expect. The screens are the fast part. The time goes into the domain model, the seed data that makes rules visible, and verifying the knowledge base against the running application. That last one is the most likely to be skipped and the most expensive to skip, because a knowledge base that misdescribes the application produces journeys that fail for reasons nobody can find. Read the three existing applications before starting: they are real, tested, and a better reference than any template.</p>
+    </div>
+  </div>`;
+}
+
 function viewApps(){
   const inFlight = state.clients.filter(c=>!["Active","Rejected"].includes(c.stage)).length;
   const open = state.quotes.filter(x=>x.stage==="Quote"||x.stage==="Application").length;
@@ -2470,7 +3032,7 @@ function viewApps(){
   <div class="launch-wrap" data-testid="app-picker">
     <div class="page-head"><div style="flex:1;min-width:260px">
       <h1>Choose an application</h1>
-      <p>Signed in as ${esc(actor().name)}. All three applications share this sign-in and these users. Demo data is reset from inside each application and affects only that one.</p>
+      <p>Signed in as ${esc(actor().name)}. All three applications share this sign-in and these users. Demo data is reset from inside each application and affects only that one. The collateral page is reference material and holds no demo data.</p>
     </div></div>
     <div class="launch-grid">
       <button class="launch-card" data-qact="open-app" data-app="wam" data-testid="app-wam">
@@ -2490,6 +3052,12 @@ function viewApps(){
         <h3>Pensions — Retirement Income</h3>
         <p>Retirement instructions with the protection checks that govern them: safeguarded benefits, guidance and advice, sustainability of income, and a deterministic decision that accepts, refers or declines.</p>
         <div class="meta"><span>${pOpen} instructions</span><span>${pRefs + pAuth} awaiting a decision</span></div>
+      </button>
+      <button class="launch-card launch-card-ref" data-qact="open-app" data-app="collateral" data-testid="app-collateral">
+        <div class="ic">SC</div>
+        <h3>Supporting Demo Collateral</h3>
+        <p>Everything needed to build your own Touchstone project from these applications: knowledge base sources, directives, example compliance documents, the finished Virtuoso goals, and the prompts to use at each stage.</p>
+        <div class="meta"><span>Reference</span><span>No demo data</span></div>
       </button>
     </div>
     <div class="cross-link" data-testid="cross-link-retail-launcher">
@@ -2619,6 +3187,7 @@ function premiumTable(q, r){
     <tr><td style="font-weight:600">Rated premium</td><td class="right mono" style="font-weight:600">${money(r.gross)}</td></tr>
     <tr><td>No-claims discount (${Math.round(r.ncd*100)}%)</td><td class="right mono">−${money(r.gross*r.ncd)}</td></tr>
     <tr><td>Voluntary excess discount (${Math.round(r.ex*100)}%)</td><td class="right mono">−${money(r.gross*(1-r.ncd)*r.ex)}</td></tr>
+    ${r.ncdProt?`<tr><td>Protected no-claims discount (9%)</td><td class="right mono" data-testid="premium-ncd-protection">${money(r.ncdProt)}</td></tr>`:""}
     ${r.extras?`<tr><td>Optional extras</td><td class="right mono">${money(r.extras)}</td></tr>`:""}
     ${r.floored?`<tr><td class="legend">Minimum premium applied</td><td class="right mono legend">180</td></tr>`:""}
     ${r.loading?`<tr><td>Underwriting loading (${q.loading}%)</td><td class="right mono">${money(r.loading)}</td></tr>`:""}
@@ -2695,7 +3264,21 @@ function qStepBody(d){
       ${qnum("faultClaims","Fault claims",d,{min:0,max:10,ph:"0",hint:"Two refers; three or more declines."})}
       ${qnum("nonFaultClaims","Non-fault claims",d,{min:0,max:10,ph:"0"})}
       ${qsel("convictions","Motoring convictions",CONVICTION_CODES,d,{ph:"Select…"})}
-    </div>`;
+    </div>
+    ${v2("insurance") ? `
+    <div class="sep"></div>
+    <h3 style="margin-bottom:4px">Named additional driver <span class="rel-new" data-testid="rel-new">New</span></h3>
+    <p class="hint" style="margin-bottom:10px">Optional. The driver age band is rated on the youngest driver on the policy, and an additional driver under 21 refers the quote.</p>
+    <div class="field check" style="margin-bottom:12px">
+      <input type="checkbox" id="q-adddrv" data-qfield="hasAdditionalDriver" ${d.hasAdditionalDriver?"checked":""} data-testid="input-hasAdditionalDriver">
+      <label for="q-adddrv">Add a named driver to this policy</label></div>
+    ${d.hasAdditionalDriver ? `
+    <div class="grid g2" data-testid="additional-driver">
+      ${qtext("addDriverFirst","Additional driver first name",d)}
+      ${qtext("addDriverLast","Additional driver last name",d)}
+      ${qtext("addDriverDob","Additional driver date of birth",d,{type:"date",hint:"Must be 17 or over. Under 21 refers the quote."})}
+      ${qnum("addDriverLicenceYears","Years licence held",d,{min:0,max:70,ph:"3"})}
+    </div>` : ""}` : ""}`;
 
   case "quote": {
     const r = ratePremium(d);
@@ -2704,6 +3287,17 @@ function qStepBody(d){
       ${qsel("ncdYears","No-claims discount (years)",["0","1","2","3","4","5","6","7","8","9"],d)}
       ${qsel("excess","Voluntary excess",EXCESS_OPTIONS.map(v=>({value:String(v),label:money(v)})),d)}
     </div>
+    ${v2("insurance") ? `
+    <div class="field check${qbad("ncdProtected")}" style="margin-bottom:8px">
+      <input type="checkbox" id="q-ncdprot" data-qfield="ncdProtected" ${d.ncdProtected?"checked":""} data-testid="input-ncdProtected">
+      <label for="q-ncdprot">Protect the no-claims discount <span class="rel-new" data-testid="rel-new">New</span></label></div>
+    <div class="hint" style="margin:-4px 0 10px 26px">Available from 4 years no-claims discount. Adds 9 per cent to the discounted premium.</div>
+    ${qerr("ncdProtected")}
+    <div class="field check${qbad("telematics")}" style="margin-bottom:8px">
+      <input type="checkbox" id="q-telem" data-qfield="telematics" ${d.telematics?"checked":""} data-testid="input-telematics">
+      <label for="q-telem">Telematics policy <span class="rel-new" data-testid="rel-new">New</span></label></div>
+    <div class="hint" style="margin:-4px 0 14px 26px">A 15 per cent discount, available where annual mileage is 12,000 or less.</div>
+    ${qerr("telematics")}` : ""}
     <div class="field" style="margin-bottom:16px"><label>Optional extras</label>
       <div data-testid="extras-list">${EXTRAS.map(x=>`<div class="field check" style="margin-bottom:6px">
         <input type="checkbox" id="x-${x.id}" data-qextra="${x.id}" ${d.extras&&d.extras[x.id]?"checked":""} data-testid="extra-${x.id}">
@@ -2748,11 +3342,16 @@ function qStepBody(d){
         <dt>Age</dt><dd>${driverAge(d.proposerDob) ?? "-"}</dd>
         <dt>Licence</dt><dd>${esc(d.licenceType||"-")} · ${esc(String(d.licenceYears||"-"))} yr</dd>
         <dt>Fault claims</dt><dd>${esc(String(d.faultClaims||0))}</dd>
-        <dt>Convictions</dt><dd>${esc(d.convictions||"-")}</dd></dl></div>
+        <dt>Convictions</dt><dd>${esc(d.convictions||"-")}</dd>
+        ${v2("insurance")?`<dt>Additional driver</dt><dd data-testid="review-additional-driver">${
+          d.hasAdditionalDriver
+            ? esc([d.addDriverFirst,d.addDriverLast].filter(Boolean).join(" ")||"-") + " (age " + (driverAge(d.addDriverDob) ?? "-") + ")"
+            : "None"}</dd>`:""}</dl></div>
       <div><h3 style="margin-bottom:10px">Policy</h3><dl class="kv" data-testid="review-policy">
         <dt>Start date</dt><dd>${fmtDate(d.startDate)}</dd>
         <dt>Payment</dt><dd>${esc(d.payment||"-")}</dd>
-        <dt>No-claims discount</dt><dd>${esc(String(d.ncdYears||"0"))} years</dd>
+        <dt>No-claims discount</dt><dd>${esc(String(d.ncdYears||"0"))} years${v2("insurance")&&d.ncdProtected?" (protected)":""}</dd>
+        ${v2("insurance")?`<dt>Telematics</dt><dd data-testid="review-telematics">${d.telematics?"Yes":"No"}</dd>`:""}
         <dt>Voluntary excess</dt><dd class="mono">${d.excess!==""&&d.excess!=null?money(d.excess):"-"}</dd>
         <dt>Total premium</dt><dd class="mono" style="font-weight:600">${money(r.total)}</dd></dl></div>
     </div>`;
@@ -2802,10 +3401,35 @@ function validateQuoteStep(){
       if(!String(d.faultClaims??"").trim()) e.faultClaims = "Enter the number of fault claims, or zero.";
       if(!String(d.nonFaultClaims??"").trim()) e.nonFaultClaims = "Enter the number of non-fault claims, or zero.";
       req("convictions","Select a conviction, or None.");
+      /* Release 2.1: a named additional driver is optional, but once declared
+         every field on it is required and carries the same checks as the
+         proposer. */
+      if(v2("insurance") && d.hasAdditionalDriver){
+        req("addDriverFirst","Additional driver first name is required.");
+        req("addDriverLast","Additional driver last name is required.");
+        req("addDriverDob","Additional driver date of birth is required.");
+        if(d.addDriverDob){
+          const aa = driverAge(d.addDriverDob);
+          if(aa !== null && aa < 17) e.addDriverDob = "An additional driver must be at least 17 years old.";
+          else if(aa !== null && aa > 100) e.addDriverDob = "Enter a valid date of birth.";
+        }
+        if(!String(d.addDriverLicenceYears??"").trim()) e.addDriverLicenceYears = "Years licence held is required for the additional driver.";
+        else {
+          const aa = driverAge(d.addDriverDob);
+          if(Number(d.addDriverLicenceYears) < 0) e.addDriverLicenceYears = "Enter a positive number of years.";
+          else if(aa !== null && Number(d.addDriverLicenceYears) > (aa - 17)) e.addDriverLicenceYears = "Licence years cannot exceed the time since the additional driver turned 17.";
+        }
+      }
       break;
     case "quote":
       req("ncdYears","Select the no-claims discount.");
       if(String(d.excess??"").trim()==="") e.excess = "Select a voluntary excess.";
+      if(v2("insurance")){
+        if(d.ncdProtected && Number(d.ncdYears||0) < 4)
+          e.ncdProtected = "A protected no-claims discount requires at least 4 years.";
+        if(d.telematics && Number(d.mileage||0) > 12000)
+          e.telematics = "A telematics policy is available only where annual mileage is 12,000 or less.";
+      }
       break;
     case "application": {
       req("startDate","Policy start date is required.");
@@ -2834,6 +3458,9 @@ function submitQuoteApplication(){
   if(!validateQuoteStep()){ render(); toast("Submission blocked — complete the earlier steps."); return; }
   const dec = underwrite(d), r = ratePremium(d);
   d.id = "MQ-" + state.nextQuoteId++;
+  /* Stamp the release now, so the record keeps these rules for the rest of
+     its life whatever the toggle does afterwards. */
+  d.release = v2("insurance") ? "2.1" : "1.0";
   d.premium = Number(r.total.toFixed(2));
   d.decision = dec.outcome; d.reasonCode = dec.code; d.reasonText = dec.text;
   d.submittedBy = actor().name; d.submittedAt = new Date().toISOString();
@@ -2926,7 +3553,26 @@ document.addEventListener("click", ev => {
   const t = ev.target.closest("[data-qact]"); if(!t) return;
   const act = t.dataset.qact;
   switch(act){
-    case "open-app": go(t.dataset.app === "insurance" ? "#/insurance" : t.dataset.app === "pensions" ? "#/pensions" : "#/dashboard"); return;
+    case "open-app": go(t.dataset.app === "insurance" ? "#/insurance" : t.dataset.app === "pensions" ? "#/pensions" : t.dataset.app === "collateral" ? "#/collateral" : "#/dashboard"); return;
+    case "copy-prompt": {
+      const i = Number(t.dataset.i);
+      const p = COLLATERAL_PROMPTS[i];
+      if(!p) return;
+      const done = () => {
+        t.textContent = "Copied";
+        t.dataset.copied = "1";
+        setTimeout(() => { t.textContent = "Copy"; t.removeAttribute("data-copied"); }, 1800);
+      };
+      /* The clipboard API is unavailable over plain http and in some embedded
+         views, so a selection of the prompt text is the fallback rather than a
+         silent failure: the reader can still copy it themselves. */
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(p.body).then(done).catch(()=>selectPrompt(i, t));
+        }else{ selectPrompt(i, t); }
+      }catch(e){ selectPrompt(i, t); }
+      return;
+    }
     case "new-quote": go("#/insurance/quote/new"); return;
     case "go-referrals": go("#/insurance/referrals"); return;
     case "open-quote": go(`#/insurance/quote/${t.dataset.id}`); return;
@@ -2987,6 +3633,10 @@ const BASIC_RATE_LIMIT = 50270;
 const HIGHER_RATE_LIMIT = 125140;
 const ANNUAL_CHARGE = 0.0075;
 const SUSTAINABILITY_AGE = 85;
+/* Release 2.1 extends the sustainability horizon from 85 to 90, so an income
+   that was sustainable on the previous release may now refer. This is the one
+   change to an existing rule rather than an addition. */
+const SUSTAINABILITY_AGE_V2 = 90;
 const GAR_RATE = 9.5;
 
 const RP_REASON = {
@@ -3005,8 +3655,14 @@ const RP_REASON = {
   "RP-R08":"A member under 60 taking full access to the fund requires a review of long-term provision.",
   "RP-R09":"The money purchase annual allowance is already triggered while contributions continue.",
   "RP-R10":"A member resident outside the United Kingdom requires overseas payment checks.",
+  "RP-R11":"The nominated beneficiaries do not account for the whole death benefit and require confirmation before payment.",
   "RP-A01":"Accepted on standard terms."
 };
+
+/* A case is adjudicated on the release it was submitted under, so extending the
+   sustainability horizon does not re-decide an instruction already in payment. */
+function caseV2(c){ return c && c.release ? c.release === "2.1" : v2("pensions"); }
+function sustainabilityAge(c){ return caseV2(c) ? SUSTAINABILITY_AGE_V2 : SUSTAINABILITY_AGE; }
 
 function memberAge(dob){ return dob ? Math.floor((today() - new Date(dob))/(365.25*86400000)) : null; }
 function paudit(c, text){ (c.audit = c.audit || []).push({at:new Date().toISOString(), by:actor().name, text}); }
@@ -3153,7 +3809,7 @@ function adjudicate(p){
 
   if(pot > LARGE_CASE_THRESHOLD)                                              return out("REFER","RP-R01");
   if(p.vulnerability === "yes")                                               return out("REFER","RP-R02");
-  if(opt === "Flexi-access drawdown" && r.depletionAge !== null && r.depletionAge < SUSTAINABILITY_AGE)
+  if(opt === "Flexi-access drawdown" && r.depletionAge !== null && r.depletionAge < sustainabilityAge(p))
                                                                               return out("REFER","RP-R03");
   if(p.guidanceStatus === "Guidance declined - opt out recorded")              return out("REFER","RP-R04");
   if(p.protectedCashPct && Number(p.protectedCashPct) > 25)                    return out("REFER","RP-R05");
@@ -3165,6 +3821,11 @@ function adjudicate(p){
   if(p.mpaaTriggered === "yes" && ["Employed","Self-employed"].includes(p.employmentStatus))
                                                                               return out("REFER","RP-R09");
   if(p.residence && p.residence !== "United Kingdom")                          return out("REFER","RP-R10");
+  /* Release 2.1: nominations that do not account for the whole death benefit
+     are referred. Evaluated last, so every earlier rule still takes precedence. */
+  if(caseV2(p) && Array.isArray(p.beneficiaries) && p.beneficiaries.length &&
+     Math.abs(p.beneficiaries.reduce((a,b)=>a+Number(b.share||0),0) - 100) > 0.01)
+                                                                              return out("REFER","RP-R11");
   return out("ACCEPT","RP-A01");
 }
 
@@ -3175,6 +3836,9 @@ function blankCase(){
     potValue:"", employmentStatus:"", residence:"", otherIncome:"",
     safeguardedBenefits:"", protectedPensionAge:"", protectedCashPct:"", guidanceStatus:"",
     scamWarning:false, vulnerability:"", vulnerabilityDetail:"", mpaaTriggered:"",
+    /* Release 2.1 fields. Present on every draft so a case reads cleanly on
+       either release; only shown, validated and acted on while 2.1 is live. */
+    release:"", guidanceReference:"", beneficiaries:[],
     retirementOption:"", taxFreeCash:"", annuityShape:"", guaranteePeriod:"", underwritingBasis:"",
     drawdownIncome:"", paymentFrequency:"", incomeIndexed:"", ufplsAmount:"",
     firstPaymentDate:"", growthAssumption:"",
@@ -3197,6 +3861,7 @@ function seedCases(){
   ];
   return raw.map(r=>{
     const c = blankCase();
+    c.release = "1.0";   /* seeded records predate release 2.1 */
     c.id = r[0]; c.memberFirst = r[1]; c.memberLast = r[2]; c.memberDob = r[3];
     c.schemeType = r[4]; c.potValue = r[5]; c.retirementOption = r[6]; c.stage = r[7];
     c.reasonCode = r[8]; c.reasonText = RP_REASON[r[8]] || ""; c.paymentRef = r[9];
@@ -3279,6 +3944,11 @@ function pStepBody(d){
       ${psel("safeguardedBenefits","Safeguarded benefits held",SAFEGUARDED_BENEFITS,d,{hint:"Above 30,000 these can only be given up on regulated advice."})}
       ${psel("guidanceStatus","Guidance or advice status",GUIDANCE_STATUS,d)}
     </div>
+    ${v2("pensions") && d.guidanceStatus === "Pension Wise guidance taken" ? `
+    <div class="field${pbad("guidanceReference")}" style="margin-bottom:14px" data-testid="guidance-reference-field">
+      <label for="p-guidref">Pension Wise appointment reference <span class="rel-new" data-testid="rel-new">New</span> *</label>
+      <input type="text" id="p-guidref" data-pfield="guidanceReference" data-testid="input-guidanceReference" value="${esc(d.guidanceReference||"")}" placeholder="PW-000000">
+      <span class="hint">Format PW- followed by six digits, as issued at the appointment.</span>${perr("guidanceReference")}</div>` : ""}
     ${pradio("protectedPensionAge","Does the member hold a protected pension age?",d,"A protected pension age permits access before 55.")}
     <div class="grid g2" style="margin-top:14px;margin-bottom:14px">
       ${pnum("protectedCashPct","Protected tax-free cash entitlement (per cent)",d,{opt:true,min:0,max:100,step:1,ph:"25",hint:"Leave blank for the standard 25 per cent. Above 25 is verified against scheme records."})}
@@ -3289,6 +3959,26 @@ function pStepBody(d){
       <label for="p-vulnerabilityDetail">Nature of the support required *</label>
       <textarea id="p-vulnerabilityDetail" data-pfield="vulnerabilityDetail" data-testid="input-vulnerabilityDetail" placeholder="Describe the adjustment or support the member has asked for.">${esc(d.vulnerabilityDetail||"")}</textarea>
       ${perr("vulnerabilityDetail")}</div>`:""}
+    ${v2("pensions") ? `
+    <div class="sep"></div>
+    <h3 style="margin-bottom:4px">Death benefit nomination <span class="rel-new" data-testid="rel-new">New</span></h3>
+    <p class="hint" style="margin-bottom:10px">Optional. Where nominations are recorded their shares must total 100 per cent, or the instruction is referred.</p>
+    <div data-testid="beneficiaries">
+      ${(d.beneficiaries||[]).map((bn,i)=>`
+        <div class="grid g3" style="margin-bottom:10px" data-testid="beneficiary-${i}">
+          <div class="field"><label for="p-bn-${i}">Nominee name</label>
+            <input type="text" id="p-bn-${i}" data-bfield="name" data-bidx="${i}" data-testid="beneficiary-name-${i}" value="${esc(bn.name||"")}"></div>
+          <div class="field"><label for="p-br-${i}">Relationship</label>
+            <input type="text" id="p-br-${i}" data-bfield="relationship" data-bidx="${i}" data-testid="beneficiary-relationship-${i}" value="${esc(bn.relationship||"")}"></div>
+          <div class="field"><label for="p-bs-${i}">Share (per cent)</label>
+            <input type="number" id="p-bs-${i}" data-bfield="share" data-bidx="${i}" data-testid="beneficiary-share-${i}" min="0" max="100" value="${esc(bn.share??"")}"></div>
+        </div>`).join("")}
+    </div>
+    <div class="row" style="gap:10px;align-items:center;margin-bottom:6px">
+      <button type="button" class="btn btn-sm" data-pact="add-beneficiary" data-testid="add-beneficiary">Add a nominee</button>
+      ${(d.beneficiaries||[]).length ? `<button type="button" class="btn btn-sm" data-pact="clear-beneficiaries" data-testid="clear-beneficiaries">Clear all</button>` : ""}
+      <span class="legend" data-testid="beneficiary-total">Total ${(d.beneficiaries||[]).reduce((a,b)=>a+Number(b.share||0),0)}%</span>
+    </div>` : ""}
     <div class="sep"></div>
     <div class="field check${pbad("scamWarning")}">
       <input type="checkbox" id="p-scam" data-pfield="scamWarning" ${d.scamWarning?"checked":""} data-testid="input-scamWarning">
@@ -3429,6 +4119,11 @@ function validateCaseStep(){
       if(d.vulnerability === "yes" && String(d.vulnerabilityDetail||"").trim().length < 20)
         e.vulnerabilityDetail = "Describe the support required in at least 20 characters.";
       if(!d.scamWarning) e.scamWarning = "Confirm the ScamSmart warning has been given.";
+      if(v2("pensions") && d.guidanceStatus === "Pension Wise guidance taken"){
+        const ref = String(d.guidanceReference||"").trim();
+        if(!ref) e.guidanceReference = "The Pension Wise appointment reference is required.";
+        else if(!/^PW-\d{6}$/.test(ref)) e.guidanceReference = "Enter the reference as PW- followed by six digits.";
+      }
       break;
     case "option":
       req("retirementOption","Select how benefits are to be taken.");
@@ -3482,6 +4177,9 @@ function submitCase(){
   if(!validateCaseStep()){ render(); toast("Submission blocked - complete the earlier steps."); return; }
   const dec = adjudicate(d), r = projectRetirement(d);
   d.id = "PN-" + state.nextCaseId++;
+  /* Stamp the release so the sustainability horizon this case was decided
+     against stays with it, whatever the toggle does afterwards. */
+  d.release = v2("pensions") ? "2.1" : "1.0";
   d.decision = dec.outcome; d.reasonCode = dec.code; d.reasonText = dec.text;
   d.settledIncome = Number((r.annualIncome || r.taxableAmount).toFixed(2));
   d.settledTax = Number(r.tax.total.toFixed(2));
@@ -3755,7 +4453,7 @@ function pensionsView(hash){
 }
 
 /* ---------------- pensions events ---------------- */
-const P_LIVE_FIELDS = ["retirementOption","safeguardedBenefits","vulnerability","protectedPensionAge","mpaaTriggered","incomeIndexed","annuityShape","guaranteePeriod","underwritingBasis","paymentFrequency","growthAssumption","declarationUnderstood","declarationIrreversible","scamWarning"];
+const P_LIVE_FIELDS = ["retirementOption","safeguardedBenefits","guidanceStatus","vulnerability","protectedPensionAge","mpaaTriggered","incomeIndexed","annuityShape","guaranteePeriod","underwritingBasis","paymentFrequency","growthAssumption","declarationUnderstood","declarationIrreversible","scamWarning"];
 const P_PARTIAL_FIELDS = ["potValue","taxFreeCash","drawdownIncome","ufplsAmount","otherIncome","protectedCashPct","memberDob"];
 let _lastPRender = { el:null, t:0 };
 
@@ -3767,6 +4465,18 @@ function pFieldWrite(el){
     const txt = document.querySelector('[data-pfield="' + dk + '"][data-datefmt]');
     if(txt) txt.value = isoToUK(el.value);
     save(); return "partial";
+  }
+  if(el.dataset.bfield !== undefined && el.dataset.bidx !== undefined){
+    const d = ensureCaseDraft();
+    d.beneficiaries = d.beneficiaries || [];
+    const i = Number(el.dataset.bidx);
+    if(d.beneficiaries[i]){
+      d.beneficiaries[i][el.dataset.bfield] = el.value;
+      save();
+      /* the running total is printed beside the controls, so a share redraws */
+      return el.dataset.bfield === "share" ? "render" : true;
+    }
+    return true;
   }
   if(el.dataset.pfield){
     const d = ensureCaseDraft(), k = el.dataset.pfield;
@@ -3812,6 +4522,15 @@ document.addEventListener("click", ev => {
   const t = ev.target.closest("[data-pact]"); if(!t) return;
   switch(t.dataset.pact){
     case "new-case": go("#/pensions/case/new"); return;
+    case "add-beneficiary": {
+      const d = ensureCaseDraft();
+      d.beneficiaries = d.beneficiaries || [];
+      d.beneficiaries.push({name:"", relationship:"", share:""});
+      save(); render(); return;
+    }
+    case "clear-beneficiaries": {
+      const d = ensureCaseDraft(); d.beneficiaries = []; save(); render(); return;
+    }
     case "go-advice": go("#/pensions/advice"); return;
     case "open-case": go(`#/pensions/case/${t.dataset.id}`); return;
     case "pback": pwiz.step = Math.max(0, pwiz.step-1); pwiz.errors = {}; render(); return;

@@ -2,7 +2,7 @@
 
 **System:** Cavendish Client Ops — Pensions module
 **Build:** 2026.09.27
-**Release:** previous (New features off)
+**Release:** 2.1
 **Module:** Pensions → Instructions, and Dashboards → Find requests
 **Application URL:** `https://kishorespotqa.github.io/virtuoso-wealth-demo/platform.html`
 **Document type:** End-to-end process specification
@@ -23,23 +23,38 @@
 
 ---
 
-## 0. Which release this describes
+## 0. Release 2.1
 
-Pensions carries a **New features** control in the sidebar, `data-testid="release-toggle"`, which switches it to a later release. **This document describes the application with that control off**, which is its default state.
+This document describes Pensions with **New features enabled**. Release 2.1 adds a Pension Wise appointment reference, adds a death benefit nomination block with its own referral rule, and **extends the sustainability horizon from age 85 to age 90**.
 
-With the release on, the application adds a Pension Wise appointment reference, adds a death benefit nomination block with its own referral rule, and extends the sustainability horizon from age 85 to age 90. None of that is in scope here; it is covered by `Cavendish-Pensions-KB-Source-v2.md`.
+| # | Change | Kind |
+|---|---|---|
+| 1 | Pension Wise appointment reference, required and format-checked when guidance was taken | New field |
+| 2 | Death benefit nomination — nominees and shares, with RP-R11 where they do not total 100 per cent | New block, **new referral rule** |
+| 3 | Sustainability horizon extended from 85 to 90 | **Changes an existing rule** |
 
-**A journey written against this document must pin the release off** rather than relying on the default:
+### The release control
+
+A **New features** control in the sidebar, `data-testid="release-toggle"`, scoped to Pensions and **off by default**. A banner with `data-testid="release-banner"` shows while it is on; each new field carries `data-testid="rel-new"`.
+
+A journey pins the release on its opening navigation rather than clicking the control:
 
 ```
-platform.html?release=off#/pensions/case/new
+platform.html?release=on#/pensions/case/new     release on
+platform.html?release=off#/pensions/case/new    release off
 ```
 
-The setter is absolute and idempotent, and estate-wide: `?release=off` sets every application in this shell, not only Pensions. Do **not** click `release-toggle` from a journey.
+The setter is absolute and idempotent. Any value other than `on` or `off` is ignored.
 
-**Download KB source** serves this document while the release is off; with it on the control reads **Download KB source v2** and serves the other document.
+> **The URL setter is estate-wide.** `?release=on` turns the release on for **every** application in this shell that has one, not only Pensions. The sidebar control is per application; the URL setter is not.
 
-> **Existing records are unaffected either way.** Each case is stamped with the release it was decided under, so turning the release on does not re-decide any instruction described here.
+> **A journey must never click `release-toggle` or `reset-data`.** Both change the rules underneath a run.
+
+### A case keeps the horizon it was decided against
+
+Each submitted case is stamped with its release and adjudicated on that horizon permanently. Extending the horizon does not re-decide an instruction already in payment, and the seeded records keep the previous horizon whatever the toggle does.
+
+**Download KB source** follows the release: with it on the control reads **Download KB source v2** and serves this file.
 
 ---
 
@@ -189,6 +204,32 @@ Answering **Yes** to the vulnerability question reveals a mandatory textarea (`v
 
 ---
 
+### Pension Wise appointment reference — release 2.1
+
+| Field | Control | `data-testid` | Mandatory | Validation | Exact error message |
+|---|---|---|---|---|---|
+| Pension Wise appointment reference | Text | `input-guidanceReference` | Only when the status is `Pension Wise guidance taken` | `PW-` followed by exactly six digits | `The Pension Wise appointment reference is required.` · `Enter the reference as PW- followed by six digits.` |
+
+The field is **not in the DOM** until the guidance status is set to `Pension Wise guidance taken`. Its container carries `data-testid="guidance-reference-field"`. Changing the status redraws the step, so a journey waits for that container rather than assuming the field is present.
+
+`PW-000123` passes. `PW-12345` (five digits), `PW-1234567` (seven) and `pw-123456` (lower case) all fail.
+
+### Death benefit nomination — release 2.1
+
+An optional block at the foot of step 2.
+
+| Element | `data-testid` |
+|---|---|
+| Add a nominee | `add-beneficiary` |
+| Clear all | `clear-beneficiaries` — present only once a nominee exists |
+| Nominee rows | `beneficiary-0`, `beneficiary-1`, … |
+| Name, relationship, share | `beneficiary-name-{i}` · `beneficiary-relationship-{i}` · `beneficiary-share-{i}` |
+| Running total | `beneficiary-total`, reading `Total {n}%` |
+
+Adding a nominee redraws the step; so does changing a share, because the running total is printed beside the controls.
+
+**The rule.** Where one or more nominations are recorded and the shares do not total 100 per cent, the instruction is referred as **RP-R11**. No nominations at all is not a referral — the block is optional.
+
 ## 5. Step 3 — Retirement option
 
 ### Fields
@@ -302,7 +343,7 @@ Sixteen rules, evaluated in **strict precedence order**. The first match decides
 |---|---|---|---|
 | 6 | RP-R01 | Fund above 500,000 | `A fund above 500,000 requires a large-case review before benefits are put into payment.` |
 | 7 | RP-R02 | Vulnerability declared | `A declared vulnerability requires a specialist review before benefits are put into payment.` |
-| 8 | RP-R03 | Drawdown income exhausts the fund before age 85 | `The requested income depletes the fund before age 85 and requires a sustainability review.` |
+| 8 | RP-R03 | Drawdown income exhausts the fund before age 90 | `The requested income depletes the fund before age 85 and requires a sustainability review.` |
 | 9 | RP-R04 | Guidance declined | `Guidance has been declined without regulated advice; the member must be referred for a suitability conversation.` |
 | 10 | RP-R05 | Protected tax-free cash above 25 per cent | `Protected tax-free cash above 25 per cent must be verified against the scheme records.` |
 | 11 | RP-R06 | Full encashment above 50,000 | `A full encashment above 50,000 requires a tax-consequence review before payment.` |
@@ -330,6 +371,24 @@ Several conditions overlap, and only the earlier one is observable.
 **One requirement per code.** Sixteen codes under strict precedence cannot be covered by a handful of requirements, and a coverage figure that collapses them says nothing.
 
 ---
+
+### The sustainability horizon — release 2.1
+
+RP-R03 now tests the fund against **age 90** rather than age 85. The reason text is unchanged and still reads *"depletes the fund before age 85"*, which is a known inconsistency: the message was not updated with the rule. Assert on the code `RP-R03`, not on the wording.
+
+**The band this opens up.** Member born `12-04-1966`, fund 200,000, flexi-access drawdown, no tax-free cash, 4 per cent central growth, monthly, not indexed, UK resident, no other income:
+
+| Requested income | Fund depletes at | Previous release | Release 2.1 |
+|---|---|---|---|
+| 10,250 | 90 | ACCEPT (RP-A01) | ACCEPT (RP-A01) |
+| **10,500** | **89** | **ACCEPT (RP-A01)** | **REFER (RP-R03)** |
+| 11,000 | 87 | ACCEPT (RP-A01) | REFER (RP-R03) |
+| 11,500 | 85 | ACCEPT (RP-A01) | REFER (RP-R03) |
+| 11,750 | 84 | REFER (RP-R03) | REFER (RP-R03) |
+
+Every income from **10,500 to 11,500** on this member changes outcome between the releases. That band is the cleanest demonstration that a rule changed rather than a field being added: the same instruction, accepted before and referred now.
+
+A case stamped with the previous release keeps its decision. Turning the release on does not move an instruction already in payment.
 
 ## 9. The two four-eyes controls
 
@@ -409,6 +468,20 @@ Every interactive element carries a stable `data-testid`.
 `case-decision` · `review-member` · `review-protection` · `review-settlement` · `input-declarationUnderstood` · `input-declarationIrreversible` · `decision-banner` · `authorisation-banner` · `payment-banner` · `decline-banner` · `case-member` · `case-settlement` · `case-audit` · `case-not-found` · `pa-role-notice` · `auth-role-notice` · `pa-approve` · `pa-approve-confirm` · `pa-approve-note` · `pa-approve-note-error` · `pa-decline` · `pa-decline-confirm` · `pa-decline-reason` · `pa-decline-reason-error` · `pa-authorise` · `pa-authorise-confirm` · `pa-authorise-note` · `pa-authorise-note-error` · `pa-reject` · `pa-reject-confirm` · `pa-reject-reason` · `pa-reject-reason-error`
 
 ---
+
+### Release 2.1 controls
+
+| Element | `data-testid` |
+|---|---|
+| New features toggle | `release-toggle` — a button; state on `aria-pressed` |
+| Release banner | `release-banner` |
+| New badge | `rel-new` — shared by both new labels, decorative, do not target it |
+| Guidance reference container | `guidance-reference-field` |
+| Guidance reference | `input-guidanceReference` |
+| Beneficiaries container | `beneficiaries` |
+| Add a nominee | `add-beneficiary` |
+| Clear all | `clear-beneficiaries` |
+| Running total | `beneficiary-total` |
 
 ## 11. Test data that produces each branch
 
@@ -610,6 +683,18 @@ The canonical path from a blank instruction to benefits in payment, through the 
 ---
 
 ## 14. Notes for automation
+
+### Release 2.1 — before anything else
+
+Open `?release=on` as the journey's first navigation rather than clicking the toggle. The setter is absolute and idempotent.
+
+- Do not operate `release-toggle` or `reset-data` from a journey.
+- Setting the guidance status to `Pension Wise guidance taken` redraws the step: wait for `guidance-reference-field`.
+- Adding a nominee and changing a share both redraw the step: wait for the row, and read the total from `beneficiary-total`.
+- A journey asserting a drawdown outcome in the 10,500 to 11,500 band must pin the release, because the outcome differs between them.
+- RP-R03's reason text still says age 85 while the rule tests age 90. Assert the code, not the wording.
+
+
 
 ### Select options must match exactly
 

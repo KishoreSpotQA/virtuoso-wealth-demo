@@ -2,7 +2,7 @@
 
 **System:** Cavendish Client Management & Onboarding (CMO)
 **Build:** 2026.09.27
-**Release:** previous (New features off)
+**Release:** 2.1
 **Module:** Client management → Onboarding → New client
 **Application URL:** `https://kishorespotqa.github.io/virtuoso-wealth-demo/platform.html`
 **Document type:** End-to-end process specification
@@ -14,25 +14,38 @@
 
 ---
 
-## 0. Which release this describes
+## 0. Release 2.1
 
-Private Wealth carries a **New features** control in the sidebar, `data-testid="release-toggle"`, which switches it to a later release. **This document describes the application with that control off**, which is its default state.
+This document describes Private Wealth with **New features enabled**. Release 2.1 adds a vulnerability assessment to KYC, a sustainability preference to risk and suitability, and **reprices the fee schedule**.
 
-With the release on, the application adds a vulnerability assessment to KYC, a sustainability preference to risk and suitability, and reprices the fee schedule. None of that is in scope here; it is covered by `WAM-Cavendish-Onboarding-KB-Source-v2.md`.
+| # | Change | Kind |
+|---|---|---|
+| 1 | Vulnerability assessment — indicator plus a support plan, and a raised screening verdict | New fields, **new screening rule** |
+| 2 | Sustainability preference — the five UK SDR labels | New field |
+| 3 | Fee schedule — entry tiers reduced and a fifth tier added above 25,000,000 | **Changes an existing calculation** |
 
-**A journey written against this document must pin the release off** rather than relying on the default, because a browser reused between runs can carry the release from an earlier one:
+### The release control
+
+A **New features** control in the sidebar, `data-testid="release-toggle"`, scoped to Private Wealth and **off by default**. A banner with `data-testid="release-banner"` shows while it is on, and each new field carries a badge with `data-testid="rel-new"`.
+
+A journey pins the release on its opening navigation rather than clicking the control, which is a toggle and therefore only correct from a known starting state:
 
 ```
-platform.html?release=off#/onboarding/new
+platform.html?release=on#/onboarding/new     release on
+platform.html?release=off#/onboarding/new    release off
 ```
 
-The setter is absolute and idempotent. Do **not** click `release-toggle` from a journey.
+The setter is absolute and idempotent. Any value other than `on` or `off` is ignored.
 
 > **The URL setter is estate-wide.** `?release=on` turns the release on for **every** application in this shell that has one, not only the one you navigate to. The sidebar control is per application; the URL setter is not. A journey that needs one application on its new release and another on its previous one cannot express that with this flag, and should use the sidebar control manually before the run.
 
-**Download KB source** serves this document while the release is off; with it on the control reads **Download KB source v2** and serves the other document.
+> **A journey must never click `release-toggle` or `reset-data`.** Both change the rules underneath a run.
 
-> **Existing records are unaffected either way.** Each client is stamped with the release it was onboarded under and priced on that schedule permanently, so turning the release on does not reprice any record described here.
+### A client keeps the schedule it was onboarded under
+
+Each submitted client is stamped with its release and priced on that schedule permanently. Repricing does not change the fee on a mandate that is already active, and the seeded client records keep the previous schedule whatever the toggle does.
+
+**Download KB source** in the sidebar follows the release: with it on the control reads **Download KB source v2** and serves this file.
 
 ---
 
@@ -240,6 +253,29 @@ A *warn* severity (PEP confirmed, Elevated risk) does **not** block progress and
 
 ---
 
+### Vulnerability assessment — release 2.1
+
+| Field | Control | `data-testid` | Mandatory | Exact error message |
+|---|---|---|---|---|
+| Vulnerability indicators | Select | `input-vulnerability` | Yes | `Record a vulnerability indicator, or None declared.` |
+| Support plan | Text | `input-vulnerabilitySupport` | Only when an indicator other than None declared is recorded | `A support plan is required when a vulnerability indicator is recorded.` |
+
+Options: `None declared` · `Health` · `Life event` · `Financial resilience` · `Capability`.
+
+The support-plan field is **not in the DOM** until an indicator other than `None declared` is chosen. Its container carries `data-testid="vulnerability-support-field"`. Selecting an indicator redraws the step, so a journey waits for that container rather than assuming the field is present.
+
+**The screening rule.** A recorded indicator raises the screening verdict to **Enhanced support required**, severity `warn`, with the detail naming the indicator. It sits below a sanctions match and below a confirmed PEP in precedence, and above a clear result:
+
+| Condition | Verdict |
+|---|---|
+| Watchlist name match | Potential match |
+| PEP declared | PEP confirmed |
+| High-risk jurisdiction | Elevated risk |
+| **Vulnerability indicator recorded** | **Enhanced support required** |
+| None of the above | Clear |
+
+A client record stamped with the previous release is unaffected by this rule even while 2.1 is on.
+
 ## 5. Stage 3 — Risk & suitability
 
 ### The questionnaire
@@ -302,6 +338,18 @@ Bands are indexed 0–3 (Conservative, Balanced, Growth, Aggressive). The gap is
 The banner appears on this stage once all eight questions are answered and an objective is chosen, and again in the declaration panel at stage 6. **It is advisory — it does not block progress or submission.**
 
 ---
+
+### Sustainability preference — release 2.1
+
+| Field | Control | `data-testid` | Mandatory | Exact error message |
+|---|---|---|---|---|
+| Sustainability preference | Select | `input-sustainability` | Yes | `Select a sustainability preference.` |
+
+Options, the five UK SDR labels: `No preference` · `Sustainability Focus` · `Sustainability Improvers` · `Sustainability Impact` · `Sustainability Mixed Goals`.
+
+It sits beside the existing ESG field, which is unchanged and remains optional. A stated preference restricts the model portfolios that may be recommended; the hint under the field says so.
+
+Validated on Continue from the risk and suitability stage, alongside objective, horizon and liquidity.
 
 ## 6. Stage 4 — Documents
 
@@ -374,14 +422,33 @@ Calculated live from the funding amount on a **marginal tiered** basis:
 
 | Tranche | Rate |
 |---|---|
-| Up to 1,000,000 | 95 bps |
-| 1,000,000 – 5,000,000 | 75 bps |
+| Up to 1,000,000 | 85 bps |
+| 1,000,000 – 5,000,000 | 70 bps |
 | 5,000,000 – 10,000,000 | 55 bps |
-| Above 10,000,000 | 40 bps |
+| 10,000,000 – 25,000,000 | 40 bps |
+| Above 25,000,000 | 30 bps |
+
+> **Release 2.1 repriced this schedule.** The entry tier fell from 95 to 85 bps, the second from 75 to 70, and a fifth tier was added above 25,000,000 at 30 bps. The two middle tiers are unchanged. This is the one change to an existing calculation rather than an addition, so **every fee figure in this document differs from the previous release**.
 
 Each tranche is shown as its own row with amount, rate and fee, followed by a total and an effective rate in bps. With no funding amount entered the panel reads *"Enter an initial funding amount to calculate the indicative fee."* The note states the fee excludes custody, transaction and third-party fund charges.
 
-**Worked example.** A funding amount of 2,000,000 GBP produces 1,000,000 @ 95 bps = 9,500 and 1,000,000 @ 75 bps = 7,500, total **17,000 GBP**, effective rate 85.0 bps.
+**Worked example.** A funding amount of 2,000,000 GBP produces 1,000,000 @ 85 bps = 8,500 and 1,000,000 @ 70 bps = 7,000, total **15,500 GBP**, effective rate 77.5 bps.
+
+**The schedule across the tiers**
+
+| Funding amount | Fee | Effective rate |
+|---|---|---|
+| 500,000 | 4,250 | 85.0 bps |
+| 1,000,000 | 8,500 | 85.0 bps |
+| 2,000,000 | 15,500 | 77.5 bps |
+| 5,000,000 | 36,500 | 73.0 bps |
+| 10,000,000 | 64,000 | 64.0 bps |
+| 25,000,000 | 124,000 | 49.6 bps |
+| 30,000,000 | 139,000 | 46.3 bps |
+
+At 30,000,000 the tranches are 1,000,000 @ 85 · 4,000,000 @ 70 · 5,000,000 @ 55 · 15,000,000 @ 40 · 5,000,000 @ 30. On the previous release the same amount produced four tranches and a fee of 147,000.
+
+**An active client is not repriced.** A mandate onboarded under the previous release keeps that schedule, so the fee shown on its record does not move when the release is turned on.
 
 ---
 
@@ -574,6 +641,22 @@ The form submits on Enter as well as on the button, so a journey may use either.
 
 ---
 
+### Release 2.1 controls
+
+| Element | `data-testid` |
+|---|---|
+| New features toggle | `release-toggle` |
+| Release banner | `release-banner` |
+| New badge | `rel-new` — shared by both new field labels, decorative, do not target it |
+| Vulnerability indicators | `input-vulnerability` |
+| Support plan container | `vulnerability-support-field` |
+| Support plan | `input-vulnerabilitySupport` |
+| Sustainability preference | `input-sustainability` |
+| Indicative fee on review | `review-fee` |
+| Fee table | `fee-table` · total at `fee-total` |
+
+The release toggle is a **button**; its state is on `aria-pressed`, which reads `"true"` while the release is on.
+
 ## 11. Test data that produces each branch
 
 The application's clock is **fixed at 2026-09-22**. All date arithmetic — age, document expiry, KYC review due — is calculated from that date, so date-driven tests are deterministic and do not drift.
@@ -733,6 +816,18 @@ The canonical path from an empty wizard to an activated mandate.
 ---
 
 ## 14. Notes for automation
+
+### Release 2.1 — before anything else
+
+Open `?release=on` as the journey's first navigation rather than clicking the toggle. The setter is absolute and idempotent, so the journey lands in the same state on every run whatever the browser carried.
+
+- Do not operate `release-toggle` or `reset-data` from a journey.
+- The release survives `Reset demo data` and survives a reload.
+- Recording a vulnerability indicator redraws the step: wait for `vulnerability-support-field` rather than assuming the support-plan field is present.
+- A journey asserting a fee figure must pin the release, because every figure in section 7 differs between releases.
+- A journey opening an existing client record is stable across releases: the record keeps the schedule it was onboarded under.
+
+
 
 Properties of this build that decide whether a generated journey runs or stalls.
 

@@ -172,7 +172,13 @@ table.tbl tfoot td{font-weight:700; border-top:2px solid var(--line-2)}
 
 /* ---------- top bar ---------- */
 .topbar{position:sticky; top:0; z-index:500; background:var(--surface); border-bottom:1px solid var(--line)}
-.topbar-in{display:flex; align-items:center; gap:.9rem; padding:.6rem 20px; max-width:1560px; margin:0 auto}
+/* The bar now carries a fifth control. Below about 1400px it no longer fits
+   on one line, so it wraps rather than pushing the page wider; the brandmark
+   and the nav are kept whole so neither breaks mid-word. */
+.topbar-in{display:flex; align-items:center; gap:.9rem; padding:.6rem 20px; max-width:1560px; margin:0 auto;
+  flex-wrap:wrap; row-gap:.45rem}
+.topbar-in > .brandmark, .topbar-in > .navlinks, .topbar-in > .who{flex:none}
+.topbar-in .sys-name, .topbar-in .sys-sub, .topbar-in .navlink, .topbar-in .who b{white-space:nowrap}
 .brandmark{display:flex; align-items:center; gap:.55rem; font-weight:800; letter-spacing:-.01em}
 .brand-dot{width:26px; height:26px; border-radius:7px; display:grid; place-items:center; font-size:.76rem; font-weight:900; color:#fff}
 .sys-name{font-size:.95rem}
@@ -626,8 +632,26 @@ table.grid tbody tr[aria-selected="true"]{background:var(--erp-soft); outline:2p
   text-decoration:none; white-space:nowrap;
 }
 .btn-kb:hover,.btn-kb:focus-visible{background:#1550c8; border-color:#1550c8; color:#fff}
+/* ---- release toggle (New features) ---- */
+.btn-rel{display:inline-flex; align-items:center; gap:.45rem; font:inherit; font-size:.78rem; font-weight:600;
+  padding:.3rem .6rem; border-radius:7px; cursor:pointer; white-space:nowrap;
+  background:transparent; color:var(--lx-ink-2); border:1px dashed var(--lx-line)}
+.btn-rel:hover,.btn-rel:focus-visible{color:var(--lx-ink); border-color:var(--lx-ink-2)}
+.btn-rel .rel-dot{width:7px; height:7px; border-radius:50%; background:var(--lx-line); flex:none}
+.btn-rel[aria-pressed="true"]{background:#1E65F0; border:1px solid #1E65F0; color:#fff}
+.btn-rel[aria-pressed="true"] .rel-dot{background:#fff}
+.rel-banner{display:flex; gap:.7rem; align-items:flex-start; padding:.6rem .9rem; margin:.9rem auto; max-width:1200px; width:calc(100% - 2.4rem);
+  border-radius:9px; border:1px solid #1E65F0; background:rgba(30,101,240,.08); font-size:.82rem; color:var(--lx-ink)}
+.rel-banner b{font-weight:600}
+.rel-banner .rel-ver{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.76rem; color:var(--lx-ink-2)}
+.rel-new{display:inline-block; font-size:.6rem; letter-spacing:.06em; text-transform:uppercase; font-weight:700;
+  color:#1E65F0; border:1px solid #1E65F0; border-radius:4px; padding:0 .3rem; margin-left:.35rem; vertical-align:1px}
 .kb-ic{font-size:.85rem; opacity:.95}
-.dir-group{display:inline-flex; align-items:center; gap:.5rem; white-space:nowrap; flex:none}
+/* The group holds four controls on one line. With a fifth control now in the
+   bar it no longer fits a phone viewport, so it wraps rather than pushing the
+   page 4px wide. flex:none is kept so it does not shrink on a wide screen. */
+.dir-group{display:inline-flex; align-items:center; gap:.5rem; white-space:nowrap; flex:none;
+  flex-wrap:wrap; row-gap:.2rem; max-width:100%}
 .dir-label{font-size:.62rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
 .dir-link{font-size:.76rem; font-weight:700; color:var(--shop); text-decoration:none; border-bottom:1px solid transparent}
 .dir-link:hover,.dir-link:focus-visible{border-bottom-color:currentColor}
@@ -674,6 +698,58 @@ function applyGoalLink(){
       .catch(()=>{});
   }catch(e){}
 })();
+
+/* ------------------------------------------------------------------
+   RELEASE TOGGLE ("New features")
+
+   A release is not demo data: it is the difference between two versions
+   of the application. It is stored under its own key so that resetting
+   the demo records leaves the release alone, and so that a reset in the
+   middle of a demo does not undo it.
+   ------------------------------------------------------------------ */
+const RELEASE_KEY = "halcyon.commerce.release.v1";
+const RELEASE_VERSION = "2.1";
+let RELEASE_ON = false;
+function loadRelease(){
+  try{ RELEASE_ON = localStorage.getItem(RELEASE_KEY) === "on"; }catch(e){}
+}
+function saveRelease(){
+  try{ localStorage.setItem(RELEASE_KEY, RELEASE_ON ? "on" : "off"); }catch(e){}
+}
+/* True while the platform is running its new release. One expression decides
+   the whole difference between versions. */
+function v2(){ return RELEASE_ON === true; }
+/* An order is assessed on the release it was placed under, so changing a
+   threshold does not re-decide an order that is already in the warehouse. */
+function orderV2(o){ return o && o.release ? o.release === "2.1" : v2(); }
+loadRelease();
+
+/* An absolute setter, so an automated run pins the release rather than
+   toggling whatever it happened to arrive with. Virtuoso opens a fresh
+   browser for every run.
+
+       commerce.html?release=on#/erp/orders     release on
+       commerce.html?release=off#/erp/orders    release off
+
+   Idempotent, applied before the first render, and anything other than
+   on or off is ignored rather than guessed at. */
+(function releaseFromUrl(){
+  try{
+    const q = new URLSearchParams(location.search).get("release");
+    if(q !== "on" && q !== "off") return;
+    const want = (q === "on");
+    if(RELEASE_ON !== want){ RELEASE_ON = want; saveRelease(); }
+  }catch(e){}
+})();
+
+function toggleRelease(){
+  RELEASE_ON = !RELEASE_ON;
+  saveRelease();
+  render();
+  toast(RELEASE_ON
+    ? "Halcyon release " + RELEASE_VERSION + " is on. New fields are now live."
+    : "Halcyon is back to the previous release.");
+}
 
 const BUILD = "2026.09.25";
 const STORE_KEY = "halcyon.commerce.v1";
@@ -916,10 +992,15 @@ function renderLauncher(){
 
   app.innerHTML = `
   <div class="launchbody">
+  ${v2() ? `<div class="rel-banner" data-testid="release-banner"><div><b>New features are on.</b> This platform is running <span class="rel-ver">Halcyon Commerce release ${RELEASE_VERSION}</span>, which adds fields at checkout and changes when an order is held for fraud review. Turn it off in the top bar to go back to the previous release.</div></div>` : ""}
   <div class="topbar"><div class="topbar-in">
-    <a class="btn-kb" href="kb/Halcyon-Commerce-KB-Source.md" download="Halcyon-Commerce-KB-Source.md" data-testid="kb-download"
-       aria-label="Download KB source for Halcyon Retail Group"
-       title="Download the knowledge base source for this platform"><span class="kb-ic" aria-hidden="true">&#8595;</span>Download KB source</a>
+    <button type="button" class="btn-rel" data-act="release-toggle" data-testid="release-toggle"
+       aria-pressed="${v2() ? "true" : "false"}"
+       aria-label="${v2() ? "Turn off" : "Turn on"} new features for Halcyon Commerce"
+       title="${v2() ? "Turn off the release 2.1 features" : "Turn on the release 2.1 features"}"><span class="rel-dot" aria-hidden="true"></span>${v2() ? "New features on" : "New features"}</button>
+    <a class="btn-kb" href="kb/${v2() ? "Halcyon-Commerce-KB-Source-v2.md" : "Halcyon-Commerce-KB-Source.md"}" download="${v2() ? "Halcyon-Commerce-KB-Source-v2.md" : "Halcyon-Commerce-KB-Source.md"}" data-testid="kb-download"
+       aria-label="Download KB source for Halcyon Retail Group, ${v2() ? "release 2.1" : "the previous release"}"
+       title="Download the knowledge base source for this platform (${v2() ? "release 2.1" : "the previous release"})"><span class="kb-ic" aria-hidden="true">&#8595;</span>${v2() ? "Download KB source v2" : "Download KB source"}</a>
     <span class="dir-group" data-testid="directives">
       <span class="dir-label">Directives</span>
       <a class="dir-link" href="directives/analyst.json" download="analyst.json" data-testid="dir-analyst" aria-label="Download Analyst directives">Analyst</a>
@@ -1008,9 +1089,13 @@ function backOfficeTop(sys, links, active){
     : { name:"Vector WMS", sub:"Warehouse and Transport", chip:"VW", cls:"chip-wms", bar:"wms-bar" };
   return `
   <div class="topbar"><div class="topbar-in">
-    <a class="btn-kb" href="kb/Halcyon-Commerce-KB-Source.md" download="Halcyon-Commerce-KB-Source.md" data-testid="kb-download"
-       aria-label="Download KB source for Halcyon Retail Group"
-       title="Download the knowledge base source for this platform"><span class="kb-ic" aria-hidden="true">&#8595;</span>Download KB source</a>
+    <button type="button" class="btn-rel" data-act="release-toggle" data-testid="release-toggle"
+       aria-pressed="${v2() ? "true" : "false"}"
+       aria-label="${v2() ? "Turn off" : "Turn on"} new features for Halcyon Commerce"
+       title="${v2() ? "Turn off the release 2.1 features" : "Turn on the release 2.1 features"}"><span class="rel-dot" aria-hidden="true"></span>${v2() ? "New features on" : "New features"}</button>
+    <a class="btn-kb" href="kb/${v2() ? "Halcyon-Commerce-KB-Source-v2.md" : "Halcyon-Commerce-KB-Source.md"}" download="${v2() ? "Halcyon-Commerce-KB-Source-v2.md" : "Halcyon-Commerce-KB-Source.md"}" data-testid="kb-download"
+       aria-label="Download KB source for Halcyon Retail Group, ${v2() ? "release 2.1" : "the previous release"}"
+       title="Download the knowledge base source for this platform (${v2() ? "release 2.1" : "the previous release"})"><span class="kb-ic" aria-hidden="true">&#8595;</span>${v2() ? "Download KB source v2" : "Download KB source"}</a>
     <span class="dir-group" data-testid="directives">
       <span class="dir-label">Directives</span>
       <a class="dir-link" href="directives/analyst.json" download="analyst.json" data-testid="dir-analyst" aria-label="Download Analyst directives">Analyst</a>
@@ -1035,7 +1120,8 @@ function backOfficeTop(sys, links, active){
   <div class="${meta.bar}">
     <span>${meta.name}</span><span>Environment DEMO</span><span>Build ${BUILD}</span>
     <span>System date ${isoToUK(nowISO().slice(0,10))}</span>
-  </div>`;
+  </div>
+  ${v2() ? `<div class="rel-banner" data-testid="release-banner"><div><b>New features are on.</b> This platform is running <span class="rel-ver">Halcyon Commerce release ${RELEASE_VERSION}</span>, which adds fields at checkout and changes when an order is held for fraud review. Turn it off in the top bar to go back to the previous release.</div></div>` : ""}`;
 }
 /* ============================================================
    PRODUCT ART
@@ -2496,6 +2582,8 @@ function ensureCheckout(){
       email:"", firstName:"", lastName:"", phone:"",
       line1:"", line2:"", city:"", postcode:"", country:"GB",
       deliveryOption:"", storeId:"",
+      /* release 2.1 */
+      poReference:"", requestedDate:"",
       billingSame:true, bLine1:"", bCity:"", bPostcode:"", bCountry:"GB",
       cardName:"", cardNumber:"", expMonth:"", expYear:"", cvc:"",
       verifyCode:"", terms:false, marketing:false,
@@ -2630,6 +2718,20 @@ function viewCheckout(){
             </div>
             ${e("deliveryOption")}
             ${t.bulky ? `<div class="hint" style="margin-top:.5rem" data-testid="bulky-note"><b>EC-D02</b> Your basket contains a bulky item, so express delivery is not offered.</div>` : ""}
+
+            ${v2() ? `
+            <div class="field" style="margin-top:1rem" data-testid="requested-date-field">
+              <label for="co-reqdate">Requested delivery date <span class="rel-new" data-testid="rel-new">New</span></label>
+              <input type="text" id="co-reqdate" data-cfield="requestedDate" class="${cls("requestedDate")}" data-testid="input-requestedDate" value="${esc(c.requestedDate)}" placeholder="dd-mm-yyyy" inputmode="numeric" maxlength="10" autocomplete="off">
+              <div class="hint">Optional. Must be on or after the estimated date for the delivery method chosen.</div>
+              ${e("requestedDate")}
+            </div>
+            <div class="field" style="margin-top:1rem" data-testid="po-reference-field">
+              <label for="co-po">Purchase order reference <span class="rel-new" data-testid="rel-new">New</span></label>
+              <input type="text" id="co-po" data-cfield="poReference" class="${cls("poReference")}" data-testid="input-poReference" value="${esc(c.poReference)}" placeholder="PO-00000" autocomplete="off">
+              <div class="hint">Account orders above ${money(1000)} are held without one.</div>
+              ${e("poReference")}
+            </div>` : ""}
 
             ${c.deliveryOption === "collect" ? `
               <div class="field" style="margin-top:1rem">
@@ -2794,6 +2896,21 @@ function validateCheckoutStep(step){
   if(step === 2){
     const opts = availableDelivery(c.country, t.bulky);
     if(!c.deliveryOption) shopErrors.deliveryOption = "Choose a delivery method.";
+    /* Release 2.1: a requested date is optional, but where one is given it
+       cannot be earlier than the estimate for the method chosen. */
+    if(v2() && String(c.requestedDate||"").trim()){
+      const iso = ukToISO(c.requestedDate);
+      if(!iso) shopErrors.requestedDate = "Enter the date as dd-mm-yyyy.";
+      else {
+        const o = deliveryById(c.deliveryOption);
+        if(o){
+          const earliest = addWorkingDays(nowISO(), o.days).slice(0,10);
+          if(iso < earliest) shopErrors.requestedDate = "The earliest date for this delivery method is " + isoToUK(earliest) + ".";
+        }
+      }
+    }
+    if(v2() && String(c.poReference||"").trim() && !/^PO-\d{5}$/.test(String(c.poReference).trim()))
+      shopErrors.poReference = "Enter the reference as PO- followed by five digits.";
     else if(!opts.some(o => o.id === c.deliveryOption)){
       shopBanner = { kind:"risk", code:"EC-D01", text:"That delivery method is not available for " + (countryByCode(c.country) || {}).name + "." };
       shopErrors.deliveryOption = "Choose a delivery method.";
@@ -2869,6 +2986,11 @@ function placeOrder(){
     ref: ref,
     placedAt: nowISO(),
     channel: "Web",
+    /* Stamp the release so the thresholds this order was assessed against
+       stay with it, whatever the toggle does afterwards. */
+    release: v2() ? "2.1" : "1.0",
+    poReference: v2() ? String(c.poReference||"").trim() : "",
+    requestedDate: v2() ? String(ukToISO(c.requestedDate) || "") : "",
     customer: {
       id: cust ? cust.id : null,
       name: (c.firstName + " " + c.lastName).trim(),
@@ -3010,6 +3132,14 @@ function fraudScore(order){
 }
 
 /* ---------- hold engine, strict precedence ---------- */
+/* Release 2.1 lowers the fraud review threshold from 70 to 60, so orders that
+   released automatically on the previous release now stop for review. This is
+   the one change to an existing rule rather than an addition. */
+const PO_REQUIRED_ABOVE = 1000;   /* release 2.1 */
+const FRAUD_THRESHOLD = 70;
+const FRAUD_THRESHOLD_V2 = 60;
+function fraudThreshold(order){ return orderV2(order) ? FRAUD_THRESHOLD_V2 : FRAUD_THRESHOLD; }
+
 function assessOrder(order){
   const f = fraudScore(order);
   const shortLines = order.lines.filter(l => l.alloc < l.qty);
@@ -3025,9 +3155,9 @@ function assessOrder(order){
       reason:"Line " + restrictedLines[0].no + " contains a lithium ion battery and the destination is outside the United Kingdom and the European Union.",
       fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
   /* 2 */
-  if(f.score >= 70)
+  if(f.score >= fraudThreshold(order))
     return { code:"ER-H02", status:"Hold", holdName:"Fraud review",
-      reason:"The fraud score is " + f.score + ", at or above the review threshold of 70.",
+      reason:"The fraud score is " + f.score + ", at or above the review threshold of " + fraudThreshold(order) + ".",
       fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
   /* 3 */
   if(!order.customer.isNew && order.totals.gross > order.customer.creditLimit)
@@ -3045,6 +3175,13 @@ function assessOrder(order){
       reason:"Line " + shortLines[0].no + " requires " + shortLines[0].qty + " units and " + shortLines[0].alloc + " are allocatable.",
       fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
   /* 6 */
+  /* Release 2.1: an account order above the purchase-order threshold must carry
+     a purchase order reference. Evaluated before the new-customer rule, which
+     only applies to customers without an account. */
+  if(orderV2(order) && !order.customer.isNew && order.totals.gross > PO_REQUIRED_ABOVE && !String(order.poReference||"").trim())
+    return { code:"ER-H07", status:"Hold", holdName:"Purchase order required",
+      reason:"The order value of " + money(order.totals.gross) + " is above the purchase order threshold of " + money(PO_REQUIRED_ABOVE) + " and no purchase order reference was supplied.",
+      fraud:f, shortLines:shortLines, addrDiffers:addrDiffers };
   if(order.customer.isNew && order.totals.gross > 500)
     return { code:"ER-H06", status:"Hold", holdName:"New account review",
       reason:"This is a first order for this email address and the value of " + money(order.totals.gross) + " is above the new account threshold of 500.00.",
@@ -4321,6 +4458,7 @@ document.addEventListener("click", ev => {
     case "apps":     go("#/apps"); break;
     case "signout":  signOut(); break;
     case "theme":    toggleTheme(); break;
+    case "release-toggle": toggleRelease(); break;
     case "reset":
       resetDemo();
       shopFilter = { cat:"All", sort:"featured", brands:[], price:"All", rating:"All", inStock:false, q:"", qApplied:"", page:1 };

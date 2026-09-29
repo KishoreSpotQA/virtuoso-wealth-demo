@@ -4,7 +4,7 @@
 **Application:** `commerce.html` plus its `assets/` folder
 **Application URL:** `https://kishorespotqa.github.io/virtuoso-wealth-demo/commerce.html`
 **Build:** 2026.09.25
-**Release:** previous (New features off)
+**Release:** 2.1
 **Systems covered:** Halcyon Market Storefront, Axion ERP, Vector WMS
 **Status:** Current - describes the application as deployed
 
@@ -38,23 +38,38 @@ A requirement must never cite codes from two engines at once.
 
 ---
 
-## 0. Which release this describes
+## 0. Release 2.1
 
-Halcyon Commerce carries a **New features** control in the top bar, `data-testid="release-toggle"`, which switches the platform to a later release. **This document describes the application with that control off**, which is its default state.
+This document describes Halcyon Commerce with **New features enabled**. Release 2.1 adds two fields at checkout, adds one hold, and **lowers the fraud review threshold from 70 to 60**.
 
-With the release on, checkout gains a requested delivery date and a purchase order reference, a hold ER-H07 is added, and the fraud review threshold falls from 70 to 60. None of that is in scope here; it is covered by `Halcyon-Commerce-KB-Source-v2.md`.
+| # | Change | Kind |
+|---|---|---|
+| 1 | Requested delivery date, validated against the lead time of the method chosen | New field |
+| 2 | Purchase order reference, with ER-H07 where an account order above 1,000.00 has none | New field, **new hold** |
+| 3 | Fraud review threshold lowered from 70 to 60 | **Changes an existing rule** |
 
-**A journey written against this document must pin the release off** rather than relying on the default, because a browser reused between runs can carry the release from an earlier one:
+### The release control
+
+A **New features** control in the top bar, `data-testid="release-toggle"`, present on the launcher and inside both back-office systems, **off by default**. A banner with `data-testid="release-banner"` shows while it is on; each new field carries `data-testid="rel-new"`.
+
+Unlike the Cavendish shell, the release here is **platform-wide**: the storefront, Axion ERP and Vector WMS are one application and switch together.
+
+A journey pins the release on its opening navigation rather than clicking the control, which is a toggle and therefore only correct from a known starting state:
 
 ```
-commerce.html?release=off#/shop
+commerce.html?release=on#/shop      release on
+commerce.html?release=off#/shop     release off
 ```
 
-The setter is absolute and idempotent. Do **not** click `release-toggle` from a journey: it is a toggle, so it is only correct from a known starting state. The release here is platform-wide — the storefront, ERP and WMS switch together.
+The setter is absolute and idempotent. Any value other than `on` or `off` is ignored.
 
-**Download KB source** serves this document while the release is off; with it on the control reads **Download KB source v2** and serves the other document.
+> **A journey must never click `release-toggle` or `btn-reset`.** Both change the rules underneath a run.
 
-> **Existing orders are unaffected either way.** Each order is stamped with the release it was placed under and assessed on those thresholds permanently, so turning the release on does not re-assess any order described here.
+### An order keeps the thresholds it was placed under
+
+Each order is stamped with its release and assessed on those thresholds permanently. Lowering the fraud threshold does not re-assess an order already in the warehouse.
+
+**Download KB source** follows the release: with it on the control reads **Download KB source v2** and serves this file.
 
 ---
 
@@ -513,6 +528,21 @@ screen.
 
 ---
 
+### Delivery step fields — release 2.1
+
+Both sit under the delivery method options on step 2 of checkout, and both are **optional**.
+
+| Field | Control | `data-testid` | Container | Validation | Exact error message |
+|---|---|---|---|---|---|
+| Requested delivery date | Text, `dd-mm-yyyy` | `input-requestedDate` | `requested-date-field` | Not earlier than the estimate for the method chosen | `Enter the date as dd-mm-yyyy.` · `The earliest date for this delivery method is {date}.` |
+| Purchase order reference | Text | `input-poReference` | `po-reference-field` | `PO-` followed by exactly five digits | `Enter the reference as PO- followed by five digits.` |
+
+`PO-00001` passes. `PO-1234` (four digits), `PO-123456` (six) and `po-00001` (lower case) all fail.
+
+Leaving either blank is permitted at checkout. The consequence of leaving the purchase order blank is a **hold at intake**, not a validation error — see the hold engine.
+
+Both values are carried onto the order: `order.poReference`, and `order.requestedDate` as an ISO date.
+
 ## 7. Storefront decision codes, EC
 
 Every outcome carries a code. The banner is `checkout-banner`, the product page
@@ -645,23 +675,27 @@ also be true and will never be seen.
 | Order | Code | Condition | Hold name |
 |---|---|---|---|
 | 1 | **ER-H01** | Any line is a restricted item and the destination zone is ROW | Export control |
-| 2 | **ER-H02** | Fraud score is 70 or above | Fraud review |
+| 2 | **ER-H02** | Fraud score is **60** or above | Fraud review |
 | 3 | **ER-H03** | Customer is on the register and the gross is **above** the credit limit | Credit limit |
 | 4 | **ER-H04** | Customer is on the register and the delivery address differs from the address of record | Address verification |
 | 5 | **ER-H05** | Any line's allocatable quantity is below the ordered quantity | Stock shortage |
-| 6 | **ER-H06** | Customer is **not** on the register and the gross is **above** 500.00 | New account review |
-| 7 | **ER-P01** | Nothing above applies | Released automatically, then allocated |
+| 6 | **ER-H07** | Customer **is** on the register, the gross is **above** 1,000.00 and no purchase order reference was supplied | Purchase order required |
+| 7 | **ER-H06** | Customer is **not** on the register and the gross is **above** 500.00 | New account review |
+| 8 | **ER-P01** | Nothing above applies | Released automatically, then allocated |
+
+> **Two changes to this table in release 2.1.** ER-H02 now triggers at **60** rather than 70, and **ER-H07** is new. ER-H07 sits above ER-H06 in precedence, which costs nothing in practice: ER-H07 applies only to customers on the register and ER-H06 only to customers who are not, so the two can never both match.
 
 ### Exact reason texts
 
 | Code | Reason |
 |---|---|
 | ER-H01 | `Line 1 contains a lithium ion battery and the destination is outside the United Kingdom and the European Union.` |
-| ER-H02 | `The fraud score is 80, at or above the review threshold of 70.` |
+| ER-H02 | `The fraud score is 65, at or above the review threshold of 60.` |
 | ER-H03 | `The order value of GBP 432.50 is above the account credit limit of GBP 400.00.` |
 | ER-H04 | `The delivery address does not match the address of record for account CU-4001.` |
 | ER-H05 | `Line 1 requires 4 units and 2 are allocatable.` |
 | ER-H06 | `This is a first order for this email address and the value of GBP 503.00 is above the new account threshold of 500.00.` |
+| ER-H07 | `The order value of GBP 1,500.00 is above the purchase order threshold of GBP 1,000.00 and no purchase order reference was supplied.` |
 | ER-P01 | `No hold condition applies. Released for fulfilment automatically.` |
 
 ### Fraud scoring
@@ -715,6 +749,36 @@ The address comparison ignores case, spaces and punctuation, and compares **addr
 line 1 and the postcode only**.
 
 ---
+
+### The fraud threshold — release 2.1
+
+The threshold moved from **70** to **60**. The fraud score itself is unchanged, and still built from the same five components:
+
+| Component | Points |
+|---|---|
+| Billing country differs from delivery country | 40 |
+| Order value above 1,000.00 | 25 |
+| Express delivery on a first order | 20 |
+| Email domain on the watchlist | 15 |
+| More than five order lines | 10 |
+
+**The band this opens up.** Any combination scoring 60 to 69 released automatically on the previous release and now holds for fraud review:
+
+| Components | Score | Previous release | Release 2.1 |
+|---|---|---|---|
+| Billing country differs | 40 | Released | Released |
+| Billing country differs + more than five lines | 50 | Released | Released |
+| Billing country differs + watchlist domain | 55 | Released | Released |
+| **Billing country differs + express on a first order** | **60** | **Released** | **ER-H02** |
+| **Billing country differs + value above 1,000** | **65** | **Released** | **ER-H02** |
+| Billing country differs + watchlist domain + more than five lines | 65 | Released | **ER-H02** |
+| Billing country differs + value above 1,000 + more than five lines | 75 | ER-H02 | ER-H02 |
+
+The two bolded rows are the cleanest demonstration that a rule changed rather than a field being added: the same order, released before and held now. Anything scoring 40 to 55 is unaffected, and anything at 70 or above behaved this way already.
+
+The watchlist domains are `mailinator.test` and `guerrilla.test`.
+
+An order stamped with the previous release keeps its assessment. Turning the release on does not re-assess an order already in the warehouse.
 
 ## 12. Axion ERP: release, partial release and cancellation
 
@@ -1129,3 +1193,27 @@ an `assets/` folder beside it**. If the folder is missing or partly copied, the
 application still works: every affected product falls back to its vector artwork
 and the SKU is recorded in `IMG_FAILURES`. The fallback is never silent, so
 `IMG_FAILURES` being empty is the check that a deployment is complete.
+
+
+---
+
+## 20. Release 2.1 — notes for automation
+
+Open `?release=on` as the journey's first navigation rather than clicking the toggle. The setter is absolute and idempotent, so the journey lands in the same state on every run whatever the browser carried.
+
+- Do not operate `release-toggle` or `btn-reset` from a journey.
+- The release survives a reset and survives a reload; it is stored separately from the demo records.
+- The release is platform-wide here: the storefront, ERP and WMS switch together.
+- A journey asserting a hold outcome on an order scoring 60 to 69 must pin the release, because the outcome differs between them.
+- A journey asserting an account order above 1,000.00 must pin the release, because without a purchase order reference it now holds as ER-H07.
+- To assert the release is on, check `aria-pressed="true"` on `release-toggle`, or that `release-banner` is present.
+
+### Release 2.1 controls
+
+| Element | `data-testid` |
+|---|---|
+| New features toggle | `release-toggle` — a button; state on `aria-pressed` |
+| Release banner | `release-banner` |
+| New badge | `rel-new` — shared by both new field labels, decorative, do not target it |
+| Requested delivery date | `input-requestedDate`, container `requested-date-field` |
+| Purchase order reference | `input-poReference`, container `po-reference-field` |
