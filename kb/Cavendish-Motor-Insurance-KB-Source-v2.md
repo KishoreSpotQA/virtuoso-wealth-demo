@@ -1,7 +1,7 @@
 # Cavendish Motor Insurance — Quote & Apply
 
 **System:** Cavendish Client Ops — Motor Insurance module
-**Build:** 2026.09.29
+**Build:** 2026.10.26
 **Release:** 2.1
 **Module:** Motor insurance → Quotes → New quote
 **Application URL:** `https://kishorespotqa.github.io/virtuoso-wealth-demo/platform.html`
