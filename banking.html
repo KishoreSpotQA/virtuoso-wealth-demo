@@ -905,12 +905,13 @@ function payStepPayee(d){
         <select id="f-np-country" data-field="np-country" data-testid="input-payee-country">
           ${SERVED_COUNTRIES.map(c => `<option value="${esc(c[0])}" ${d.newPayee.country===c[0]?"selected":""}>${esc(c[1])}</option>`).join("")}
         </select>${payErr(d,"np-country")}</div>
+      ${d.newPayee.country === "GB" ? `
       <div class="field${bad(d,"np-sort")}"><label for="f-np-sort">Sort code</label>
         <input id="f-np-sort" type="text" placeholder="00-00-00" data-field="np-sort" data-testid="input-payee-sort" value="${esc(d.newPayee.sort)}">
-        <span class="hint">Six digits, as 00-00-00. Not required outside the United Kingdom.</span>${payErr(d,"np-sort")}</div>
+        <span class="hint">Six digits, as 00-00-00.</span>${payErr(d,"np-sort")}</div>` : ""}
       <div class="field${bad(d,"np-number")}"><label for="f-np-number">Account number</label>
         <input id="f-np-number" type="text" data-field="np-number" data-testid="input-payee-number" value="${esc(d.newPayee.number)}">
-        <span class="hint">Eight digits in the United Kingdom, otherwise an IBAN.</span>${payErr(d,"np-number")}</div>
+        <span class="hint">${d.newPayee.country === "GB" ? "Eight digits." : "An IBAN, for example DE89370400440532013000."}</span>${payErr(d,"np-number")}</div>
     </div>`}
 
   <div class="row" style="margin-top:8px">
@@ -1203,7 +1204,11 @@ function validatePayStep(d){
     else if(iso(vd) < today()) d.errors["valueDate"] = "The value date cannot be in the past.";
     else if(daysBetween(today(), iso(vd)) > 365) d.errors["valueDate"] = "A payment cannot be dated more than 365 days ahead.";
 
-    if(d.kind === "Immediate" && vd && iso(vd) !== today())
+    /* Only reached when the date is otherwise sound. Without the guard this
+       overwrote the more fundamental "cannot be in the past" message, so a
+       past date on an immediate payment reported the wrong reason and the
+       past-date message became unreachable on this path. */
+    if(!d.errors["valueDate"] && d.kind === "Immediate" && vd && iso(vd) !== today())
       d.errors["valueDate"] = "An immediate payment must be dated today. Choose Scheduled for a later date.";
 
     if(d.reference && d.reference.length > 18) d.errors["reference"] = "A reference can be at most 18 characters.";
@@ -1833,7 +1838,14 @@ function writeField(el){
   if(f === "sentinel-search"){ ui.sentinelQuery = el.value; renderListOnly(); return true; }
 
   const d = ensureDraft();
-  if(f.indexOf("np-") === 0){ d.newPayee[f.slice(3)] = el.value; return true; }
+  if(f.indexOf("np-") === 0){
+    d.newPayee[f.slice(3)] = el.value;
+    /* Country is a revealing control: a United Kingdom payee is identified
+       by sort code and account number, an overseas one by IBAN alone. The
+       field set has to be redrawn, not only revalidated. */
+    if(f === "np-country") render();
+    return true;
+  }
 
   if(f === "kind" || f === "payeeMode"){
     if(!el.checked) return true;
