@@ -595,12 +595,8 @@ body[data-module="pensions"] .nav a[aria-current="page"]{box-shadow:inset 3px 0 
         </a>
         <span class="dir-group" id="dir-group" data-testid="directives" hidden>
         <span class="dir-label">Directives</span>
-        <a class="dir-link" href="directives/analyst.json" download="analyst.json"
-           data-testid="dir-analyst" aria-label="Download Analyst directives">Analyst</a>
-        <a class="dir-link" href="directives/architect.json" download="architect.json"
-           data-testid="dir-architect" aria-label="Download Architect directives">Architect</a>
-        <a class="dir-link" href="directives/autopilot.json" download="autopilot.json"
-           data-testid="dir-autopilot" aria-label="Download Autopilot directives">Autopilot</a>
+        <a class="dir-link" id="dir-link" href="#" download
+           data-testid="dir-download" aria-label="Download directives">Download</a>
         </span>
       </div>
       <div class="demo-note" data-testid="sidebar-disclosure">Demo · synthetic data</div>
@@ -875,6 +871,11 @@ const RESET_SCOPES = {
     goal: "",
     kb: "WAM-Cavendish-Onboarding-KB-Source.md",
     kb2: "WAM-Cavendish-Onboarding-KB-Source-v2.md",
+    /* The directive set is written per application, in markdown rather than as a
+       Touchstone export, because the team reads it before setting anything up.
+       It carries the reasoning for each directive and how to check it landed,
+       which a JSON export cannot. */
+    dir: "Cavendish-Onboarding-Touchstone-Directives.md",
     label: "Private Wealth",
     keys: ["clients", "draft", "nextId"],
     home: "#/dashboard",
@@ -886,6 +887,7 @@ const RESET_SCOPES = {
     /* The later release has its own knowledge base source; the download button
        follows whichever release the application is running. */
     kb2: "Cavendish-Motor-Insurance-KB-Source-v2.md",
+    dir: "Cavendish-Motor-Insurance-Directives.md",
     label: "Motor Insurance",
     keys: ["quotes", "draftQuote", "nextQuoteId", "nextPolicyId"],
     home: "#/insurance",
@@ -895,6 +897,7 @@ const RESET_SCOPES = {
     goal: "",
     kb: "Cavendish-Pensions-KB-Source.md",
     kb2: "Cavendish-Pensions-KB-Source-v2.md",
+    dir: "Cavendish-Pensions-Directives.md",
     label: "Pensions",
     keys: ["cases", "draftCase", "nextCaseId", "nextPaymentId", "members", "finds", "findDraft", "nextFindId"],
     home: "#/pensions",
@@ -1130,10 +1133,21 @@ function renderActor(){
   if(kb){
     const scope = which === "all" ? null : RESET_SCOPES[which];
     kb.hidden = !scope;
-    /* One directive set serves every application, so these do not change with the
-       scope; they simply keep company with the knowledge base control and hide
-       with it on the launcher. */
-    const dg = $("#dir-group"); if(dg) dg.hidden = !scope;
+    /* The directive set follows the application, exactly as the knowledge base
+       source does, and hides with it on the launcher where no application is in
+       scope. It is a single markdown document per application rather than three
+       Touchstone JSON exports: the team reads it before setting anything up, and
+       the reasoning behind each directive is the part that does not survive an
+       export. Importable JSON is still served beside it for anyone who wants it,
+       linked from the collateral page. */
+    const dg = $("#dir-group"), dl = $("#dir-link");
+    if(dg) dg.hidden = !scope;
+    if(dl && scope && scope.dir){
+      dl.setAttribute("href", "directives/" + scope.dir);
+      dl.setAttribute("download", scope.dir);
+      dl.setAttribute("title", "Download the Touchstone directives for " + scope.label);
+      dl.setAttribute("aria-label", "Download directives for " + scope.label);
+    }
 
     /* The goal exists only once the work has been done in Touchstone, so the
        link is absent until a URL is recorded rather than present and dead. */
@@ -2768,10 +2782,27 @@ const COLLATERAL_KB = [
   ["Halcyon Commerce", "Halcyon-Commerce-KB-Source.md",          "Storefront, ERP and warehouse: order to cash across three connected systems."]
 ];
 
+/* One markdown document per application, mirroring the knowledge base table
+   above. Markdown rather than a Touchstone JSON export because the set is read
+   before it is used: each directive carries why it exists, which failure it
+   prevents, and what to look for in the generated output to confirm it landed.
+   None of that survives an export, and without it a colleague importing a JSON
+   file has rules they cannot evaluate. The exports are still offered below for
+   anyone who wants to import rather than read. */
 const COLLATERAL_DIR = [
-  ["Analyst",   "analyst.json",   "How requirements are analysed and written."],
-  ["Architect", "architect.json", "How journey structures are generated from requirements."],
-  ["Autopilot", "autopilot.json", "How Autopilot implements a journey when it runs."]
+  ["Private Wealth",   "Cavendish-Onboarding-Touchstone-Directives.md", "Branch granularity, advisory versus blocking, exact messages, four-eyes through sign-in."],
+  ["Motor Insurance",  "Cavendish-Motor-Insurance-Directives.md",       "Decision precedence across fourteen underwriting codes, fields that do not rate, the unreachable rule."],
+  ["Pensions",         "Cavendish-Pensions-Directives.md",              "Two processes in one module, twenty-four codes across two engines, two four-eyes controls."],
+  ["Halcyon Commerce", "Halcyon-Commerce-Directives.md",                "Three systems, forty-one decision codes, the cross-system hand-off, product media in two shapes."]
+];
+
+/* The same rules in Touchstone's own import format, one file per target. Kept
+   because importing is faster than retyping, not because it is the better
+   starting point. */
+const COLLATERAL_DIR_JSON = [
+  ["Analyst",   "analyst.json",   "Requirement stage — how requirements are analysed and written."],
+  ["Architect", "architect.json", "Journey stage — how journey structures are generated."],
+  ["Autopilot", "autopilot.json", "Autopilot stage — how a journey is implemented when it runs."]
 ];
 
 const COLLATERAL_DOCS = [
@@ -2954,10 +2985,15 @@ function viewCollateral(){
 
     <div class="col-sec">
       <h2>Directives</h2>
-      <p class="col-why">Standing rules injected into generation, so conventions are encoded once rather than repeated in every conversation. Directives steer generation; they do not enforce it, so verify on output that matters.</p>
+      <p class="col-why">Standing rules injected into generation, so conventions are encoded once rather than repeated in every conversation. Directives steer generation; they do not enforce it, so verify on output that matters. One document per application, each giving the rule to set, the failure it prevents and what to check in the output to confirm it landed. Each is also downloadable from inside its own application.</p>
       <table class="col-table" data-testid="collateral-directives">
-        <thead><tr><th>Directive</th><th>Stage it applies to</th></tr></thead>
+        <thead><tr><th>Application</th><th>What it covers</th></tr></thead>
         <tbody>${collateralRows(COLLATERAL_DIR, "directives/")}</tbody>
+      </table>
+      <p class="col-why" style="margin-top:14px">The same rules in Touchstone's import format, one file per stage, for importing rather than reading.</p>
+      <table class="col-table" data-testid="collateral-directives-json">
+        <thead><tr><th>Export</th><th>Stage it applies to</th></tr></thead>
+        <tbody>${collateralRows(COLLATERAL_DIR_JSON, "directives/")}</tbody>
       </table>
     </div>
 
