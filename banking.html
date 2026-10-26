@@ -1,0 +1,1975 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marchmont Bank</title>
+<style>
+/* ============================================================
+   Marchmont Bank - demonstration application
+   Two systems in one file: Marchmont Online (customer channel)
+   and Sentinel Payment Operations (bank side console).
+
+   Every visible string is plain ASCII on purpose. Virtuoso selects
+   by visible text, and a curly quote or an en dash in a label is a
+   selector that cannot be typed by hand.
+   ============================================================ */
+
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --line:#d9dee7; --line-soft:#e8ecf2;
+  --ink:#141a22; --ink-2:#48525f; --ink-3:#6b7684;
+  --brand:#0b5d52;          /* Marchmont green */
+  --brand-ink:#084940;
+  --sentinel:#2d3f8f;       /* Sentinel blue */
+  --ok:#1f7a45; --ok-bg:#e8f5ed;
+  --warn:#8a5a00; --warn-bg:#fdf3e2;
+  --risk:#a62b2b; --risk-bg:#fbeceb;
+  --info:#1d5a8a; --info-bg:#e9f2f9;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.1);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0; padding:0}
+body{
+  font:15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+
+/* ---------- layout ---------- */
+.shell{display:flex; min-height:100vh}
+.aside{
+  width:252px; flex:none; background:#0d1b26; color:#cdd7e0;
+  display:flex; flex-direction:column; padding:18px 16px;
+}
+.main{flex:1; min-width:0; display:flex; flex-direction:column}
+.topbar{background:var(--surface); border-bottom:1px solid var(--line); padding:10px 22px}
+.topbar-in{display:flex; align-items:center; gap:.9rem; flex-wrap:wrap; row-gap:.45rem}
+.view{padding:22px; max-width:1180px; width:100%}
+
+/* ---------- brand ---------- */
+.brand{display:flex; align-items:center; gap:.6rem; margin-bottom:4px}
+.brand-mark{
+  width:30px; height:30px; border-radius:7px; flex:none;
+  background:linear-gradient(135deg,#128a79,#0b5d52);
+  display:grid; place-items:center; color:#fff; font-weight:800; font-size:.86rem;
+}
+.brand-mark.sent{background:linear-gradient(135deg,#4458b8,#2d3f8f)}
+.brand-name{font-weight:800; letter-spacing:.2px; color:#fff; font-size:1.02rem}
+.brand-sub{font-size:.72rem; color:#8c9bab; letter-spacing:.09em; text-transform:uppercase; font-weight:700}
+
+/* ---------- nav ---------- */
+.nav{margin-top:18px; display:flex; flex-direction:column; gap:1px}
+.nav a{
+  display:block; padding:.5rem .65rem; border-radius:7px; color:#b9c5d1;
+  text-decoration:none; font-size:.9rem; font-weight:600;
+}
+.nav a:hover{background:#17293a; color:#fff}
+.nav a.on{background:var(--brand); color:#fff}
+.nav a.on.sent{background:var(--sentinel)}
+.nav-head{
+  font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;
+  color:#6e7f90; font-weight:800; margin:16px 0 6px .65rem;
+}
+
+/* ---------- sidebar foot ---------- */
+.aside-foot{margin-top:auto; padding-top:16px; font-size:.78rem; color:#7f8d9b}
+.res-block{display:flex; flex-direction:column; gap:.45rem; align-items:flex-start; margin:10px 0}
+.btn-kb{
+  display:inline-flex; align-items:center; gap:.4rem; background:var(--brand);
+  color:#fff; border:1px solid var(--brand); border-radius:7px;
+  padding:.4rem .6rem; font-size:.78rem; font-weight:700; text-decoration:none;
+}
+.btn-kb:hover,.btn-kb:focus-visible{background:#0f7265; border-color:#0f7265}
+.btn-goal{
+  display:inline-flex; align-items:center; gap:.4rem; background:transparent;
+  color:#9ec8c1; border:1px solid #2b4a52; border-radius:7px;
+  padding:.4rem .6rem; font-size:.78rem; font-weight:700; text-decoration:none;
+}
+.btn-goal:hover,.btn-goal:focus-visible{background:#123d38; color:#fff}
+.dir-group{display:inline-flex; align-items:center; gap:.5rem; flex-wrap:wrap; row-gap:.2rem; max-width:100%}
+.dir-label{font-size:.68rem; letter-spacing:.09em; text-transform:uppercase; color:#6e7f90; font-weight:800}
+.dir-link{font-size:.78rem; font-weight:700; color:#79c3b6; text-decoration:none; border-bottom:1px solid transparent}
+.dir-link:hover,.dir-link:focus-visible{border-bottom-color:currentColor}
+.btn-rel{
+  display:inline-flex; align-items:center; gap:.45rem; background:transparent;
+  color:#9aa8b6; border:1px dashed #3a4c5c; border-radius:7px;
+  padding:.4rem .6rem; font-size:.78rem; font-weight:700; cursor:pointer;
+}
+.btn-rel:hover{border-color:#5a6e80; color:#d7e2ec}
+.btn-rel[aria-pressed="true"]{background:#123d38; border-style:solid; border-color:#19907e; color:#8fe0cf}
+.rel-dot{width:8px; height:8px; border-radius:50%; background:#5a6e80; flex:none}
+.btn-rel[aria-pressed="true"] .rel-dot{background:#2fd2b0}
+.demo-note{font-size:.72rem; color:#6e7f90; margin-top:8px}
+
+/* ---------- release banner ---------- */
+.rel-banner{
+  background:#e8f6f3; border-bottom:1px solid #b6ddd5; color:#0a4a41;
+  padding:.6rem 22px; font-size:.86rem;
+}
+.rel-ver{font-weight:800}
+.rel-new{
+  display:inline-block; margin-left:.4rem; font-size:.64rem; font-weight:800;
+  letter-spacing:.07em; text-transform:uppercase; color:#0b5d52;
+  background:#cdeee7; border:1px solid #9fd8cd; border-radius:4px; padding:.05rem .3rem;
+  vertical-align:middle;
+}
+
+/* ---------- typography ---------- */
+h1{font-size:1.4rem; margin:0 0 .25rem; letter-spacing:-.01em}
+h2{font-size:1.08rem; margin:0 0 .6rem}
+h3{font-size:.95rem; margin:0 0 .4rem}
+.lede{color:var(--ink-2); margin:0 0 18px}
+.muted{color:var(--ink-3)}
+.crumb{font-size:.84rem; color:var(--ink-3); font-weight:600}
+
+/* ---------- cards ---------- */
+.card{
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);
+  /* The grids carry up to seven columns and cannot fit a phone. Letting
+     the card scroll sideways keeps every column reachable and stops the
+     whole page from scrolling, which is what pushes a journey's click
+     coordinates out of place. */
+  overflow-x:auto;
+}
+.grid{display:grid; gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:980px){ .g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:700px){ .g2,.g3,.g4{grid-template-columns:1fr} }
+
+.stat{font-size:1.5rem; font-weight:800; letter-spacing:-.02em}
+.stat-l{font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); font-weight:800}
+
+/* ---------- forms ---------- */
+.field{display:flex; flex-direction:column; gap:.28rem; margin-bottom:12px}
+.field label{font-size:.82rem; font-weight:700; color:var(--ink-2)}
+.field input,.field select,.field textarea{
+  font:inherit; padding:.5rem .6rem; border:1px solid var(--line);
+  border-radius:8px; background:#fff; color:var(--ink); width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:2px solid #9fd8cd; outline-offset:0; border-color:var(--brand);
+}
+.field.bad input,.field.bad select,.field.bad textarea{border-color:var(--risk); background:#fffafa}
+.hint{font-size:.76rem; color:var(--ink-3)}
+.err{font-size:.78rem; color:var(--risk); font-weight:700}
+.radio-set{display:flex; flex-direction:column; gap:.35rem}
+.radio-row{display:flex; align-items:flex-start; gap:.5rem; font-size:.9rem}
+.radio-row input{width:auto; margin-top:.2rem}
+
+/* ---------- buttons ---------- */
+.btn{
+  font:inherit; font-weight:700; padding:.5rem .85rem; border-radius:8px;
+  border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer;
+}
+.btn:hover{background:#f6f8fb}
+.btn:disabled{opacity:.5; cursor:not-allowed}
+.btn-primary{background:var(--brand); border-color:var(--brand); color:#fff}
+.btn-primary:hover{background:#0f7265; border-color:#0f7265}
+.btn-sent{background:var(--sentinel); border-color:var(--sentinel); color:#fff}
+.btn-sent:hover{background:#3a4fa8; border-color:#3a4fa8}
+.btn-risk{background:var(--risk); border-color:var(--risk); color:#fff}
+.btn-risk:hover{background:#bb3434; border-color:#bb3434}
+.btn-sm{padding:.3rem .55rem; font-size:.8rem; border-radius:6px}
+.btn-lg{padding:.6rem 1rem; font-size:1rem}
+.btn-block{width:100%}
+.row{display:flex; gap:.5rem; align-items:center; flex-wrap:wrap}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse; width:100%; font-size:.9rem}
+th,td{text-align:left; padding:.55rem .6rem; border-bottom:1px solid var(--line-soft)}
+th{
+  font-size:.7rem; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:800; background:#fafbfd;
+}
+tbody tr:hover{background:#fafbfd}
+td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
+
+/* ---------- pills and banners ---------- */
+.pill{
+  display:inline-block; font-size:.72rem; font-weight:800; padding:.12rem .42rem;
+  border-radius:5px; border:1px solid currentColor; letter-spacing:.02em;
+}
+.p-ok{color:var(--ok); background:var(--ok-bg)}
+.p-warn{color:var(--warn); background:var(--warn-bg)}
+.p-risk{color:var(--risk); background:var(--risk-bg)}
+.p-info{color:var(--info); background:var(--info-bg)}
+.p-mute{color:var(--ink-3); background:#f1f3f7}
+
+.banner{border:1px solid; border-radius:9px; padding:.65rem .8rem; margin:0 0 14px; font-size:.9rem}
+.b-ok{border-color:#9ed4b5; background:var(--ok-bg); color:#13572f}
+.b-warn{border-color:#e4c489; background:var(--warn-bg); color:#6b4600}
+.b-risk{border-color:#e9aeab; background:var(--risk-bg); color:#86201f}
+.b-info{border-color:#a9cce4; background:var(--info-bg); color:#154867}
+
+/* ---------- wizard ---------- */
+.steps{display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:16px}
+.step{
+  font-size:.78rem; font-weight:700; padding:.3rem .6rem; border-radius:999px;
+  border:1px solid var(--line); background:#fff; color:var(--ink-3);
+}
+.step.on{background:var(--brand); border-color:var(--brand); color:#fff}
+.step.done{background:#e8f5ed; border-color:#9ed4b5; color:#13572f}
+
+/* ---------- sign in ---------- */
+.login-wrap{min-height:100vh; display:grid; place-items:center; padding:22px; background:#0d1b26}
+.login-card{width:100%; max-width:410px; background:#fff; border-radius:14px; padding:26px; box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.cred{font-size:.8rem; border:1px dashed var(--line); border-radius:8px; padding:.6rem; margin-top:14px; background:#fafbfd}
+.cred table{font-size:.78rem}
+.cred th,.cred td{padding:.25rem .35rem; border-bottom:1px solid var(--line-soft)}
+
+/* ---------- launcher ---------- */
+.launch{min-height:100vh; background:#0d1b26; padding:40px 22px; color:#cdd7e0}
+.launch-in{max-width:900px; margin:0 auto}
+.app-card{
+  display:block; background:#13232f; border:1px solid #22384a; border-radius:12px;
+  padding:18px; text-decoration:none; color:inherit;
+}
+.app-card:hover,.app-card:focus-visible{border-color:#2f5a6e; background:#17293a}
+.app-card h3{color:#fff; margin-bottom:.3rem}
+.app-card p{margin:0; font-size:.86rem; color:#9aa8b6}
+
+/* ---------- toasts ---------- */
+.toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:.4rem; z-index:50}
+.toast{
+  background:#13232f; color:#eaf1f6; border:1px solid #2a4458; border-radius:9px;
+  padding:.55rem .75rem; font-size:.86rem; box-shadow:0 8px 24px rgba(0,0,0,.25); max-width:380px;
+}
+
+/* ---------- modal ---------- */
+.modal-back{position:fixed; inset:0; background:rgba(10,18,26,.55); display:grid; place-items:center; padding:22px; z-index:60}
+.modal{background:#fff; border-radius:12px; padding:20px; width:100%; max-width:480px; box-shadow:0 24px 60px rgba(0,0,0,.3)}
+
+/* ---------- misc ---------- */
+.kv{display:grid; grid-template-columns:180px 1fr; gap:.3rem .8rem; font-size:.9rem}
+.kv dt{color:var(--ink-3); font-weight:700}
+.kv dd{margin:0}
+.sep{height:1px; background:var(--line-soft); margin:14px 0}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.84rem; background:#f1f3f7; padding:.05rem .3rem; border-radius:4px}
+@media (max-width:860px){
+  .shell{flex-direction:column}
+  .aside{width:auto}
+  .nav{flex-direction:row; flex-wrap:wrap}
+  /* The section heading is a label for the links after it, so it has to
+     break the row rather than sit between two of them. */
+  .nav-head{width:100%; margin:10px 0 2px .65rem}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toasts" id="toasts" data-testid="toasts"></div>
+<script>
+/* ============================================================
+   MARCHMONT BANK - core
+   Storage, clock, release state, seed data, auth, routing.
+   ============================================================ */
+
+const BUILD = "2026.10.26";
+const KEY = "marchmont.banking.v1";
+
+/* The application evaluates every date rule against a fixed clock.
+   A demonstration that drifts with the wall clock stops matching the
+   document that describes it, and a journey written against "today"
+   rots the moment nobody runs it for a week. 2026-10-26 is a Monday,
+   which the next working day rules depend on. */
+const CLOCK = "2026-10-26";
+const CLOCK_HOUR_DEFAULT = 10;   /* 10:00, comfortably before the cut-off */
+
+/* ---------- release state ----------
+   Held under its own key so that resetting the demo data never changes
+   which release the application is running. The two are independent
+   choices and a reset that silently flipped the release would be the
+   most confusing possible behaviour. */
+const RELEASE_KEY = "marchmont.banking.release.v1";
+const RELEASE_VERSION = "2.1";
+let RELEASE = false;
+
+function loadRelease(){
+  try{
+    const raw = localStorage.getItem(RELEASE_KEY);
+    if(raw !== null) RELEASE = (raw === "true");
+  }catch(e){}
+}
+function saveRelease(){ try{ localStorage.setItem(RELEASE_KEY, String(RELEASE)); }catch(e){} }
+function v2(){ return RELEASE === true; }
+loadRelease();
+
+/* An absolute setter, so an automated run pins the release rather than
+   toggling whatever it happened to arrive with. A toggle is not safe for
+   a journey: clicking it is correct on a clean browser and wrong on a
+   dirty one, and Virtuoso opens a fresh browser for every run.
+
+       banking.html?release=on#/pay/new     release on
+       banking.html?release=off#/pay/new    release off
+
+   Applied before the first render and idempotent, so repeating the same
+   navigation always lands in the same state. Anything other than on or
+   off is ignored rather than guessed at. */
+(function releaseFromUrl(){
+  try{
+    const q = new URLSearchParams(location.search).get("release");
+    if(q !== "on" && q !== "off") return;
+    const want = (q === "on");
+    if(RELEASE !== want){ RELEASE = want; saveRelease(); }
+  }catch(e){}
+})();
+
+/* ---------- small helpers ---------- */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+function esc(s){
+  return String(s === null || s === undefined ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+/* Money is held in pence throughout and formatted only on the way out.
+   Holding it in pounds as a float means 0.1 + 0.2 appears in a balance,
+   and a boundary at exactly 1000.00 stops being testable. */
+function money(pence){
+  const n = Number(pence || 0);
+  const neg = n < 0;
+  const s = (Math.abs(n) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return (neg ? "-" : "") + s;
+}
+function gbp(pence){ return "GBP " + money(pence); }
+function toPence(text){
+  const t = String(text === null || text === undefined ? "" : text).trim().replace(/,/g, "");
+  if(t === "") return null;
+  if(!/^\d+(\.\d{1,2})?$/.test(t)) return NaN;
+  return Math.round(Number(t) * 100);
+}
+
+/* ---------- dates ----------
+   Dates are held and displayed as dd-mm-yyyy, the format the fields
+   accept. ISO is used only as a sort key and never shown. */
+function iso(d){
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), x = String(d.getDate()).padStart(2,"0");
+  return y + "-" + m + "-" + x;
+}
+function parseIso(s){ const p = String(s).split("-"); return new Date(Number(p[0]), Number(p[1])-1, Number(p[2])); }
+function parseUk(s){
+  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(String(s || "").trim());
+  if(!m) return null;
+  const d = new Date(Number(m[3]), Number(m[2])-1, Number(m[1]));
+  if(d.getFullYear() !== Number(m[3]) || d.getMonth() !== Number(m[2])-1 || d.getDate() !== Number(m[1])) return null;
+  return d;
+}
+function ukDate(isoStr){
+  if(!isoStr) return "";
+  const p = String(isoStr).split("-");
+  return p[2] + "-" + p[1] + "-" + p[0];
+}
+function today(){ return CLOCK; }
+function addDays(isoStr, n){ const d = parseIso(isoStr); d.setDate(d.getDate() + n); return iso(d); }
+function daysBetween(a, b){ return Math.round((parseIso(b) - parseIso(a)) / 86400000); }
+
+/* Saturday and Sunday are not working days. No bank holiday calendar is
+   modelled - section "what this application does not do" in the source
+   says so plainly, because a half implemented holiday calendar is worse
+   than none at all. */
+function isWorkingDay(isoStr){ const w = parseIso(isoStr).getDay(); return w !== 0 && w !== 6; }
+function nextWorkingDay(isoStr){ let d = addDays(isoStr, 1); while(!isWorkingDay(d)) d = addDays(d, 1); return d; }
+function onOrNextWorkingDay(isoStr){ let d = isoStr; while(!isWorkingDay(d)) d = addDays(d, 1); return d; }
+
+/* ---------- reference numbers ---------- */
+function pad(n, w){ return String(n).padStart(w, "0"); }
+
+/* ---------- users ----------
+   Identity comes from signing in. There is no role selector, which is
+   what makes the four eyes control real rather than decorative. */
+const USERS = [
+  { username:"rose.whitfield",  name:"Rose Whitfield",  role:"Customer",            system:"online",  customerId:"C-100412" },
+  { username:"daniel.okonjo",   name:"Daniel Okonjo",   role:"Customer",            system:"online",  customerId:"C-100873" },
+  { username:"sean.hartley",    name:"Sean Hartley",    role:"Payment Operations",  system:"sentinel" },
+  { username:"nadia.prasad",    name:"Nadia Prasad",    role:"Financial Crime",     system:"sentinel" },
+  { username:"omar.farrell",    name:"Omar Farrell",    role:"Platform Administrator", system:"both" }
+];
+const PASSWORD = "Marchmont#2026";
+
+function userByName(u){ return USERS.find(x => x.username === u) || null; }
+function canReach(user, system){
+  if(!user) return false;
+  if(user.system === "both") return true;
+  return user.system === system;
+}
+
+/* ---------- customers ---------- */
+const CUSTOMERS = {
+  "C-100412": { id:"C-100412", name:"Rose Whitfield", tier:"Standard" },
+  "C-100873": { id:"C-100873", name:"Daniel Okonjo",  tier:"Premier"  }
+};
+
+/* ---------- seed ---------- */
+function seed(){
+  return {
+    accounts: [
+      /* Rose's current account is seeded above her 25,000.00 daily limit
+         on purpose. If the balance were the lower of the two, every
+         large payment would stop at PA-D01 and the daily limit rule
+         would be unreachable through the interface. */
+      { id:"30-91-55-41220119", customerId:"C-100412", name:"Everyday Current", type:"Current", sort:"30-91-55", number:"41220119", balance: 2845080, available: 2845080, currency:"GBP" },
+      { id:"30-91-55-41220127", customerId:"C-100412", name:"Reserve Saver",    type:"Savings", sort:"30-91-55", number:"41220127", balance: 1540000, available: 1540000, currency:"GBP" },
+      { id:"30-91-55-48801934", customerId:"C-100873", name:"Premier Current",  type:"Current", sort:"30-91-55", number:"48801934", balance:12480900, available:12480900, currency:"GBP" },
+      { id:"30-91-55-48801942", customerId:"C-100873", name:"Premier Saver",    type:"Savings", sort:"30-91-55", number:"48801942", balance:38950000, available:38950000, currency:"GBP" }
+    ],
+    payees: [
+      { id:"P-0001", customerId:"C-100412", name:"Hannah Whitfield", sort:"20-44-18", number:"70113396", country:"GB", established:true,  reference:"Rent" },
+      { id:"P-0002", customerId:"C-100412", name:"Meridian Utilities", sort:"60-12-03", number:"88204417", country:"GB", established:true,  reference:"Account 44120" },
+      { id:"P-0003", customerId:"C-100412", name:"Kestrel Letting",   sort:"09-01-72", number:"31559028", country:"GB", established:false, reference:"Deposit" },
+      { id:"P-0004", customerId:"C-100873", name:"Okonjo Holdings",   sort:"40-26-11", number:"62340018", country:"GB", established:true,  reference:"Transfer" },
+      { id:"P-0005", customerId:"C-100873", name:"Vertex Legal LLP",  sort:"16-55-40", number:"29087741", country:"GB", established:true,  reference:"Fees" },
+      { id:"P-0006", customerId:"C-100873", name:"Albrecht Partners", sort:"00-00-00", number:"DE89370400440532013000", country:"DE", established:false, reference:"Consultancy" },
+      /* An established international payee. Without one, PA-S03 could
+         never be observed: the only other overseas payee is new, and
+         PA-S02 is evaluated first and would always win. */
+      { id:"P-0007", customerId:"C-100873", name:"Clonmel Trading", sort:"00-00-00", number:"IE64IRCE92050112345678", country:"IE", established:true, reference:"Supply" }
+    ],
+    payments: [],
+    standingOrders: [],
+    cases: [],
+    draft: null,
+    nextPayment: 1,
+    nextCase: 1,
+    nextOrder: 1
+  };
+}
+
+let state = seed();
+let session = null;          /* the signed in user */
+let loginDraft = { username:"", password:"" };
+let loginError = "";
+let lockouts = {};           /* username -> failed attempt count */
+let ui = {};                 /* per view scratch, never persisted */
+
+function save(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify({
+      accounts: state.accounts, payees: state.payees, payments: state.payments,
+      standingOrders: state.standingOrders, cases: state.cases, draft: state.draft,
+      nextPayment: state.nextPayment, nextCase: state.nextCase, nextOrder: state.nextOrder,
+      lockouts: lockouts
+    }));
+  }catch(e){}
+}
+
+function load(){
+  let raw = null;
+  try{ raw = localStorage.getItem(KEY); }catch(e){ return; }
+  if(!raw) return;
+  let o;
+  try{ o = JSON.parse(raw); }catch(e){ return; }
+  const s = seed();
+  ["accounts","payees","payments","standingOrders","cases"].forEach(k => {
+    if(Array.isArray(o[k])) s[k] = o[k];
+  });
+  ["nextPayment","nextCase","nextOrder"].forEach(k => {
+    if(typeof o[k] === "number") s[k] = o[k];
+  });
+  if(o.draft && typeof o.draft === "object") s.draft = o.draft;
+  if(o.lockouts && typeof o.lockouts === "object") lockouts = o.lockouts;
+  state = s;
+
+  /* Records written before release 2.1 existed carry no stamp. Without
+     one they would follow the live toggle and be re-decided when the
+     release is turned on, which is exactly what the stamp prevents. */
+  [state.payments, state.standingOrders].forEach(list => {
+    if(Array.isArray(list)) list.forEach(r => { if(r && !r.release) r.release = "1.0"; });
+  });
+}
+
+function resetData(){
+  const keepLockouts = {};
+  state = seed();
+  lockouts = keepLockouts;
+  save();
+}
+
+/* A payment is decided once, under the release that was running when it
+   was submitted, and is never re-decided. Turning the release on must
+   not reprice or re-assess anything already in the ledger. */
+function paymentV2(p){ return p && p.release ? p.release === RELEASE_VERSION : v2(); }
+
+/* ---------- toasts ---------- */
+function toast(msg){
+  const wrap = $("#toasts");
+  if(!wrap) return;
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.setAttribute("data-testid", "toast");
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => { if(el.parentNode) el.parentNode.removeChild(el); }, 5200);
+}
+
+/* ---------- routing ---------- */
+function route(){
+  const h = location.hash.replace(/^#/, "");
+  return h ? h.split("/").filter(Boolean) : [];
+}
+function go(path){ location.hash = path; }
+
+/* Which system the current route belongs to. The launcher returns
+   "none", and the knowledge base and directive downloads hide there
+   because no system is in scope to describe. */
+function currentSystem(){
+  const r = route();
+  if(r[0] === "online") return "online";
+  if(r[0] === "sentinel") return "sentinel";
+  return "none";
+}
+/* ============================================================
+   DECISION ENGINES
+   Two engines, each evaluating its rules in a fixed order and
+   returning the first that matches.
+
+     PA  the channel, evaluated when the customer submits
+     PH  operations, evaluated on a payment the channel accepted
+
+   The prefix names the engine. A requirement that cites a PA code
+   and a PH code at once is testable against neither.
+   ============================================================ */
+
+/* ---------- the session clock ----------
+   Every date rule runs against the fixed clock date. The time of day
+   is settable from the URL, because the cut-off is otherwise
+   unreachable: a fixed clock at 10:00 is always before 16:00 and
+   PA-A03 could never be produced.
+
+       banking.html?now=16:30#/online/pay/new    after the cut-off
+       banking.html?now=09:00#/online/pay/new    before it
+
+   Absolute, like the release setter, so a journey lands in the same
+   state whatever the browser carried. Out of range or malformed values
+   are ignored rather than guessed at. */
+let CLOCK_MIN = CLOCK_HOUR_DEFAULT * 60;
+
+(function clockFromUrl(){
+  try{
+    const q = new URLSearchParams(location.search).get("now");
+    if(!q) return;
+    const m = /^(\d{1,2}):(\d{2})$/.exec(q.trim());
+    if(!m) return;
+    const h = Number(m[1]), mi = Number(m[2]);
+    if(h < 0 || h > 23 || mi < 0 || mi > 59) return;
+    CLOCK_MIN = h * 60 + mi;
+  }catch(e){}
+})();
+
+function clockText(){
+  const h = Math.floor(CLOCK_MIN / 60), m = CLOCK_MIN % 60;
+  return pad(h,2) + ":" + pad(m,2);
+}
+
+/* ---------- thresholds ----------
+   Every figure here is in pence. The source states the verified
+   boundary for each one; these are the values those boundaries were
+   measured from. */
+const CUTOFF_MIN          = 16 * 60;      /* 16:00, CHAPS only */
+const STEPUP_THRESHOLD    = 100000;       /* 1,000.00 */
+const STEPUP_THRESHOLD_V2 =  50000;       /* 500.00 in release 2.1 */
+const FP_MAX              = 100000000;    /* 1,000,000.00 Faster Payment */
+const SO_MAX              = 2500000;      /* 25,000.00 per standing order instalment */
+const AML_THRESHOLD       = 1000000;      /* 10,000.00 */
+const NEW_PAYEE_HOLD      = 250000;       /* 2,500.00 to a payee created today */
+const ROUND_SUM_INTL      = 500000;       /* 5,000.00 round sum, international */
+const VELOCITY_COUNT      = 4;            /* fourth payment to one payee in a day */
+const GIFT_REVIEW         = 250000;       /* 2,500.00, release 2.1 only */
+
+const DAILY_LIMIT = { Standard: 2500000, Premier: 10000000 };   /* 25,000.00 / 100,000.00 */
+
+/* Release limits in Sentinel. Payment Operations works the ordinary
+   queue; anything larger, and anything held for financial crime
+   reasons, belongs to Financial Crime. */
+const RELEASE_LIMIT = { "Payment Operations": 5000000 };        /* 50,000.00 */
+
+const SANCTIONED_COUNTRIES = ["KP", "IR", "SY"];
+const SERVED_COUNTRIES = [
+  ["GB","United Kingdom"], ["DE","Germany"], ["FR","France"], ["IE","Ireland"],
+  ["US","United States"], ["AE","United Arab Emirates"], ["AU","Australia"],
+  ["KP","Korea, Democratic People's Republic of"], ["IR","Iran"], ["SY","Syria"]
+];
+/* Names that return a sanctions match in Sentinel. A demonstration
+   screening list, not a real one. */
+const WATCHLIST = ["albrecht", "voronov", "ferreira-dos-santos"];
+
+function stepUpThreshold(p){ return paymentV2(p) ? STEPUP_THRESHOLD_V2 : STEPUP_THRESHOLD; }
+
+/* ---------- the PA engine ----------
+   Evaluated when the customer submits. Rejections first, then the
+   step-up triggers, then acceptance. First match wins and nothing
+   after it is ever observable.
+
+   ctx: { account, payee, amount, rail, kind, valueDate, customer,
+          spentToday, payeeCreatedToday, sameePayeeToday, release } */
+const PA_RULES = [
+  /* --- rejections --- */
+  { code:"PA-D01", kind:"reject", reason:"The available balance on this account is not enough to make this payment.",
+    test: c => c.amount > c.account.available },
+
+  { code:"PA-D02", kind:"reject", reason:"A Faster Payment cannot be more than 1,000,000.00. Use CHAPS for a higher value.",
+    test: c => c.rail === "Faster Payment" && c.amount > FP_MAX },
+
+  { code:"PA-D03", kind:"reject", reason:"A standing order instalment cannot be more than 25,000.00.",
+    test: c => c.kind === "Standing order" && c.amount > SO_MAX },
+
+  { code:"PA-D04", kind:"reject", reason:"Payments to this destination country are not available.",
+    test: c => SANCTIONED_COUNTRIES.indexOf(c.payee.country) !== -1 },
+
+  { code:"PA-D05", kind:"reject", reason:"This payment would take you past your daily payment limit.",
+    test: c => c.kind !== "Standing order" && (c.spentToday + c.amount) > DAILY_LIMIT[c.customer.tier] },
+
+  /* --- step-up authentication ---
+     Three independent triggers. A payment can satisfy more than one
+     and will always report the earliest: a 5,000.00 payment to a new
+     payee is PA-S01, never PA-S02. */
+  { code:"PA-S01", kind:"stepup", reason:"This payment is above your step-up limit, so it needs a passcode.",
+    test: c => c.amount >= stepUpThreshold({ release: c.release }) },
+
+  { code:"PA-S02", kind:"stepup", reason:"This is your first payment to this payee, so it needs a passcode.",
+    test: c => !c.payee.established },
+
+  { code:"PA-S03", kind:"stepup", reason:"International payments need a passcode.",
+    test: c => c.payee.country !== "GB" },
+
+  /* --- acceptance ---
+     Reached only when nothing above matched, or after the passcode has
+     been accepted. */
+  { code:"PA-A04", kind:"accept", reason:"Standing order set up.",
+    test: c => c.kind === "Standing order" },
+
+  { code:"PA-A03", kind:"accept", reason:"Submitted after the 16:00 CHAPS cut-off, so this payment is dated the next working day.",
+    test: c => c.rail === "CHAPS" && c.valueDate === today() && CLOCK_MIN >= CUTOFF_MIN },
+
+  { code:"PA-A02", kind:"accept", reason:"Scheduled for a future date.",
+    test: c => c.valueDate !== today() },
+
+  { code:"PA-A01", kind:"accept", reason:"Accepted for execution today.",
+    test: () => true }
+];
+
+function evaluatePA(ctx, opts){
+  const skipStepUp = !!(opts && opts.skipStepUp);
+  for(const r of PA_RULES){
+    if(skipStepUp && r.kind === "stepup") continue;
+    if(r.test(ctx)) return { code:r.code, kind:r.kind, reason:r.reason };
+  }
+  return { code:"PA-A01", kind:"accept", reason:"Accepted for execution today." };
+}
+
+/* ---------- the PH engine ----------
+   Evaluated on a payment the channel accepted. A hold stops the
+   payment in Sentinel's queue; nothing matching means it goes straight
+   through.
+
+   ctx: { payment, payee, amount, customer, samePayeeToday, payeeCreatedToday } */
+const PH_RULES = [
+  { code:"PH-H01", reason:"Sanctions name match on the payee.", owner:"Financial Crime",
+    test: c => WATCHLIST.some(w => c.payee.name.toLowerCase().indexOf(w) !== -1) },
+
+  { code:"PH-H02", reason:"Value at or above the anti money laundering review threshold.", owner:"Financial Crime",
+    test: c => c.amount >= AML_THRESHOLD },
+
+  { code:"PH-H03", reason:"Repeat payments to the same payee within one day.", owner:"Payment Operations",
+    test: c => c.samePayeeToday >= VELOCITY_COUNT },
+
+  { code:"PH-H04", reason:"First payment to a payee added today, above 2,500.00.", owner:"Payment Operations",
+    test: c => c.payeeCreatedToday && c.amount > NEW_PAYEE_HOLD },
+
+  { code:"PH-H05", reason:"Round sum international payment above 5,000.00.", owner:"Financial Crime",
+    test: c => c.payee.country !== "GB" && c.amount > ROUND_SUM_INTL && (c.amount % 100000 === 0) },
+
+  /* Added in release 2.1, and only evaluated on a payment submitted
+     under it. A payment stamped 1.0 never acquires this hold, however
+     the toggle is later set. */
+  { code:"PH-H06", reason:"Declared source of funds requires review.", owner:"Financial Crime",
+    test: c => paymentV2(c.payment)
+               && c.payment.sourceOfFunds === "Gift or inheritance"
+               && c.amount > GIFT_REVIEW }
+];
+
+function evaluatePH(ctx){
+  for(const r of PH_RULES){
+    if(r.test(ctx)) return { code:r.code, reason:r.reason, owner:r.owner };
+  }
+  return null;
+}
+
+/* ---------- payment status ----------
+   The irrevocability boundary. A payment can be cancelled while it is
+   waiting - scheduled, or held in Sentinel - and not once it has been
+   released or settled. A Faster Payment settles on acceptance, so it is
+   never cancellable at all. That is the point of the rail, not a
+   limitation of the demonstration. */
+const CANCELLABLE = ["Scheduled", "Held"];
+function isCancellable(p){ return CANCELLABLE.indexOf(p.status) !== -1; }
+
+function statusPill(s){
+  const map = {
+    "Settled":"p-ok", "Released":"p-ok", "Scheduled":"p-info",
+    "Held":"p-warn", "Rejected":"p-risk", "Cancelled":"p-mute", "Active":"p-ok"
+  };
+  return map[s] || "p-mute";
+}
+/* ============================================================
+   MARCHMONT ONLINE - the customer channel
+   ============================================================ */
+
+const PAY_STEPS = ["Payee", "Payment", "Review"];
+
+function myCustomer(){
+  if(!session || !session.customerId) return null;
+  return CUSTOMERS[session.customerId] || null;
+}
+function myAccounts(){
+  const c = myCustomer(); if(!c) return [];
+  return state.accounts.filter(a => a.customerId === c.id);
+}
+function myPayees(){
+  const c = myCustomer(); if(!c) return [];
+  return state.payees.filter(p => p.customerId === c.id);
+}
+function myPayments(){
+  const c = myCustomer(); if(!c) return [];
+  return state.payments.filter(p => p.customerId === c.id);
+}
+function accountById(id){ return state.accounts.find(a => a.id === id) || null; }
+function payeeById(id){ return state.payees.find(p => p.id === id) || null; }
+function countryName(code){ const r = SERVED_COUNTRIES.find(x => x[0] === code); return r ? r[1] : code; }
+
+/* Money already committed today, used by the daily limit rule. A
+   cancelled or rejected payment releases its share of the limit. */
+function spentToday(customerId){
+  return state.payments
+    .filter(p => p.customerId === customerId && p.valueDate === today()
+                 && ["Cancelled","Rejected"].indexOf(p.status) === -1)
+    .reduce((s, p) => s + p.amount, 0);
+}
+function countToPayeeToday(customerId, payeeId){
+  return state.payments.filter(p => p.customerId === customerId && p.payeeId === payeeId
+    && p.valueDate === today() && ["Cancelled","Rejected"].indexOf(p.status) === -1).length;
+}
+
+/* ---------- draft ---------- */
+function ensureDraft(){
+  if(!state.draft){
+    const accs = myAccounts();
+    state.draft = {
+      step: 1, errors: {},
+      payeeMode: "existing", payeeId: "", newPayee: { name:"", sort:"", number:"", country:"GB", reference:"" },
+      fromAccount: accs.length ? accs[0].id : "",
+      amount: "", kind: "Immediate", rail: "Faster Payment",
+      valueDate: ukDate(today()), reference: "",
+      frequency: "Monthly", endDate: "",
+      purpose: "", sourceOfFunds: ""     /* release 2.1 fields */
+    };
+  }
+  return state.draft;
+}
+function clearDraft(){ state.draft = null; }
+
+/* ---------- views ---------- */
+
+function viewOnlineDashboard(){
+  const c = myCustomer();
+  const accs = myAccounts();
+  const total = accs.reduce((s,a) => s + a.balance, 0);
+  const pays = myPayments().slice().sort((a,b) => (b.createdAt||"").localeCompare(a.createdAt||""));
+  const held = pays.filter(p => p.status === "Held");
+  const sched = pays.filter(p => p.status === "Scheduled");
+  const limit = DAILY_LIMIT[c.tier];
+  const used = spentToday(c.id);
+
+  return `
+  <h1>Good morning, ${esc(c.name.split(" ")[0])}</h1>
+  <p class="lede">Customer ${esc(c.id)} &middot; ${esc(c.tier)} tier &middot; today is ${esc(ukDate(today()))} at ${esc(clockText())}</p>
+
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card"><div class="stat-l">Total balance</div><div class="stat" data-testid="stat-balance">${esc(gbp(total))}</div></div>
+    <div class="card"><div class="stat-l">Daily limit used</div><div class="stat" data-testid="stat-limit-used">${esc(money(used))}</div>
+      <div class="hint">of ${esc(money(limit))}</div></div>
+    <div class="card"><div class="stat-l">Awaiting review</div><div class="stat" data-testid="stat-held">${held.length}</div></div>
+    <div class="card"><div class="stat-l">Scheduled</div><div class="stat" data-testid="stat-scheduled">${sched.length}</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="row" style="justify-content:space-between; margin-bottom:10px">
+      <h2 style="margin:0">Your accounts</h2>
+      <button class="btn btn-primary" data-act="new-payment" data-testid="btn-new-payment">Make a payment</button>
+    </div>
+    <table data-testid="grid-accounts">
+      <thead><tr><th>Account</th><th>Sort code</th><th>Number</th><th class="num">Balance</th><th class="num">Available</th></tr></thead>
+      <tbody>${accs.map(a => `
+        <tr data-testid="row-${esc(a.id)}">
+          <td><b>${esc(a.name)}</b><div class="hint">${esc(a.type)}</div></td>
+          <td class="mono">${esc(a.sort)}</td>
+          <td class="mono">${esc(a.number)}</td>
+          <td class="num">${esc(money(a.balance))}</td>
+          <td class="num">${esc(money(a.available))}</td>
+        </tr>`).join("")}</tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Recent payments</h2>
+    ${pays.length ? `
+    <table data-testid="grid-payments">
+      <thead><tr><th>Reference</th><th>Payee</th><th class="num">Amount</th><th>Value date</th><th>Status</th><th>Outcome</th><th></th></tr></thead>
+      <tbody>${pays.slice(0,10).map(p => `
+        <tr data-testid="row-${esc(p.ref)}">
+          <td class="mono">${esc(p.ref)}</td>
+          <td>${esc(p.payeeName)}</td>
+          <td class="num">${esc(money(p.amount))}</td>
+          <td>${esc(ukDate(p.valueDate))}</td>
+          <td><span class="pill ${statusPill(p.status)}" data-testid="status-${esc(p.ref)}">${esc(p.status)}</span></td>
+          <td class="mono">${esc(p.outcomeCode || "")}</td>
+          <td><a href="#/online/payment/${esc(p.ref)}" data-testid="open-${esc(p.ref)}">Open</a></td>
+        </tr>`).join("")}</tbody>
+    </table>` : `<p class="muted" data-testid="payments-empty">No payments yet.</p>`}
+  </div>`;
+}
+
+function viewPayees(){
+  const ps = myPayees();
+  return `
+  <h1>Payees</h1>
+  <p class="lede">A payee added today is treated as new until its first payment settles.</p>
+  <div class="card">
+    <table data-testid="grid-payees">
+      <thead><tr><th>Name</th><th>Sort code</th><th>Account</th><th>Country</th><th>Status</th></tr></thead>
+      <tbody>${ps.map(p => `
+        <tr data-testid="row-${esc(p.id)}">
+          <td><b>${esc(p.name)}</b></td>
+          <td class="mono">${esc(p.sort)}</td>
+          <td class="mono">${esc(p.number)}</td>
+          <td>${esc(countryName(p.country))}</td>
+          <td><span class="pill ${p.established ? "p-ok" : "p-warn"}" data-testid="payee-status-${esc(p.id)}">${p.established ? "Established" : "New"}</span></td>
+        </tr>`).join("")}</tbody>
+    </table>
+  </div>`;
+}
+
+/* ---------- the payment wizard ---------- */
+
+function payErr(d, k){
+  return d.errors[k] ? `<span class="err" data-testid="error-${esc(k)}">${esc(d.errors[k])}</span>` : "";
+}
+function bad(d, k){ return d.errors[k] ? " bad" : ""; }
+
+function viewPayNew(){
+  const d = ensureDraft();
+  const stepBar = PAY_STEPS.map((s, i) => {
+    const n = i + 1;
+    const cls = n === d.step ? "step on" : (n < d.step ? "step done" : "step");
+    return `<span class="${cls}" data-testid="step-${n}">${n}. ${esc(s)}</span>`;
+  }).join("");
+
+  let body = "";
+  if(d.step === 1) body = payStepPayee(d);
+  else if(d.step === 2) body = payStepDetail(d);
+  else body = payStepReview(d);
+
+  return `
+  <h1>Make a payment</h1>
+  <p class="lede" data-testid="wizard-progress">Step ${d.step} of ${PAY_STEPS.length} &middot; ${esc(PAY_STEPS[d.step-1])}</p>
+  <div class="steps">${stepBar}</div>
+  <div class="card">${body}</div>`;
+}
+
+function payStepPayee(d){
+  const ps = myPayees();
+  return `
+  <div class="radio-set" style="margin-bottom:14px">
+    <label class="radio-row"><input type="radio" name="payeeMode" value="existing" data-field="payeeMode" data-testid="mode-existing" ${d.payeeMode==="existing"?"checked":""}>
+      <span><b>An existing payee</b><div class="hint">Someone already on your list.</div></span></label>
+    <label class="radio-row"><input type="radio" name="payeeMode" value="new" data-field="payeeMode" data-testid="mode-new" ${d.payeeMode==="new"?"checked":""}>
+      <span><b>Someone new</b><div class="hint">A new payee always needs a passcode, whatever the amount.</div></span></label>
+  </div>
+
+  ${d.payeeMode === "existing" ? `
+    <div class="field${bad(d,"payeeId")}">
+      <label for="f-payee">Payee</label>
+      <select id="f-payee" data-field="payeeId" data-testid="input-payee">
+        <option value="">Select...</option>
+        ${ps.map(p => `<option value="${esc(p.id)}" ${d.payeeId===p.id?"selected":""}>${esc(p.name)} ${esc(p.sort)} ${esc(p.number)}</option>`).join("")}
+      </select>${payErr(d,"payeeId")}
+    </div>` : `
+    <div class="grid g2">
+      <div class="field${bad(d,"np-name")}"><label for="f-np-name">Payee name</label>
+        <input id="f-np-name" type="text" data-field="np-name" data-testid="input-payee-name" value="${esc(d.newPayee.name)}">${payErr(d,"np-name")}</div>
+      <div class="field${bad(d,"np-country")}"><label for="f-np-country">Country</label>
+        <select id="f-np-country" data-field="np-country" data-testid="input-payee-country">
+          ${SERVED_COUNTRIES.map(c => `<option value="${esc(c[0])}" ${d.newPayee.country===c[0]?"selected":""}>${esc(c[1])}</option>`).join("")}
+        </select>${payErr(d,"np-country")}</div>
+      <div class="field${bad(d,"np-sort")}"><label for="f-np-sort">Sort code</label>
+        <input id="f-np-sort" type="text" placeholder="00-00-00" data-field="np-sort" data-testid="input-payee-sort" value="${esc(d.newPayee.sort)}">
+        <span class="hint">Six digits, as 00-00-00. Not required outside the United Kingdom.</span>${payErr(d,"np-sort")}</div>
+      <div class="field${bad(d,"np-number")}"><label for="f-np-number">Account number</label>
+        <input id="f-np-number" type="text" data-field="np-number" data-testid="input-payee-number" value="${esc(d.newPayee.number)}">
+        <span class="hint">Eight digits in the United Kingdom, otherwise an IBAN.</span>${payErr(d,"np-number")}</div>
+    </div>`}
+
+  <div class="row" style="margin-top:8px">
+    <button class="btn" data-act="pay-cancel" data-testid="btn-cancel">Cancel</button>
+    <button class="btn btn-primary" data-act="pay-next" data-testid="btn-continue">Continue</button>
+  </div>`;
+}
+
+function payStepDetail(d){
+  const accs = myAccounts();
+  const immediate = d.kind === "Immediate";
+  return `
+  <div class="grid g2">
+    <div class="field${bad(d,"fromAccount")}"><label for="f-from">Pay from</label>
+      <select id="f-from" data-field="fromAccount" data-testid="input-from">
+        ${accs.map(a => `<option value="${esc(a.id)}" ${d.fromAccount===a.id?"selected":""}>${esc(a.name)} - ${esc(money(a.available))} available</option>`).join("")}
+      </select>${payErr(d,"fromAccount")}</div>
+
+    <div class="field${bad(d,"amount")}"><label for="f-amount">Amount</label>
+      <input id="f-amount" type="text" inputmode="decimal" placeholder="0.00" data-field="amount" data-testid="input-amount" value="${esc(d.amount)}">
+      <span class="hint">Pounds and pence, for example 1250.00</span>${payErr(d,"amount")}</div>
+  </div>
+
+  <div class="field${bad(d,"kind")}"><label>Payment type</label>
+    <div class="radio-set">
+      ${["Immediate","Scheduled","Standing order"].map(k => `
+      <label class="radio-row"><input type="radio" name="kind" value="${esc(k)}" data-field="kind" data-testid="kind-${esc(k.toLowerCase().replace(/ /g,"-"))}" ${d.kind===k?"checked":""}>
+        <span>${esc(k)}</span></label>`).join("")}
+    </div>${payErr(d,"kind")}
+  </div>
+
+  <div class="grid g2">
+    ${d.kind !== "Standing order" ? `
+    <div class="field${bad(d,"rail")}"><label for="f-rail">Send by</label>
+      <select id="f-rail" data-field="rail" data-testid="input-rail">
+        <option value="Faster Payment" ${d.rail==="Faster Payment"?"selected":""}>Faster Payment</option>
+        <option value="CHAPS" ${d.rail==="CHAPS"?"selected":""}>CHAPS</option>
+      </select>
+      <span class="hint">Faster Payments run at any hour and settle at once. CHAPS has a 16:00 cut-off.</span>${payErr(d,"rail")}</div>` : ""}
+
+    <div class="field${bad(d,"valueDate")}"><label for="f-date">${d.kind === "Standing order" ? "First payment date" : "Value date"}</label>
+      <input id="f-date" type="text" placeholder="dd-mm-yyyy" data-field="valueDate" data-testid="input-date" value="${esc(d.valueDate)}">
+      <span class="hint">Today is ${esc(ukDate(today()))}. A weekend date moves to the next working day.</span>${payErr(d,"valueDate")}</div>
+
+    ${d.kind === "Standing order" ? `
+    <div class="field${bad(d,"frequency")}"><label for="f-freq">Frequency</label>
+      <select id="f-freq" data-field="frequency" data-testid="input-frequency">
+        ${["Weekly","Monthly","Quarterly"].map(f => `<option value="${esc(f)}" ${d.frequency===f?"selected":""}>${esc(f)}</option>`).join("")}
+      </select>${payErr(d,"frequency")}</div>
+    <div class="field${bad(d,"endDate")}"><label for="f-end">End date</label>
+      <input id="f-end" type="text" placeholder="dd-mm-yyyy" data-field="endDate" data-testid="input-end-date" value="${esc(d.endDate)}">
+      <span class="hint">Leave empty for no end date.</span>${payErr(d,"endDate")}</div>` : ""}
+
+    <div class="field${bad(d,"reference")}"><label for="f-ref">Reference</label>
+      <input id="f-ref" type="text" data-field="reference" data-testid="input-reference" value="${esc(d.reference)}">
+      <span class="hint">Shown on the payee's statement. Up to 18 characters.</span>${payErr(d,"reference")}</div>
+
+    ${v2() ? `
+    <div class="field${bad(d,"purpose")}"><label for="f-purpose">Payment purpose <span class="rel-new">New</span></label>
+      <select id="f-purpose" data-field="purpose" data-testid="input-purpose">
+        <option value="">Select...</option>
+        ${["Goods and services","Property","Family support","Investment","Salary","Other"].map(x => `<option value="${esc(x)}" ${d.purpose===x?"selected":""}>${esc(x)}</option>`).join("")}
+      </select>${payErr(d,"purpose")}</div>
+    <div class="field${bad(d,"sourceOfFunds")}"><label for="f-sof">Source of funds <span class="rel-new">New</span></label>
+      <select id="f-sof" data-field="sourceOfFunds" data-testid="input-source-of-funds">
+        <option value="">Select...</option>
+        ${["Salary or earnings","Savings","Property sale","Investment income","Gift or inheritance","Business income"].map(x => `<option value="${esc(x)}" ${d.sourceOfFunds===x?"selected":""}>${esc(x)}</option>`).join("")}
+      </select>${payErr(d,"sourceOfFunds")}</div>` : ""}
+  </div>
+
+  <div class="row" style="margin-top:8px">
+    <button class="btn" data-act="pay-back" data-testid="btn-back">Back</button>
+    <button class="btn btn-primary" data-act="pay-next" data-testid="btn-continue">Continue</button>
+  </div>`;
+}
+
+function payStepReview(d){
+  const ctx = buildContext(d);
+  if(!ctx) return `<p class="err">Complete the earlier steps first.</p>`;
+  const indicative = evaluatePA(ctx);
+  const cls = indicative.kind === "reject" ? "b-risk" : (indicative.kind === "stepup" ? "b-warn" : "b-ok");
+
+  /* A step-up hides the acceptance sitting behind it, and that acceptance
+     is what decides the value date. Showing the date the payment would
+     actually carry - rather than the date typed into the form - keeps the
+     review honest when the cut-off has moved it. */
+  const behind = indicative.kind === "stepup" ? evaluatePA(ctx, { skipStepUp:true }) : indicative;
+  const effectiveDate = behind.code === "PA-A03" ? nextWorkingDay(today()) : ctx.valueDate;
+  const rolled = effectiveDate !== ctx.valueDate;
+
+  return `
+  <dl class="kv" data-testid="review">
+    <dt>Pay from</dt><dd>${esc(ctx.account.name)} <span class="mono">${esc(ctx.account.sort)} ${esc(ctx.account.number)}</span></dd>
+    <dt>Payee</dt><dd data-testid="review-payee">${esc(ctx.payee.name)} <span class="mono">${esc(ctx.payee.number)}</span></dd>
+    <dt>Country</dt><dd>${esc(countryName(ctx.payee.country))}</dd>
+    <dt>Amount</dt><dd data-testid="review-amount"><b>${esc(gbp(ctx.amount))}</b></dd>
+    <dt>Payment type</dt><dd>${esc(d.kind)}${d.kind !== "Standing order" ? " by " + esc(d.rail) : " " + esc(d.frequency.toLowerCase())}</dd>
+    <dt>Value date</dt><dd data-testid="review-date">${esc(ukDate(effectiveDate))}${rolled ? ` <span class="pill p-warn" data-testid="review-date-moved">Moved</span>` : ""}</dd>
+    <dt>Reference</dt><dd>${esc(d.reference || "-")}</dd>
+    ${v2() ? `<dt>Payment purpose</dt><dd data-testid="review-purpose">${esc(d.purpose || "-")}</dd>
+    <dt>Source of funds</dt><dd data-testid="review-source-of-funds">${esc(d.sourceOfFunds || "-")}</dd>` : ""}
+  </dl>
+
+  <div class="banner ${cls}" data-testid="indicative-outcome" style="margin-top:14px">
+    <b class="mono" data-testid="indicative-code">${esc(indicative.code)}</b> &middot; ${esc(indicative.reason)}
+    <div class="hint" style="margin-top:.25rem">This is indicative. The decision is confirmed when you submit.</div>
+  </div>
+
+  <div class="row" style="margin-top:8px">
+    <button class="btn" data-act="pay-back" data-testid="btn-back">Back</button>
+    <button class="btn btn-primary btn-lg" data-act="pay-submit" data-testid="btn-submit">Submit payment</button>
+  </div>`;
+}
+
+/* ---------- step-up ---------- */
+function viewStepUp(){
+  const s = ui.stepUp;
+  if(!s) return `<p class="muted">Nothing is waiting for a passcode.</p>`;
+  return `
+  <h1>Confirm it is you</h1>
+  <p class="lede">We have sent a passcode to the mobile number on your account.</p>
+  <div class="card" style="max-width:460px">
+    <div class="banner b-info" data-testid="stepup-reason">
+      <b class="mono">${esc(s.code)}</b> &middot; ${esc(s.reason)}
+    </div>
+    <div class="banner b-warn" data-testid="stepup-passcode">
+      For this demonstration the passcode is <b class="mono" data-testid="passcode-value">${esc(s.passcode)}</b>
+    </div>
+    <div class="field${ui.stepUpError ? " bad" : ""}">
+      <label for="f-otp">Passcode</label>
+      <input id="f-otp" type="text" inputmode="numeric" maxlength="6" data-field="otp" data-testid="input-passcode" value="${esc(ui.otp || "")}">
+      ${ui.stepUpError ? `<span class="err" data-testid="error-passcode">${esc(ui.stepUpError)}</span>` : ""}
+      <span class="hint">Attempts used: ${s.attempts} of 3</span>
+    </div>
+    <div class="row">
+      <button class="btn" data-act="stepup-cancel" data-testid="btn-stepup-cancel">Cancel payment</button>
+      <button class="btn btn-primary" data-act="stepup-confirm" data-testid="btn-stepup-confirm">Confirm</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- payment detail ---------- */
+function viewPaymentDetail(ref){
+  const p = state.payments.find(x => x.ref === ref);
+  if(!p) return `<p class="err" data-testid="not-found">No payment with reference ${esc(ref)}.</p>`;
+  const cancellable = isCancellable(p);
+
+  return `
+  <h1>Payment ${esc(p.ref)}</h1>
+  <p class="lede">${esc(p.payeeName)} &middot; ${esc(gbp(p.amount))} &middot; value ${esc(ukDate(p.valueDate))}</p>
+
+  <div class="banner ${p.status === "Rejected" ? "b-risk" : (p.status === "Held" ? "b-warn" : "b-ok")}" data-testid="payment-outcome">
+    <b class="mono" data-testid="outcome-code">${esc(p.outcomeCode)}</b> &middot; ${esc(p.outcomeReason)}
+  </div>
+
+  <div class="card">
+    <dl class="kv">
+      <dt>Status</dt><dd><span class="pill ${statusPill(p.status)}" data-testid="payment-status">${esc(p.status)}</span></dd>
+      <dt>Rail</dt><dd>${esc(p.rail || p.kind)}</dd>
+      <dt>Submitted</dt><dd>${esc(ukDate(p.valueDate))} at ${esc(p.submittedAt)}</dd>
+      <dt>Reference</dt><dd>${esc(p.reference || "-")}</dd>
+      <dt>Release</dt><dd class="mono" data-testid="payment-release">${esc(p.release)}</dd>
+      ${p.holdCode ? `<dt>Hold</dt><dd class="mono" data-testid="payment-hold">${esc(p.holdCode)} ${esc(p.holdReason)}</dd>` : ""}
+      ${p.decidedBy ? `<dt>Decided by</dt><dd data-testid="payment-decided-by">${esc(p.decidedBy)}</dd>` : ""}
+      ${p.purpose ? `<dt>Payment purpose</dt><dd>${esc(p.purpose)}</dd>` : ""}
+      ${p.sourceOfFunds ? `<dt>Source of funds</dt><dd>${esc(p.sourceOfFunds)}</dd>` : ""}
+    </dl>
+
+    <div class="sep"></div>
+
+    ${cancellable
+      ? `<button class="btn btn-risk" data-act="cancel-payment" data-ref="${esc(p.ref)}" data-testid="btn-cancel-payment">Cancel this payment</button>
+         <div class="hint" style="margin-top:.4rem">A payment can be cancelled while it is scheduled or held.</div>`
+      : `<div class="banner b-info" data-testid="not-cancellable" style="margin:0">
+           This payment can no longer be cancelled. ${p.rail === "Faster Payment" && p.status === "Settled"
+             ? "A Faster Payment settles the moment it is accepted."
+             : "It has already been " + esc(p.status.toLowerCase()) + "."}
+         </div>`}
+  </div>
+
+  ${(p.audit || []).length ? `
+  <div class="card" style="margin-top:14px">
+    <h2>History</h2>
+    <table data-testid="grid-audit">
+      <thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead>
+      <tbody>${p.audit.map(a => `<tr><td>${esc(a.at)}</td><td>${esc(a.who)}</td><td>${esc(a.what)}</td></tr>`).join("")}</tbody>
+    </table>
+  </div>` : ""}`;
+}
+
+function viewStandingOrders(){
+  const c = myCustomer();
+  const os = state.standingOrders.filter(o => o.customerId === c.id);
+  return `
+  <h1>Standing orders</h1>
+  <div class="card">
+    ${os.length ? `
+    <table data-testid="grid-standing-orders">
+      <thead><tr><th>Reference</th><th>Payee</th><th class="num">Amount</th><th>Frequency</th><th>Next</th><th>Ends</th><th>Status</th></tr></thead>
+      <tbody>${os.map(o => `
+        <tr data-testid="row-${esc(o.ref)}">
+          <td class="mono">${esc(o.ref)}</td><td>${esc(o.payeeName)}</td>
+          <td class="num">${esc(money(o.amount))}</td><td>${esc(o.frequency)}</td>
+          <td>${esc(ukDate(o.nextDate))}</td><td>${esc(o.endDate ? ukDate(o.endDate) : "No end date")}</td>
+          <td><span class="pill ${statusPill(o.status)}">${esc(o.status)}</span></td>
+        </tr>`).join("")}</tbody>
+    </table>` : `<p class="muted" data-testid="standing-orders-empty">No standing orders.</p>`}
+  </div>`;
+}
+/* ============================================================
+   PAYMENT FLOW - context, validation, submission, cancellation
+   ============================================================ */
+
+/* The context the PA engine reads. A new payee is represented by a
+   provisional object so that the engine sees the same shape whether
+   the payee already exists or is about to be created. */
+function buildContext(d){
+  const c = myCustomer();
+  if(!c) return null;
+  const account = accountById(d.fromAccount);
+  if(!account) return null;
+
+  let payee;
+  if(d.payeeMode === "existing"){
+    payee = payeeById(d.payeeId);
+  }else{
+    payee = {
+      id: "", customerId: c.id, name: d.newPayee.name, sort: d.newPayee.sort,
+      number: d.newPayee.number, country: d.newPayee.country,
+      established: false, createdToday: true
+    };
+  }
+  if(!payee) return null;
+
+  const amount = toPence(d.amount);
+  if(amount === null || isNaN(amount)) return null;
+
+  const parsed = parseUk(d.valueDate);
+  const valueDate = parsed ? onOrNextWorkingDay(iso(parsed)) : today();
+
+  return {
+    account, payee, amount,
+    rail: d.kind === "Standing order" ? "Standing order" : d.rail,
+    kind: d.kind,
+    valueDate, customer: c,
+    spentToday: spentToday(c.id),
+    payeeCreatedToday: !!payee.createdToday,
+    samePayeeToday: payee.id ? countToPayeeToday(c.id, payee.id) : 0,
+    release: v2() ? RELEASE_VERSION : "1.0"
+  };
+}
+
+/* ---------- validation ----------
+   Every failing field is reported at once, each message naming its own
+   field. An agent that reads the messages can fix everything in one
+   pass rather than discovering one error at a time. */
+function validatePayStep(d){
+  d.errors = {};
+
+  if(d.step === 1){
+    if(d.payeeMode === "existing"){
+      if(!d.payeeId) d.errors["payeeId"] = "Select a payee.";
+    }else{
+      const np = d.newPayee;
+      if(!np.name.trim()) d.errors["np-name"] = "Payee name is required.";
+      else if(np.name.trim().length < 2) d.errors["np-name"] = "Enter the payee's full name.";
+      if(np.country === "GB"){
+        if(!np.sort.trim()) d.errors["np-sort"] = "Sort code is required.";
+        else if(!/^\d{2}-\d{2}-\d{2}$/.test(np.sort.trim())) d.errors["np-sort"] = "Enter the sort code as 00-00-00.";
+        if(!np.number.trim()) d.errors["np-number"] = "Account number is required.";
+        else if(!/^\d{8}$/.test(np.number.trim())) d.errors["np-number"] = "A United Kingdom account number is eight digits.";
+      }else{
+        if(!np.number.trim()) d.errors["np-number"] = "An IBAN is required for an international payee.";
+        else if(!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(np.number.trim().toUpperCase()))
+          d.errors["np-number"] = "Enter a valid IBAN, for example DE89370400440532013000.";
+      }
+    }
+  }
+
+  if(d.step === 2){
+    if(!d.fromAccount) d.errors["fromAccount"] = "Select an account to pay from.";
+    const amt = toPence(d.amount);
+    if(amt === null) d.errors["amount"] = "Amount is required.";
+    else if(isNaN(amt)) d.errors["amount"] = "Enter an amount in pounds and pence, for example 1250.00";
+    else if(amt <= 0) d.errors["amount"] = "Enter an amount greater than zero.";
+
+    const vd = parseUk(d.valueDate);
+    if(!d.valueDate.trim()) d.errors["valueDate"] = "Value date is required.";
+    else if(!vd) d.errors["valueDate"] = "Enter the date as dd-mm-yyyy.";
+    else if(iso(vd) < today()) d.errors["valueDate"] = "The value date cannot be in the past.";
+    else if(daysBetween(today(), iso(vd)) > 365) d.errors["valueDate"] = "A payment cannot be dated more than 365 days ahead.";
+
+    if(d.kind === "Immediate" && vd && iso(vd) !== today())
+      d.errors["valueDate"] = "An immediate payment must be dated today. Choose Scheduled for a later date.";
+
+    if(d.reference && d.reference.length > 18) d.errors["reference"] = "A reference can be at most 18 characters.";
+
+    if(d.kind === "Standing order"){
+      if(d.endDate.trim()){
+        const ed = parseUk(d.endDate);
+        if(!ed) d.errors["endDate"] = "Enter the date as dd-mm-yyyy.";
+        else if(vd && iso(ed) <= iso(vd)) d.errors["endDate"] = "The end date must be after the first payment date.";
+      }
+    }
+
+    /* Release 2.1 adds two mandatory fields. They are collected for
+       financial crime reporting and do not change any decision. */
+    if(v2()){
+      if(!d.purpose) d.errors["purpose"] = "Payment purpose is required.";
+      if(!d.sourceOfFunds) d.errors["sourceOfFunds"] = "Source of funds is required.";
+    }
+  }
+
+  return Object.keys(d.errors).length === 0;
+}
+
+/* ---------- submission ---------- */
+function newPaymentRef(){ const n = state.nextPayment++; return "MPY-" + pad(n, 6); }
+function newOrderRef(){ const n = state.nextOrder++; return "MSO-" + pad(n, 5); }
+function newCaseRef(){ const n = state.nextCase++; return "MFC-" + pad(n, 5); }
+
+function stamp(){ return ukDate(today()) + " " + clockText(); }
+
+function submitPayment(){
+  const d = ensureDraft();
+  const ctx = buildContext(d);
+  if(!ctx){ toast("Complete the earlier steps first."); return; }
+
+  const decision = evaluatePA(ctx);
+
+  if(decision.kind === "reject"){
+    recordPayment(ctx, d, decision, "Rejected");
+    return;
+  }
+
+  if(decision.kind === "stepup"){
+    /* The passcode is fixed per submission rather than random, so a
+       journey can read it from the page and type it back. A random
+       code that is also displayed would be no more secure and much
+       harder to automate. */
+    ui.stepUp = {
+      code: decision.code, reason: decision.reason,
+      passcode: String(100000 + (ctx.amount % 900000)).slice(0,6),
+      attempts: 0
+    };
+    ui.otp = ""; ui.stepUpError = "";
+    go("/online/pay/confirm");
+    return;
+  }
+
+  recordPayment(ctx, d, decision, null);
+}
+
+function confirmStepUp(){
+  const s = ui.stepUp;
+  if(!s) return;
+  const given = String(ui.otp || "").trim();
+  if(given !== s.passcode){
+    s.attempts += 1;
+    if(s.attempts >= 3){
+      ui.stepUpError = "";
+      ui.stepUp = null;
+      clearDraft(); save();
+      toast("Too many incorrect passcodes. The payment was not made.");
+      go("/online");
+      return;
+    }
+    ui.stepUpError = "That passcode is not correct.";
+    render();
+    return;
+  }
+
+  /* The passcode satisfied the step-up trigger, so the engine runs
+     again with the step-up rules skipped and returns the acceptance
+     that sits behind them. */
+  const d = ensureDraft();
+  const ctx = buildContext(d);
+  if(!ctx){ toast("The payment could not be completed."); go("/online"); return; }
+  const decision = evaluatePA(ctx, { skipStepUp:true });
+  ui.stepUp = null; ui.otp = ""; ui.stepUpError = "";
+
+  if(decision.kind === "reject"){ recordPayment(ctx, d, decision, "Rejected"); return; }
+  recordPayment(ctx, d, decision, null);
+}
+
+function recordPayment(ctx, d, decision, forcedStatus){
+  const c = ctx.customer;
+
+  /* A new payee is created only when the payment is actually recorded,
+     so an abandoned draft never leaves a payee behind. */
+  let payee = ctx.payee;
+  if(d.payeeMode === "new" && decision.kind !== "reject"){
+    payee = {
+      id: "P-" + pad(state.payees.length + 1, 4),
+      customerId: c.id, name: d.newPayee.name.trim(), sort: d.newPayee.sort.trim(),
+      number: d.newPayee.number.trim(), country: d.newPayee.country,
+      established: false, createdToday: true, reference: d.reference
+    };
+    state.payees.push(payee);
+  }
+
+  if(decision.code === "PA-A04"){
+    const ref = newOrderRef();
+    const order = {
+      ref, customerId:c.id, payeeId:payee.id, payeeName:payee.name,
+      accountId:ctx.account.id, amount:ctx.amount, frequency:d.frequency,
+      nextDate:ctx.valueDate, endDate: d.endDate.trim() ? iso(parseUk(d.endDate)) : "",
+      status:"Active", release: ctx.release, createdAt: stamp()
+    };
+    state.standingOrders.push(order);
+    clearDraft(); save();
+    toast(ref + " set up.");
+    go("/online/standing-orders");
+    return;
+  }
+
+  const ref = newPaymentRef();
+  const valueDate = decision.code === "PA-A03" ? nextWorkingDay(today()) : ctx.valueDate;
+
+  const p = {
+    ref, customerId:c.id, payeeId:payee.id, payeeName:payee.name,
+    accountId:ctx.account.id, amount:ctx.amount, rail:ctx.rail, kind:d.kind,
+    valueDate, reference:d.reference, submittedAt: clockText(),
+    outcomeCode: decision.code, outcomeReason: decision.reason,
+    purpose: d.purpose || "", sourceOfFunds: d.sourceOfFunds || "",
+    release: ctx.release,
+    status: forcedStatus || "Scheduled",
+    audit: [{ at: stamp(), who: session.name, what: "Submitted - " + decision.code }]
+  };
+
+  if(forcedStatus === "Rejected"){
+    state.payments.push(p);
+    clearDraft(); save();
+    toast(ref + " was not accepted.");
+    go("/online/payment/" + ref);
+    return;
+  }
+
+  /* The channel accepted it, so operations now looks at it. */
+  const hold = evaluatePH({
+    payment: p, payee, amount: ctx.amount, customer: c,
+    samePayeeToday: ctx.samePayeeToday + 1,
+    payeeCreatedToday: ctx.payeeCreatedToday
+  });
+
+  if(hold){
+    p.status = "Held";
+    p.holdCode = hold.code; p.holdReason = hold.reason; p.holdOwner = hold.owner;
+    p.audit.push({ at: stamp(), who:"Sentinel", what:"Held - " + hold.code });
+    state.cases.push({
+      ref: newCaseRef(), paymentRef: ref, code: hold.code, reason: hold.reason,
+      owner: hold.owner, status:"Open", raisedAt: stamp(), investigatedBy:"", notes:""
+    });
+  }else if(decision.code === "PA-A01" && ctx.rail === "Faster Payment"){
+    /* A Faster Payment settles the moment it is accepted. That is what
+       makes it irrevocable, and it is the boundary worth demonstrating. */
+    p.status = "Settled";
+    applyDebit(ctx.account.id, ctx.amount);
+    p.audit.push({ at: stamp(), who:"Marchmont", what:"Settled" });
+  }else{
+    p.status = "Scheduled";
+  }
+
+  state.payments.push(p);
+  clearDraft(); save();
+  toast(ref + " " + p.status.toLowerCase() + ".");
+  go("/online/payment/" + ref);
+}
+
+function applyDebit(accountId, amount){
+  const a = accountById(accountId);
+  if(!a) return;
+  a.balance -= amount;
+  a.available -= amount;
+}
+function releaseHold(accountId, amount){
+  const a = accountById(accountId);
+  if(!a) return;
+  a.available += amount;
+}
+
+function cancelPayment(ref){
+  const p = state.payments.find(x => x.ref === ref);
+  if(!p) return;
+  if(!isCancellable(p)){
+    toast("This payment can no longer be cancelled.");
+    return;
+  }
+  p.status = "Cancelled";
+  p.audit.push({ at: stamp(), who: session.name, what: "Cancelled by the customer" });
+  const cs = state.cases.filter(x => x.paymentRef === ref && x.status === "Open");
+  cs.forEach(x => { x.status = "Closed"; x.notes = "Payment cancelled by the customer."; });
+  save(); render();
+  toast(ref + " cancelled.");
+}
+/* ============================================================
+   SENTINEL PAYMENT OPERATIONS - the bank side console
+   ============================================================ */
+
+function openCases(){ return state.cases.filter(c => c.status === "Open"); }
+function caseByRef(ref){ return state.cases.find(c => c.ref === ref) || null; }
+function paymentByRef(ref){ return state.payments.find(p => p.ref === ref) || null; }
+
+/* Release authority. Payment Operations works the ordinary queue up to
+   its limit; anything larger, and anything held for a financial crime
+   reason, belongs to Financial Crime. The administrator has no limit. */
+function releaseLimitFor(role){
+  if(role === "Platform Administrator") return Infinity;
+  if(role === "Financial Crime") return Infinity;
+  return RELEASE_LIMIT[role] !== undefined ? RELEASE_LIMIT[role] : 0;
+}
+function mayDecide(user, kase, payment){
+  if(!user) return { ok:false, why:"Sign in to decide this case." };
+  if(user.role === "Customer") return { ok:false, why:"A customer cannot decide a case." };
+
+  if(kase.owner === "Financial Crime" && user.role === "Payment Operations")
+    return { ok:false, why:"This case is held for a financial crime reason and only Financial Crime can decide it." };
+
+  const limit = releaseLimitFor(user.role);
+  if(payment.amount > limit)
+    return { ok:false, why:"This payment is above your release limit of " + money(limit) + ". Only Financial Crime can release it." };
+
+  /* Four eyes. Whoever investigated the case is not the person who
+     decides it. There is one account per role, so a journey covering
+     this control and a journey completing a release are two journeys,
+     not one. */
+  if(kase.investigatedBy && kase.investigatedBy === user.name)
+    return { ok:false, why:"You investigated this case, so someone else must decide it." };
+
+  return { ok:true, why:"" };
+}
+
+function viewSentinelQueue(){
+  const open = openCases();
+  const mine = open.filter(c => c.owner === session.role || session.role === "Platform Administrator");
+  const total = open.reduce((s,c) => { const p = paymentByRef(c.paymentRef); return s + (p ? p.amount : 0); }, 0);
+
+  return `
+  <h1>Hold queue</h1>
+  <p class="lede">${open.length} open ${open.length === 1 ? "case" : "cases"} &middot; ${esc(gbp(total))} held &middot; signed in as ${esc(session.role)}</p>
+
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card"><div class="stat-l">Open cases</div><div class="stat" data-testid="stat-open">${open.length}</div></div>
+    <div class="card"><div class="stat-l">Yours to decide</div><div class="stat" data-testid="stat-mine">${mine.length}</div></div>
+    <div class="card"><div class="stat-l">Your release limit</div><div class="stat" data-testid="stat-limit">${releaseLimitFor(session.role) === Infinity ? "No limit" : esc(money(releaseLimitFor(session.role)))}</div></div>
+  </div>
+
+  <div class="card">
+    ${open.length ? `
+    <table data-testid="grid-queue">
+      <thead><tr><th>Case</th><th>Payment</th><th>Payee</th><th class="num">Amount</th><th>Code</th><th>Owner</th><th></th></tr></thead>
+      <tbody>${open.map(c => {
+        const p = paymentByRef(c.paymentRef);
+        return `
+        <tr data-testid="row-${esc(c.ref)}">
+          <td class="mono">${esc(c.ref)}</td>
+          <td class="mono">${esc(c.paymentRef)}</td>
+          <td>${p ? esc(p.payeeName) : ""}</td>
+          <td class="num">${p ? esc(money(p.amount)) : ""}</td>
+          <td><span class="pill ${c.owner === "Financial Crime" ? "p-risk" : "p-warn"}" data-testid="code-${esc(c.ref)}">${esc(c.code)}</span></td>
+          <td>${esc(c.owner)}</td>
+          <td><a href="#/sentinel/case/${esc(c.ref)}" data-testid="open-${esc(c.ref)}">Investigate</a></td>
+        </tr>`; }).join("")}</tbody>
+    </table>` : `<p class="muted" data-testid="queue-empty">No open cases. Make a payment that trips a hold rule in Marchmont Online.</p>`}
+  </div>`;
+}
+
+function viewSentinelCase(ref){
+  const k = caseByRef(ref);
+  if(!k) return `<p class="err" data-testid="not-found">No case with reference ${esc(ref)}.</p>`;
+  const p = paymentByRef(k.paymentRef);
+  if(!p) return `<p class="err" data-testid="not-found">The payment for this case is missing.</p>`;
+  const gate = mayDecide(session, k, p);
+  const cust = CUSTOMERS[p.customerId];
+
+  return `
+  <h1>Case ${esc(k.ref)}</h1>
+  <p class="lede">Payment ${esc(p.ref)} &middot; ${esc(gbp(p.amount))} &middot; ${esc(p.payeeName)}</p>
+
+  <div class="banner ${k.owner === "Financial Crime" ? "b-risk" : "b-warn"}" data-testid="case-reason">
+    <b class="mono" data-testid="case-code">${esc(k.code)}</b> &middot; ${esc(k.reason)}
+    <div class="hint" style="margin-top:.25rem">Owned by ${esc(k.owner)}</div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2>Payment</h2>
+      <dl class="kv">
+        <dt>Reference</dt><dd class="mono">${esc(p.ref)}</dd>
+        <dt>Customer</dt><dd>${esc(cust ? cust.name : p.customerId)} <span class="muted">(${esc(cust ? cust.tier : "")})</span></dd>
+        <dt>Payee</dt><dd>${esc(p.payeeName)}</dd>
+        <dt>Amount</dt><dd><b>${esc(gbp(p.amount))}</b></dd>
+        <dt>Rail</dt><dd>${esc(p.rail)}</dd>
+        <dt>Value date</dt><dd>${esc(ukDate(p.valueDate))}</dd>
+        <dt>Channel outcome</dt><dd class="mono">${esc(p.outcomeCode)}</dd>
+        <dt>Release</dt><dd class="mono">${esc(p.release)}</dd>
+        ${p.purpose ? `<dt>Payment purpose</dt><dd>${esc(p.purpose)}</dd>` : ""}
+        ${p.sourceOfFunds ? `<dt>Source of funds</dt><dd>${esc(p.sourceOfFunds)}</dd>` : ""}
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2>Investigation</h2>
+      <div class="field">
+        <label for="f-notes">Investigation note</label>
+        <textarea id="f-notes" rows="4" data-field="case-notes" data-testid="input-case-notes">${esc(k.notes)}</textarea>
+        <span class="hint">At least 20 characters before a decision can be recorded.</span>
+        ${ui.caseError ? `<span class="err" data-testid="error-case-notes">${esc(ui.caseError)}</span>` : ""}
+      </div>
+      <div class="row">
+        <button class="btn" data-act="case-save" data-ref="${esc(k.ref)}" data-testid="btn-save-note">Save note</button>
+      </div>
+      ${k.investigatedBy ? `<div class="hint" style="margin-top:.5rem" data-testid="case-investigator">Investigated by ${esc(k.investigatedBy)}</div>` : ""}
+
+      <div class="sep"></div>
+
+      ${gate.ok ? `
+        <div class="row">
+          <button class="btn btn-sent" data-act="case-release" data-ref="${esc(k.ref)}" data-testid="btn-release">Release payment</button>
+          <button class="btn btn-risk" data-act="case-reject" data-ref="${esc(k.ref)}" data-testid="btn-reject">Reject payment</button>
+        </div>`
+      : `<div class="banner b-info" data-testid="decision-blocked" style="margin:0">${esc(gate.why)}</div>`}
+    </div>
+  </div>`;
+}
+
+function viewSentinelPayments(){
+  const ps = state.payments.slice().sort((a,b) => b.ref.localeCompare(a.ref));
+  const q = (ui.sentinelQuery || "").trim().toLowerCase();
+  const rows = q ? ps.filter(p => p.ref.toLowerCase().indexOf(q) !== -1 || p.payeeName.toLowerCase().indexOf(q) !== -1) : ps;
+
+  return `
+  <h1>Payment enquiry</h1>
+  <p class="lede">Every payment across both customers. Search by reference or payee.</p>
+  <div class="card">
+    <div class="field" style="max-width:360px">
+      <label for="f-search">Search</label>
+      <input id="f-search" type="text" data-field="sentinel-search" data-testid="filter-search" value="${esc(ui.sentinelQuery || "")}" placeholder="MPY-000001 or a payee name">
+    </div>
+    ${rows.length ? `
+    <table data-testid="grid-sentinel-payments">
+      <thead><tr><th>Reference</th><th>Payee</th><th class="num">Amount</th><th>Value date</th><th>Channel</th><th>Hold</th><th>Status</th></tr></thead>
+      <tbody>${rows.map(p => `
+        <tr data-testid="row-${esc(p.ref)}">
+          <td class="mono"><a href="#/sentinel/payment/${esc(p.ref)}" data-testid="open-${esc(p.ref)}">${esc(p.ref)}</a></td>
+          <td>${esc(p.payeeName)}</td>
+          <td class="num">${esc(money(p.amount))}</td>
+          <td>${esc(ukDate(p.valueDate))}</td>
+          <td class="mono">${esc(p.outcomeCode)}</td>
+          <td class="mono">${esc(p.holdCode || "")}</td>
+          <td><span class="pill ${statusPill(p.status)}" data-testid="status-${esc(p.ref)}">${esc(p.status)}</span></td>
+        </tr>`).join("")}</tbody>
+    </table>` : `<p class="muted" data-testid="no-results">Nothing matches that search.</p>`}
+  </div>`;
+}
+
+function viewSentinelPayment(ref){
+  const p = paymentByRef(ref);
+  if(!p) return `<p class="err" data-testid="not-found">No payment with reference ${esc(ref)}.</p>`;
+  const k = state.cases.find(c => c.paymentRef === ref);
+  return `
+  <h1>${esc(p.ref)}</h1>
+  <p class="lede">${esc(p.payeeName)} &middot; ${esc(gbp(p.amount))}</p>
+  <div class="card">
+    <dl class="kv">
+      <dt>Status</dt><dd><span class="pill ${statusPill(p.status)}" data-testid="payment-status">${esc(p.status)}</span></dd>
+      <dt>Channel outcome</dt><dd class="mono" data-testid="outcome-code">${esc(p.outcomeCode)}</dd>
+      <dt>Hold</dt><dd class="mono" data-testid="hold-code">${esc(p.holdCode || "none")}</dd>
+      <dt>Case</dt><dd class="mono">${k ? `<a href="#/sentinel/case/${esc(k.ref)}" data-testid="open-case">${esc(k.ref)}</a>` : "none"}</dd>
+      <dt>Decided by</dt><dd data-testid="decided-by">${esc(p.decidedBy || "-")}</dd>
+      <dt>Release</dt><dd class="mono">${esc(p.release)}</dd>
+    </dl>
+    ${(p.audit || []).length ? `
+    <div class="sep"></div>
+    <table data-testid="grid-audit">
+      <thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead>
+      <tbody>${p.audit.map(a => `<tr><td>${esc(a.at)}</td><td>${esc(a.who)}</td><td>${esc(a.what)}</td></tr>`).join("")}</tbody>
+    </table>` : ""}
+  </div>`;
+}
+
+/* ---------- decisions ---------- */
+function saveCaseNote(ref){
+  const k = caseByRef(ref);
+  if(!k) return;
+  k.notes = String(ui.caseNotes !== undefined ? ui.caseNotes : k.notes);
+  if(k.notes.trim().length >= 20){
+    k.investigatedBy = session.name;
+    ui.caseError = "";
+    save(); render();
+    toast("Investigation note saved.");
+  }else{
+    ui.caseError = "An investigation note of at least 20 characters is required.";
+    render();
+  }
+}
+
+function decideCase(ref, action){
+  const k = caseByRef(ref);
+  if(!k) return;
+  const p = paymentByRef(k.paymentRef);
+  if(!p) return;
+
+  if(k.notes.trim().length < 20){
+    ui.caseError = "An investigation note of at least 20 characters is required.";
+    render();
+    return;
+  }
+  const gate = mayDecide(session, k, p);
+  if(!gate.ok){ toast(gate.why); return; }
+
+  k.status = "Closed";
+  p.decidedBy = session.name;
+
+  if(action === "release"){
+    p.status = "Released";
+    p.audit.push({ at: stamp(), who: session.name, what: "Released after investigation" });
+    applyDebit(p.accountId, p.amount);
+    toast(p.ref + " released.");
+  }else{
+    p.status = "Rejected";
+    p.outcomeReason = "Rejected by " + session.role + " after investigation.";
+    p.audit.push({ at: stamp(), who: session.name, what: "Rejected after investigation" });
+    toast(p.ref + " rejected.");
+  }
+  ui.caseError = "";
+  save();
+  go("/sentinel");
+}
+/* ============================================================
+   SHELL, EVENTS AND BOOT
+   ============================================================ */
+
+/* ---------- sign in ---------- */
+function viewLogin(){
+  return `
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="brand" style="margin-bottom:14px">
+        <span class="brand-mark">MB</span>
+        <span><span class="brand-name" style="color:var(--ink)">Marchmont Bank</span>
+        <div class="brand-sub" style="color:var(--ink-3)">Payments</div></span>
+      </div>
+
+      ${loginError ? `<div class="banner b-risk" data-testid="login-error">${esc(loginError)}</div>` : ""}
+
+      <form id="login-form" data-testid="login-form" autocomplete="off">
+        <div class="field${ui.loginErrUser ? " bad" : ""}">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" data-lfield="username" value="${esc(loginDraft.username)}" data-testid="input-username" autocomplete="username">
+          ${ui.loginErrUser ? `<span class="err" data-testid="error-username">${esc(ui.loginErrUser)}</span>` : ""}
+        </div>
+        <div class="field${ui.loginErrPass ? " bad" : ""}">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" data-lfield="password" value="${esc(loginDraft.password)}" data-testid="input-password" autocomplete="current-password">
+          ${ui.loginErrPass ? `<span class="err" data-testid="error-password">${esc(ui.loginErrPass)}</span>` : ""}
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" data-testid="btn-signin">Sign in</button>
+      </form>
+
+      <div class="cred" data-testid="demo-credentials">
+        <b>Demonstration accounts</b> - password <span class="mono">${esc(PASSWORD)}</span>
+        <table>
+          <tbody>${USERS.map(u => `<tr><td class="mono">${esc(u.username)}</td><td>${esc(u.role)}</td></tr>`).join("")}</tbody>
+        </table>
+      </div>
+      <div class="hint" style="margin-top:10px" data-testid="demo-disclosure">
+        Marchmont Bank is a fictional firm. Every account, payee and payment here is synthetic.
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-sm" data-act="reset" data-testid="login-reset">Reset demo data</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- launcher ---------- */
+function viewLauncher(){
+  const canOnline = canReach(session, "online");
+  const canSentinel = canReach(session, "sentinel");
+  return `
+  <div class="launch">
+    <div class="launch-in">
+      <div class="brand" style="margin-bottom:6px">
+        <span class="brand-mark">MB</span>
+        <span><span class="brand-name">Marchmont Bank</span><div class="brand-sub">Applications</div></span>
+      </div>
+      <p style="color:#9aa8b6; margin:0 0 22px">Signed in as ${esc(session.name)} - ${esc(session.role)}</p>
+
+      <div class="grid g2">
+        <a class="app-card" href="#/online" data-testid="app-online" ${canOnline ? "" : `aria-disabled="true"`}>
+          <h3>Marchmont Online</h3>
+          <p>Accounts, payees and payments. Make an immediate, scheduled or standing order payment.</p>
+          ${canOnline ? "" : `<p class="muted" style="margin-top:.5rem">Not available to your role.</p>`}
+        </a>
+        <a class="app-card" href="#/sentinel" data-testid="app-sentinel" ${canSentinel ? "" : `aria-disabled="true"`}>
+          <h3>Sentinel Payment Operations</h3>
+          <p>Hold queue, investigation and the release or reject decision.</p>
+          ${canSentinel ? "" : `<p class="muted" style="margin-top:.5rem">Not available to your role.</p>`}
+        </a>
+      </div>
+
+      <div class="row" style="margin-top:22px">
+        <button class="btn btn-sm" data-act="sign-out" data-testid="sign-out">Sign out</button>
+        <span class="muted" style="font-size:.8rem">Build <span class="mono" data-testid="build-id">${esc(BUILD)}</span></span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- chrome ---------- */
+const NAV = {
+  online: [
+    ["#/online", "Overview", "nav-overview"],
+    ["#/online/pay/new", "Make a payment", "nav-new-payment"],
+    ["#/online/payees", "Payees", "nav-payees"],
+    ["#/online/standing-orders", "Standing orders", "nav-standing-orders"]
+  ],
+  sentinel: [
+    ["#/sentinel", "Hold queue", "nav-queue"],
+    ["#/sentinel/payments", "Payment enquiry", "nav-payments"]
+  ]
+};
+
+function shell(system, body, crumb){
+  const sent = system === "sentinel";
+  const nav = NAV[system] || [];
+  const hash = "#" + location.hash.replace(/^#/, "");
+  return `
+  ${v2() ? `<div class="rel-banner" data-testid="release-banner"><b>New features are on.</b> This application is running <span class="rel-ver">Marchmont release ${esc(RELEASE_VERSION)}</span>, which adds two fields to a payment and lowers the step-up limit. Turn it off in the sidebar to go back to the previous release.</div>` : ""}
+  <div class="shell">
+    <aside class="aside">
+      <div class="brand">
+        <span class="brand-mark${sent ? " sent" : ""}">${sent ? "SN" : "MB"}</span>
+        <span><span class="brand-name">${sent ? "Sentinel" : "Marchmont"}</span>
+        <div class="brand-sub">${sent ? "Payment Operations" : "Online"}</div></span>
+      </div>
+
+      <nav class="nav" data-testid="main-nav">
+        ${nav.map(n => `<a href="${n[0]}" class="${hash === n[0] ? "on" + (sent ? " sent" : "") : ""}" data-testid="${n[2]}">${esc(n[1])}</a>`).join("")}
+        <div class="nav-head">Session</div>
+        <a href="#/apps" data-testid="nav-applications">Applications</a>
+        <a href="#" data-act="sign-out" data-testid="sign-out">Sign out</a>
+      </nav>
+
+      <div class="aside-foot">
+        <div data-testid="current-user"><b style="color:#e3ebf2">${esc(session.name)}</b><div>${esc(session.role)}</div></div>
+        <div style="margin-top:3px">Build <span class="mono" data-testid="build-id">${esc(BUILD)}</span></div>
+        <div class="res-block">
+          <button class="btn-rel" data-act="release-toggle" data-testid="release-toggle" type="button" aria-pressed="${v2() ? "true" : "false"}">
+            <span class="rel-dot" aria-hidden="true"></span>${v2() ? "New features on" : "New features"}
+          </button>
+          <a class="btn-kb" href="kb/${v2() ? "Marchmont-Banking-KB-Source-v2.md" : "Marchmont-Banking-KB-Source.md"}"
+             download="${v2() ? "Marchmont-Banking-KB-Source-v2.md" : "Marchmont-Banking-KB-Source.md"}" data-testid="kb-download">
+            <span aria-hidden="true">&#8595;</span>${v2() ? "Download KB source v2" : "Download KB source"}</a>
+          <span class="dir-group" data-testid="directives">
+            <span class="dir-label">Directives</span>
+            <a class="dir-link" href="directives/Marchmont-Banking-Directives.md" download="Marchmont-Banking-Directives.md" data-testid="dir-download">Download</a>
+          </span>
+          <button class="btn btn-sm" data-act="reset" data-testid="reset-data">Reset demo data</button>
+        </div>
+        <div class="demo-note" data-testid="sidebar-disclosure">Demo - synthetic data</div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar"><div class="topbar-in">
+        <span class="crumb" data-testid="breadcrumb">${esc(crumb)}</span>
+        <span class="muted" style="font-size:.8rem; margin-left:auto">Clock ${esc(ukDate(today()))} ${esc(clockText())}</span>
+      </div></header>
+      <div class="view" data-testid="view">${body}</div>
+    </div>
+  </div>`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const root = $("#root");
+  if(!session){ root.innerHTML = viewLogin(); return; }
+
+  const r = route();
+  const sys = currentSystem();
+
+  if(sys === "none"){ root.innerHTML = viewLauncher(); return; }
+
+  if(!canReach(session, sys)){
+    toast("Your role does not have access to that application.");
+    go("/apps");
+    root.innerHTML = viewLauncher();
+    return;
+  }
+
+  let body = "", crumb = "";
+  if(sys === "online"){
+    const c = myCustomer();
+    if(!c){ root.innerHTML = viewLauncher(); return; }
+    if(r[1] === "pay" && r[2] === "new"){ body = viewPayNew(); crumb = "Marchmont Online / Make a payment"; }
+    else if(r[1] === "pay" && r[2] === "confirm"){ body = viewStepUp(); crumb = "Marchmont Online / Confirm it is you"; }
+    else if(r[1] === "payees"){ body = viewPayees(); crumb = "Marchmont Online / Payees"; }
+    else if(r[1] === "standing-orders"){ body = viewStandingOrders(); crumb = "Marchmont Online / Standing orders"; }
+    else if(r[1] === "payment" && r[2]){ body = viewPaymentDetail(decodeURIComponent(r[2])); crumb = "Marchmont Online / Payment"; }
+    else { body = viewOnlineDashboard(); crumb = "Marchmont Online / Overview"; }
+  }else{
+    if(r[1] === "case" && r[2]){ body = viewSentinelCase(decodeURIComponent(r[2])); crumb = "Sentinel / Case"; }
+    else if(r[1] === "payments"){ body = viewSentinelPayments(); crumb = "Sentinel / Payment enquiry"; }
+    else if(r[1] === "payment" && r[2]){ body = viewSentinelPayment(decodeURIComponent(r[2])); crumb = "Sentinel / Payment"; }
+    else { body = viewSentinelQueue(); crumb = "Sentinel / Hold queue"; }
+  }
+
+  root.innerHTML = shell(sys, body, crumb);
+}
+
+/* ---------- field writes ---------- */
+function writeField(el){
+  const f = el.dataset.field;
+  if(!f) return false;
+
+  if(f === "otp"){ ui.otp = el.value; return true; }
+  if(f === "case-notes"){ ui.caseNotes = el.value; return true; }
+  if(f === "sentinel-search"){ ui.sentinelQuery = el.value; renderListOnly(); return true; }
+
+  const d = ensureDraft();
+  if(f.indexOf("np-") === 0){ d.newPayee[f.slice(3)] = el.value; return true; }
+
+  if(f === "kind" || f === "payeeMode"){
+    if(!el.checked) return true;
+    d[f] = el.value;
+    if(f === "kind"){
+      /* Changing the payment type adds or removes fields, so the step
+         is re-rendered. An agent working from a stale read would type
+         into a frequency field that is no longer on the page. */
+      if(d.kind === "Standing order") d.rail = "Standing order";
+      else if(d.rail === "Standing order") d.rail = "Faster Payment";
+    }
+    render();
+    return true;
+  }
+
+  d[f] = el.value;
+  return true;
+}
+function renderListOnly(){
+  const v = $("[data-testid=view]");
+  if(!v) return;
+  const q = ui.sentinelQuery;
+  v.innerHTML = viewSentinelPayments();
+  const inp = $("[data-testid=filter-search]");
+  if(inp){ inp.value = q || ""; inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener("input", ev => {
+  const el = ev.target;
+  if(el.dataset && el.dataset.lfield){ loginDraft[el.dataset.lfield] = el.value; return; }
+  if(el.dataset && el.dataset.field) writeField(el);
+});
+document.addEventListener("change", ev => {
+  const el = ev.target;
+  if(el.dataset && el.dataset.lfield){ loginDraft[el.dataset.lfield] = el.value; return; }
+  if(el.dataset && el.dataset.field) writeField(el);
+});
+
+document.addEventListener("submit", ev => {
+  if(ev.target && ev.target.id === "login-form"){ ev.preventDefault(); doSignIn(); }
+});
+
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("[data-act]");
+  if(!t) return;
+  const act = t.dataset.act;
+  if(t.tagName === "A") ev.preventDefault();
+
+  switch(act){
+    case "sign-out":
+      session = null; loginDraft = { username:"", password:"" }; loginError = ""; ui = {};
+      go("/"); render(); return;
+
+    case "reset":
+      resetData(); ui = {};
+      toast("Demo data reset.");
+      render(); return;
+
+    case "release-toggle":
+      RELEASE = !RELEASE; saveRelease(); render();
+      toast(v2() ? "New features are on." : "New features are off.");
+      return;
+
+    case "new-payment": clearDraft(); go("/online/pay/new"); return;
+
+    case "pay-next": {
+      const d = ensureDraft();
+      if(!validatePayStep(d)){ render(); return; }
+      d.step = Math.min(d.step + 1, PAY_STEPS.length);
+      save(); render(); return;
+    }
+    case "pay-back": {
+      const d = ensureDraft();
+      d.errors = {};
+      d.step = Math.max(d.step - 1, 1);
+      save(); render(); return;
+    }
+    case "pay-cancel": clearDraft(); save(); go("/online"); return;
+    case "pay-submit": submitPayment(); render(); return;
+
+    case "stepup-confirm": confirmStepUp(); return;
+    case "stepup-cancel":
+      ui.stepUp = null; ui.otp = ""; ui.stepUpError = "";
+      clearDraft(); save(); toast("Payment cancelled.");
+      go("/online"); return;
+
+    case "cancel-payment": cancelPayment(t.dataset.ref); return;
+
+    case "case-save": saveCaseNote(t.dataset.ref); return;
+    case "case-release": decideCase(t.dataset.ref, "release"); return;
+    case "case-reject": decideCase(t.dataset.ref, "reject"); return;
+  }
+});
+
+function doSignIn(){
+  ui.loginErrUser = ""; ui.loginErrPass = ""; loginError = "";
+  const u = loginDraft.username.trim(), p = loginDraft.password;
+
+  /* Field validation runs before any credential check, so a blank
+     submission never counts towards the lockout. */
+  if(!u) ui.loginErrUser = "Username is required.";
+  if(!p) ui.loginErrPass = "Password is required.";
+  if(ui.loginErrUser || ui.loginErrPass){ render(); return; }
+
+  if((lockouts[u] || 0) >= 5){
+    loginError = "This account is locked. Reset the demo data to unlock it.";
+    render(); return;
+  }
+
+  const found = userByName(u);
+  /* The same message for an unknown username and a wrong password.
+     A distinct "user not found" would be a user enumeration hole, and
+     a requirement asserting one would be asserting behaviour this
+     application deliberately does not have. */
+  if(!found || p !== PASSWORD){
+    lockouts[u] = (lockouts[u] || 0) + 1;
+    loginError = (lockouts[u] >= 5)
+      ? "This account is locked. Reset the demo data to unlock it."
+      : "The username or password is not correct.";
+    save(); render(); return;
+  }
+
+  lockouts[u] = 0;
+  session = found;
+  loginDraft = { username:"", password:"" };
+  ui = {};
+  save();
+  go("/apps");
+  render();
+}
+
+/* ---------- boot ---------- */
+window.addEventListener("hashchange", render);
+load();
+render();
+</script>
+</body>
+</html>
