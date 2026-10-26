@@ -269,9 +269,11 @@ stale read will type into a select that is no longer on the page.
 | Sort code | `input-payee-sort` | United Kingdom only | `00-00-00` | `Sort code is required.` / `Enter the sort code as 00-00-00.` |
 | Account number | `input-payee-number` | Yes | Eight digits in the UK, otherwise an IBAN | `Account number is required.` / `A United Kingdom account number is eight digits.` / `An IBAN is required for an international payee.` / `Enter a valid IBAN, for example DE89370400440532013000.` |
 
-**Changing the country changes which fields are mandatory.** Sort code is
-required for a United Kingdom payee and not required otherwise, and the account
+**Changing the country changes which fields are shown.** The sort code field is
+present for a United Kingdom payee and **absent** otherwise, and the account
 number validation switches between an eight digit pattern and an IBAN pattern.
+Re-read the form after changing the country: a journey that holds a reference to
+the sort code field across the change is holding a detached element.
 
 The country list is: United Kingdom, Germany, France, Ireland, United States,
 United Arab Emirates, Australia, Korea (Democratic People's Republic of), Iran,
