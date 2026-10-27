@@ -245,7 +245,7 @@ decision table alone.
 **Specific to this application.**
 
 ```
-Changing the payee mode on step 1, the country on a new payee, or the payment type on step 2 adds or removes fields on the page. After changing any of them, re-read the form before interacting with further fields. Select dropdown options by their complete visible text: the country list contains three entries beginning United. Type dates as dd-mm-yyyy; there is no date picker anywhere in this application. Nothing here is asynchronous, so do not insert a fixed pause. Before entering data on a step, confirm the wizard shows the expected step number.
+Changing the payee mode on step 1, the country on a new payee, or the payment type on step 2 adds or removes fields on the page. After changing any of them, re-read the form before interacting with further fields. Select dropdown options by their complete visible text: the country list contains three entries beginning United. Type dates as dd-mm-yyyy into the date text inputs. Each one has a calendar button beside it; do not drive it, because the typed value reaches the same result by a route that is reliable. Nothing here is asynchronous, so do not insert a fixed pause. Before entering data on a step, confirm the wizard shows the expected step number.
 ```
 
 **Fixes:** four separate ways a generated journey stalls or writes to the wrong
@@ -261,6 +261,9 @@ place.
 - A validation failure keeps the user on the current step, so a journey that
   does not check the step number will enter step 2 values into step 1 fields and
   fail somewhere unrelated.
+- The calendar button writes `dd-mm-yyyy` back into the text input, so the two
+  routes are interchangeable in their result and only one of them is reliable
+  to generate.
 
 ---
 
