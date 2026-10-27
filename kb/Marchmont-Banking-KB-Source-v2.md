@@ -34,8 +34,9 @@ for this application.
 | 16 | What this application deliberately does not do | both |
 | 17 | Notes for automation | both |
 
-**Eighteen decision codes in total**, across two engines. The prefix names the
-engine: `PA` is the channel, `PH` is operations. A requirement must never cite
+**Twenty eight decision codes in total**, across two engines plus the payee name check. The prefix names the
+engine: `PA` is the channel, `PH` is operations, and `CP` is the payee
+name check. A requirement must never cite
 codes from both engines at once.
 
 ---
@@ -58,6 +59,8 @@ own right; this one is not a supplement to it.
 | **Source of funds** added | Payment wizard, step 2 | New mandatory select |
 | **Step-up limit lowered** | `PA-S01` | From 1,000.00 to **500.00** |
 | **`PH-H06` added** | Hold engine | Holds a payment whose declared source of funds is `Gift or inheritance` and whose amount is above 2,500.00 |
+| **The payee name check becomes blocking** | New payee, step 1 | A `CP-03` no match is refused outright instead of being acknowledged and held |
+| **Instruction received from** added | Payment wizard, step 2 | New mandatory select, shown only when paying under an authority |
 
 Nothing else changed. Every other rule, message, field and test id in this
 document is the same as in the previous release.
@@ -284,6 +287,31 @@ the count.
 
 ---
 
+### Payment limits set by the customer
+
+`#/online/limits`, reached from `nav-limits`. The customer may set a daily limit
+**at or below** their tier limit; a higher one is refused with
+`Your limit cannot be above the bank limit of {figure}.`
+
+| Element | `data-testid` |
+|---|---|
+| The tier limit | `limit-bank` |
+| The customer's own limit, or `Not set` | `limit-own` |
+| Whichever applies today | `limit-effective` |
+| The entry field | `input-limit` |
+| Save, and remove | `btn-save-limit`, `btn-clear-limit` |
+| Error | `error-limit` |
+
+The effective limit is the **lower** of the two, and the refusal code names
+whichever one bound: `PA-D06` where the customer's own limit is the tighter,
+`PA-D05` where it is not set or is equal to the tier limit. A customer is never
+told they reached the bank's limit when it was their own.
+
+Both counts are **cumulative across the day**, so a journey that does not reset
+inherits the previous run's spending and the boundary moves.
+
+---
+
 ## 5. The payment wizard
 
 Three steps, reached from **Make a payment** on the overview or the sidebar.
@@ -295,6 +323,36 @@ Three steps, reached from **Make a payment** on the overview or the sidebar.
 
 The step counter reads `Step n of 3` in `wizard-progress`, and each step chip
 carries `step-1`, `step-2`, `step-3`.
+
+
+### Acting for another customer
+
+A customer who holds an authority over someone else's account sees an **Acting
+for** select at the top of step 1, `data-testid="input-acting-for"`. It is
+**absent entirely** for a customer who holds none, so a journey must not assume
+the control exists.
+
+Choosing an authority changes whose records the wizard works with: the payee
+list becomes the **account owner's** payees, and the account list becomes the
+owner's accounts. Both selections are cleared when the choice changes, because
+carrying a payee across to a customer it does not belong to would be wrong.
+
+A summary of the chosen authority is shown in `authority-summary`, with its type
+in `authority-type`.
+
+### Seeded authorities
+
+| Id | Holder | Over | Type | Per payment | Payees | Expires |
+|---|---|---|---|---|---|---|
+| `AU-0001` | Daniel Okonjo | Rose Whitfield, Everyday Current | Power of attorney | 2,500.00 | Established only | 31-03-2027 |
+| `AU-0002` | Daniel Okonjo | Rose Whitfield, Reserve Saver | Third party mandate | 1,000.00 | Any | **30-09-2026, expired** |
+
+`AU-0002` is seeded already expired so that `PA-T04` can be observed without
+editing data. The authority is held against **one account**, not the whole
+customer, which is what makes `PA-T01` observable: the owner's other account
+appears in the list and is refused.
+
+---
 
 ### Step 1 - Payee
 
@@ -337,6 +395,61 @@ is a coin flip between three entries, and the wrong one changes the outcome.
 **A new payee is created only when the payment is recorded.** An abandoned
 draft, and a payment rejected by the channel, both leave no payee behind.
 
+
+### Confirmation of Payee
+
+A **new** payee is checked against the name the receiving bank holds for that
+account number. An established payee was checked when it was added and is not
+rechecked.
+
+The check runs **when Continue is activated**, with the rest of step 1's
+validation, not as the fields are typed. Its outcome appears in `cop-outcome`
+with the code in `cop-code`, and on the review step in `review-cop`.
+
+| Code | Condition | Effect in release 1.0 |
+|---|---|---|
+| `CP-01` | The name matches the account | Continue |
+| `CP-02` | The surname matches, the forename differs. The held name is shown | Acknowledgement required |
+| `CP-03` | The account is known and the name does not match. The held name is shown | **Refused.** `The name does not match the account. This payment cannot proceed.` in `error-np-name`, and no acknowledgement is offered |
+| `CP-04` | The account number is not one the check covers | Continue, advisory only |
+
+Where an acknowledgement is required, a checkbox appears,
+`data-testid="input-cop-confirm"`, reading *"I have checked the payee's details
+and want to continue anyway."* Activating Continue without it returns
+`Confirm you have checked the payee's details before continuing.` in
+`error-copConfirmed`.
+
+**This control changed between releases, and it is the clearest advisory versus
+blocking pair in the application.** In release 1.0 a `CP-03` no match warns, the
+customer acknowledges it, the payment proceeds and is held under `PH-H07`. In
+this release it is refused at step 1 and `input-cop-confirm` is **not rendered**
+for it. A `CP-02` close match is still advisory in both releases.
+
+**`PH-H07` is therefore unreachable from the no-match path in this release.**
+It remains in the hold engine and can only be reached by a payment submitted
+under release 1.0 and viewed later. Record it under branches not covered with
+that reason.
+
+### The names the check knows
+
+| Account number | Held name |
+|---|---|
+| 70113396 | Hannah Whitfield |
+| 88204417 | Meridian Utilities Ltd |
+| 31559028 | Kestrel Letting Ltd |
+| 62340018 | Okonjo Holdings Ltd |
+| 29087741 | Vertex Legal LLP |
+| 12345678 | Marcus Trent |
+| 99887766 | Oakfield Services Ltd |
+| 44556677 | Priya Raghunathan |
+
+Comparison ignores case, punctuation and extra spacing. "Surname" is the last
+word of the name. **Any account number outside this table returns `CP-04`**, so
+a journey that needs a clean new payee should use one, and a journey covering
+the check should use one of these.
+
+---
+
 ### Step 2 - Payment
 
 | Field | `data-testid` | Mandatory | Validation | Exact error |
@@ -349,6 +462,7 @@ draft, and a payment rejected by the channel, both leave no payee behind.
 | Frequency | `input-frequency` | Standing order only | Weekly, Monthly, Quarterly | - |
 | End date | `input-end-date` | No | After the first payment date | `Enter the date as dd-mm-yyyy.` / `The end date must be after the first payment date.` |
 | Reference | `input-reference` | No | At most 18 characters | `A reference can be at most 18 characters.` |
+| Instruction received from | `input-instruction-from` | **Yes, when acting under an authority** | Telephone, Written instruction, In person, Secure message | `Record where the instruction was received from.` |
 | Payment purpose | `input-purpose` | **Yes** | One of six values | `Payment purpose is required.` |
 | Source of funds | `input-source-of-funds` | **Yes** | One of six values | `Source of funds is required.` |
 
@@ -369,6 +483,10 @@ Savings, Property sale, Investment income, Gift or inheritance, Business income.
 Both carry a `New` badge on their label in this release. Neither changes any
 channel decision; **Source of funds** feeds the hold rule `PH-H06` in section
 10.
+
+**Instruction received from** is shown only when the payment is being made under
+an authority, so it is absent on a payment a customer makes for themselves. It
+is recorded on the payment and shown to Sentinel, and affects no decision.
 
 **Every failing field is reported at once**, each message naming its own field,
 so an agent that reads the errors can correct everything in one pass.
@@ -395,6 +513,10 @@ matches**: five rejections, then three step-up triggers, then four acceptances.
 
 | Code | Kind | Condition | Reason text |
 |---|---|---|---|
+| PA-T04 | Reject | The authority has expired | `This authority has expired. Contact the bank to renew it.` |
+| PA-T01 | Reject | Acting under an authority that does not cover the chosen account | `You do not hold authority over the account you have chosen.` |
+| PA-T02 | Reject | The authority permits established payees only, and the payee is not established | `This authority allows payments to established payees only.` |
+| PA-T03 | Reject | Above the authority's per-payment limit | `This payment is above the limit set on your authority.` |
 | PA-D01 | Reject | Amount above the available balance on the chosen account | `The available balance on this account is not enough to make this payment.` |
 | PA-D02 | Reject | Faster Payment above 1,000,000.00 | `A Faster Payment cannot be more than 1,000,000.00. Use CHAPS for a higher value.` |
 | PA-D03 | Reject | Standing order instalment above 25,000.00 | `A standing order instalment cannot be more than 25,000.00.` |
@@ -403,12 +525,21 @@ matches**: five rejections, then three step-up triggers, then four acceptances.
 | PA-S01 | Step-up | Amount at or above **500.00** | `This payment is above your step-up limit, so it needs a passcode.` |
 | PA-S02 | Step-up | Payee is not established | `This is your first payment to this payee, so it needs a passcode.` |
 | PA-S03 | Step-up | Payee country is not the United Kingdom | `International payments need a passcode.` |
+| PA-D06 | Reject | Amount plus the day's committed total above the customer's own daily limit, where that is the tighter | `This payment would take you past the daily limit you set yourself.` |
 | PA-A04 | Accept | Payment type is Standing order | `Standing order set up.` |
 | PA-A03 | Accept | CHAPS, dated today, submitted at or after 16:00 | `Submitted after the 16:00 CHAPS cut-off, so this payment is dated the next working day.` |
 | PA-A02 | Accept | Value date is not today, which validation now guarantees for a Scheduled payment | `Scheduled for a future date.` |
 | PA-A01 | Accept | Everything else | `Accepted for execution today.` |
 
 ### Precedence, and what it hides
+
+- **An expired authority reports `PA-T04` and nothing else.** A 5,000.00 payment
+  to a payee that is not established, under `AU-0002`, satisfies `PA-T04`,
+  `PA-T02` and `PA-T03` at once and reports only `PA-T04`.
+- **The authority rules are evaluated before everything else**, including the
+  balance. A payment nobody is entitled to make is not rated.
+- **`PA-D06` and `PA-D05` are one rule with two codes.** Where the customer's
+  own limit equals the tier limit, `PA-D05` is reported, not `PA-D06`.
 
 Several conditions overlap and **only the earlier one is ever observable**.
 Each of these was confirmed against the running application:
@@ -522,7 +653,7 @@ one.**
 
 ## 10. The hold engine and PH decision codes
 
-Operations evaluates **six rules in a fixed order** on every payment the
+Operations evaluates **seven rules in a fixed order** on every payment the
 channel accepted. The first that matches holds the payment and raises a case.
 Nothing matching means the payment proceeds.
 
@@ -533,6 +664,7 @@ Nothing matching means the payment proceeds.
 | PH-H03 | Fourth payment to the same payee within the day | `Repeat payments to the same payee within one day.` | Payment Operations |
 | PH-H04 | First payment to a payee created today, above 2,500.00 | `First payment to a payee added today, above 2,500.00.` | Payment Operations |
 | PH-H05 | Round sum international payment above 5,000.00 | `Round sum international payment above 5,000.00.` | Financial Crime |
+| PH-H07 | The payee name check returned `CP-03` and the customer continued | `Payee name check did not match and the customer continued.` | Payment Operations |
 | PH-H06 | Source of funds is `Gift or inheritance` and the amount is above 2,500.00 | `Declared source of funds requires review.` | Financial Crime |
 
 ### Precedence
@@ -684,6 +816,9 @@ rule uses *at or above* rather than *above*, the pair below shows it.
 | Weekend roll | Friday 30-10-2026 stays | Saturday 31-10-2026 and Sunday 01-11-2026 both become **Monday 02-11-2026** | |
 | Value date horizon | 365 days ahead accepted | 366 days returns the error | |
 | Reference length | 18 characters accepted | 19 returns the error | |
+| `PA-T03` authority per-payment limit | 2,500.00 is allowed and reaches step-up | **2,500.01** returns `PA-T03` | Above. In this release 500.00 already triggers step-up, so every authority payment above that figure steps up |
+| `PA-D06` customer's own limit | 5,000.00 is allowed with an own limit of 5,000.00 | **5,000.01** returns `PA-D06` | Above, cumulative |
+| Own limit against the tier limit | 25,000.00 accepted on the Standard tier | **25,000.01** refused on the limits screen | At or below |
 | Investigation note | 19 characters refused | **20** accepted | At least |
 | Operations release limit | 5,000.00 may be released by Payment Operations | **5,000.01** may not | Above |
 | Sign in lockout | Four failures still allow a sign in | **Five** locks the account | |
@@ -742,6 +877,11 @@ label based identification breaks across those branches.
 | Step 1 fields | `input-payee`, `input-payee-name`, `input-payee-country`, `input-payee-sort`, `input-payee-number` |
 | Step 2 fields | `input-from`, `input-amount`, `kind-immediate`, `kind-scheduled`, `kind-standing-order`, `input-rail`, `input-date`, `input-frequency`, `input-end-date`, `input-reference`, `input-purpose`, `input-source-of-funds` |
 | Calendar buttons beside the date fields | `calendar-input-date`, `calendar-input-end-date` |
+| Acting for, and the authority summary | `input-acting-for`, `authority-summary`, `authority-type` |
+| Payee name check | `cop-outcome`, `cop-code`, `input-cop-confirm`, `error-copConfirmed`, `review-cop` |
+| Payment limits screen | `nav-limits`, `limit-bank`, `limit-own`, `limit-effective`, `input-limit`, `btn-save-limit`, `btn-clear-limit`, `error-limit` |
+| Authority on a payment and a case | `payment-instructed-by`, `case-instructed-by`, `payment-cop`, `case-cop` |
+
 | Field errors | `error-<field key>`, for example `error-amount`, `error-valueDate`, `error-np-sort` |
 | Review | `review`, `review-payee`, `review-amount`, `review-date`, `review-date-moved`, `review-purpose`, `review-source-of-funds`, `indicative-outcome`, `indicative-code` |
 | Wizard buttons | `btn-continue`, `btn-back`, `btn-cancel`, `btn-submit` |
@@ -805,6 +945,10 @@ there.
   international payment carries no rate or fee.
 - **No inactivity timeout.** A session ends on sign out or a page reload, never
   on its own.
+- **An authority cannot be created or amended in the application.** The two
+  seeded authorities are fixed, and there is no screen to add a third.
+- **The payee name check is a lookup, not a service.** It returns `CP-04` for
+  every account number outside its table rather than calling anything.
 - **No partial release.** A case is released or rejected in whole.
 - **No payee editing or deletion.** Payees are added and never changed.
 - **No statements, no transaction history beyond the payment list.**
@@ -843,6 +987,15 @@ there.
 - **Check the step counter before entering data.** A validation failure keeps the
   user on the current step, and a journey that does not check will enter step 2
   values into step 1 fields.
+- **Check whether Acting for exists before using it.** It is absent for a
+  customer who holds no authority, so a journey that selects it unconditionally
+  fails for Rose Whitfield and succeeds for Daniel Okonjo.
+- **A new payee needs the payee check cleared.** Use an account number outside
+  the Confirmation of Payee table for a clean new payee, or tick
+  `input-cop-confirm` where the check asks for it. A journey written before this
+  control existed will stop at step 1.
+- **Reset before any journey that touches a limit.** Both the tier limit and the
+  customer's own limit count the day's payments cumulatively.
 - **Read the passcode from `passcode-value`.** It differs per amount.
 - **Take the base URL, usernames and passwords from environment variables.** The
   sign in screen displays the demo credentials, which makes hard coding them
