@@ -171,6 +171,7 @@ h3{font-size:.95rem; margin:0 0 .4rem}
    two or three words in it. */
 .field.f-xs input,.field.f-xs select{max-width:190px}
 .field.f-sm input,.field.f-sm select{max-width:250px}
+.field.f-md input,.field.f-md select{max-width:340px}
 
 /* The calendar sits beside the text field rather than replacing it. The
    text input stays the field of record in dd-mm-yyyy, because a native
@@ -468,6 +469,29 @@ function seed(){
          PA-S02 is evaluated first and would always win. */
       { id:"P-0007", customerId:"C-100873", name:"Clonmel Trading", sort:"00-00-00", number:"IE64IRCE92050112345678", country:"IE", established:true, reference:"Supply" }
     ],
+    /* Third party authority. One customer holding a mandate over another
+       customer's account, with its own limits. The authority is held
+       against a single account rather than a whole customer, which is
+       what makes PA-T01 observable: the owner's other accounts appear in
+       the list and are refused. */
+    authorities: [
+      { id:"AU-0001", holder:"daniel.okonjo", ownerId:"C-100412",
+        accountId:"30-91-55-41220119", type:"Power of attorney",
+        perPayment: 250000,              /* 2,500.00 */
+        establishedPayeesOnly: true,
+        expires: "2027-03-31", status:"Active" },
+      /* Expired on purpose, so PA-T04 can be reached without editing data. */
+      { id:"AU-0002", holder:"daniel.okonjo", ownerId:"C-100412",
+        accountId:"30-91-55-41220127", type:"Third party mandate",
+        perPayment: 100000,              /* 1,000.00 */
+        establishedPayeesOnly: false,
+        expires: "2026-09-30", status:"Active" }
+    ],
+
+    /* The customer's own daily limit, at or below the tier limit. Keyed
+       by customer id; absent means no self imposed limit. */
+    customerLimits: {},
+
     payments: [],
     standingOrders: [],
     cases: [],
@@ -527,6 +551,7 @@ function save(){
     localStorage.setItem(KEY, JSON.stringify({
       accounts: state.accounts, payees: state.payees, payments: state.payments,
       standingOrders: state.standingOrders, cases: state.cases, draft: state.draft,
+      authorities: state.authorities, customerLimits: state.customerLimits,
       nextPayment: state.nextPayment, nextCase: state.nextCase, nextOrder: state.nextOrder,
       lockouts: lockouts
     }));
@@ -540,9 +565,10 @@ function load(){
   let o;
   try{ o = JSON.parse(raw); }catch(e){ return; }
   const s = seed();
-  ["accounts","payees","payments","standingOrders","cases"].forEach(k => {
+  ["accounts","payees","payments","standingOrders","cases","authorities"].forEach(k => {
     if(Array.isArray(o[k])) s[k] = o[k];
   });
+  if(o.customerLimits && typeof o.customerLimits === "object") s.customerLimits = o.customerLimits;
   ["nextPayment","nextCase","nextOrder"].forEach(k => {
     if(typeof o[k] === "number") s[k] = o[k];
   });
@@ -670,6 +696,39 @@ const DAILY_LIMIT = { Standard: 2500000, Premier: 10000000 };   /* 25,000.00 / 1
    divides the operations queue in two, which is the point of having it. */
 const RELEASE_LIMIT = { "Payment Operations": 500000 };         /* 5,000.00 */
 
+/* ---------- Confirmation of Payee ----------
+   The names the receiving banks hold against each account number. A
+   demonstration registry, not a real one. An account number absent from
+   it cannot be checked at all, which is a fourth outcome and not a
+   failure. */
+const COP_REGISTRY = {
+  "70113396": "Hannah Whitfield",
+  "88204417": "Meridian Utilities Ltd",
+  "31559028": "Kestrel Letting Ltd",
+  "62340018": "Okonjo Holdings Ltd",
+  "29087741": "Vertex Legal LLP",
+  "12345678": "Marcus Trent",
+  "99887766": "Oakfield Services Ltd",
+  "44556677": "Priya Raghunathan"
+};
+
+function normName(s){
+  return String(s || "").toLowerCase().replace(/[^a-z ]/g, "").replace(/\s+/g, " ").trim();
+}
+function surnameOf(s){ const p = normName(s).split(" "); return p[p.length - 1] || ""; }
+
+/* Four outcomes, evaluated in order. The check runs on the account
+   number, so it applies to a new payee only - an established payee was
+   checked when it was added. */
+function checkPayee(name, number){
+  const held = COP_REGISTRY[String(number || "").trim()];
+  if(!held) return { code:"CP-04", held:"", reason:"The receiving bank could not confirm this name.", confirm:false, flag:false };
+  if(normName(name) === normName(held)) return { code:"CP-01", held, reason:"The name matches the account.", confirm:false, flag:false };
+  if(surnameOf(name) && surnameOf(name) === surnameOf(held))
+    return { code:"CP-02", held, reason:"A close match. The account is held in the name " + held + ".", confirm:true, flag:false };
+  return { code:"CP-03", held, reason:"The name does not match. The account is held in the name " + held + ".", confirm:true, flag:true };
+}
+
 const SANCTIONED_COUNTRIES = ["KP", "IR", "SY"];
 const SERVED_COUNTRIES = [
   ["GB","United Kingdom"], ["DE","Germany"], ["FR","France"], ["IE","Ireland"],
@@ -690,6 +749,22 @@ function stepUpThreshold(p){ return paymentV2(p) ? STEPUP_THRESHOLD_V2 : STEPUP_
    ctx: { account, payee, amount, rail, kind, valueDate, customer,
           spentToday, payeeCreatedToday, sameePayeeToday, release } */
 const PA_RULES = [
+  /* --- authority ---
+     Evaluated first, because a payment nobody is entitled to make is not
+     a payment that needs rating. These apply only when acting for
+     another customer; a payment on one's own account skips all four. */
+  { code:"PA-T04", kind:"reject", reason:"This authority has expired. Contact the bank to renew it.",
+    test: c => c.authority && c.authority.expires < today() },
+
+  { code:"PA-T01", kind:"reject", reason:"You do not hold authority over the account you have chosen.",
+    test: c => c.actingFor && (!c.authority || c.authority.accountId !== c.account.id) },
+
+  { code:"PA-T02", kind:"reject", reason:"This authority allows payments to established payees only.",
+    test: c => c.authority && c.authority.establishedPayeesOnly && !c.payee.established },
+
+  { code:"PA-T03", kind:"reject", reason:"This payment is above the limit set on your authority.",
+    test: c => c.authority && c.amount > c.authority.perPayment },
+
   /* --- rejections --- */
   { code:"PA-D01", kind:"reject", reason:"The available balance on this account is not enough to make this payment.",
     test: c => c.amount > c.account.available },
@@ -702,6 +777,17 @@ const PA_RULES = [
 
   { code:"PA-D04", kind:"reject", reason:"Payments to this destination country are not available.",
     test: c => SANCTIONED_COUNTRIES.indexOf(c.payee.country) !== -1 },
+
+  /* The customer's own limit and the bank's tier limit are one rule with
+     two codes. The effective limit is the lower of the two, and the code
+     names whichever one bound, so a customer is never told they hit the
+     bank's limit when it was their own. Both stay reachable: PA-D06
+     only where a self imposed limit is the tighter, PA-D05 where it is
+     not set or equal. */
+  { code:"PA-D06", kind:"reject", reason:"This payment would take you past the daily limit you set yourself.",
+    test: c => c.kind !== "Standing order" && c.ownLimit !== null
+               && c.ownLimit < DAILY_LIMIT[c.customer.tier]
+               && (c.spentToday + c.amount) > c.ownLimit },
 
   { code:"PA-D05", kind:"reject", reason:"This payment would take you past your daily payment limit.",
     test: c => c.kind !== "Standing order" && (c.spentToday + c.amount) > DAILY_LIMIT[c.customer.tier] },
@@ -766,6 +852,13 @@ const PH_RULES = [
   { code:"PH-H05", reason:"Round sum international payment above 5,000.00.", owner:"Financial Crime",
     test: c => c.payee.country !== "GB" && c.amount > ROUND_SUM_INTL && (c.amount % 100000 === 0) },
 
+  /* Raised where the payee name check came back as no match and the
+     customer chose to continue anyway. In release 1.0 that is the only
+     consequence; in 2.1 the channel refuses the payment outright and
+     this hold is never reached from that path. */
+  { code:"PH-H07", reason:"Payee name check did not match and the customer continued.", owner:"Payment Operations",
+    test: c => c.payment && c.payment.copCode === "CP-03" },
+
   /* Added in release 2.1, and only evaluated on a payment submitted
      under it. A payment stamped 1.0 never acquires this hold, however
      the toggle is later set. */
@@ -816,6 +909,43 @@ function myPayees(){
   const c = myCustomer(); if(!c) return [];
   return state.payees.filter(p => p.customerId === c.id);
 }
+
+/* ---------- third party authority ---------- */
+function authorityById(id){ return (state.authorities || []).find(a => a.id === id) || null; }
+function myAuthorities(){
+  if(!session) return [];
+  return (state.authorities || []).filter(a => a.holder === session.username && a.status === "Active");
+}
+function authorityLabel(a){
+  const owner = CUSTOMERS[a.ownerId];
+  const acc = accountById(a.accountId);
+  return (owner ? owner.name : a.ownerId) + " - " + (acc ? acc.name : a.accountId);
+}
+/* Whose records the wizard is working with: the owner when acting under
+   an authority, otherwise the signed in customer. */
+function draftCustomer(d){
+  const a = d && d.actingFor ? authorityById(d.actingFor) : null;
+  return a ? (CUSTOMERS[a.ownerId] || null) : myCustomer();
+}
+function draftAccounts(d){
+  const c = draftCustomer(d); if(!c) return [];
+  return state.accounts.filter(a => a.customerId === c.id);
+}
+function draftPayees(d){
+  const c = draftCustomer(d); if(!c) return [];
+  return state.payees.filter(p => p.customerId === c.id);
+}
+
+/* ---------- limits ---------- */
+function ownLimitFor(customerId){
+  const v = state.customerLimits[customerId];
+  return (typeof v === "number") ? v : null;
+}
+function effectiveLimit(customerId, tier){
+  const own = ownLimitFor(customerId);
+  const bank = DAILY_LIMIT[tier];
+  return (own !== null && own < bank) ? own : bank;
+}
 function myPayments(){
   const c = myCustomer(); if(!c) return [];
   return state.payments.filter(p => p.customerId === c.id);
@@ -843,6 +973,7 @@ function ensureDraft(){
     const accs = myAccounts();
     state.draft = {
       step: 1, errors: {},
+      actingFor: "", copConfirmed: false, instructionFrom: "",
       payeeMode: "existing", payeeId: "", newPayee: { name:"", sort:"", number:"", country:"GB", reference:"" },
       fromAccount: accs.length ? accs[0].id : "",
       amount: "", kind: "Immediate", rail: "Faster Payment",
@@ -1011,8 +1142,30 @@ function viewPayNew(){
 }
 
 function payStepPayee(d){
-  const ps = myPayees();
+  const ps = draftPayees(d);
+  const auths = myAuthorities();
+  const cop = d.payeeMode === "new" && d.newPayee.number.trim()
+    ? checkPayee(d.newPayee.name, d.newPayee.number) : null;
+  const copCls = cop ? ({ "CP-01":"b-ok", "CP-02":"b-warn", "CP-03":"b-risk", "CP-04":"b-info" })[cop.code] : "";
+
   return `
+  ${auths.length ? `
+  <div class="field f-md${bad(d,"actingFor")}" style="margin-bottom:14px">
+    <label for="f-acting">Acting for</label>
+    <select id="f-acting" data-field="actingFor" data-testid="input-acting-for">
+      <option value="">Myself</option>
+      ${auths.map(a => `<option value="${esc(a.id)}" ${d.actingFor===a.id?"selected":""}>${esc(authorityLabel(a))}</option>`).join("")}
+    </select>
+    <span class="hint">You hold ${auths.length === 1 ? "an authority" : auths.length + " authorities"} over another customer's account.</span>${payErr(d,"actingFor")}
+  </div>
+  ${d.actingFor ? (() => { const a = authorityById(d.actingFor); if(!a) return "";
+      const expired = a.expires < today();
+      return `<div class="banner ${expired ? "b-risk" : "b-info"}" data-testid="authority-summary">
+        <b data-testid="authority-type">${esc(a.type)}</b> over ${esc(authorityLabel(a))}.
+        Up to <b>${esc(money(a.perPayment))}</b> a payment${a.establishedPayeesOnly ? ", established payees only" : ""}.
+        ${expired ? `<b>Expired ${esc(ukDate(a.expires))}.</b>` : "Expires " + esc(ukDate(a.expires)) + "."}
+      </div>`; })() : ""}` : ""}
+
   <div class="radio-set" style="margin-bottom:14px">
     <label class="radio-row"><input type="radio" name="payeeMode" value="existing" data-field="payeeMode" data-testid="mode-existing" ${d.payeeMode==="existing"?"checked":""}>
       <span><b>An existing payee</b><div class="hint">Someone already on your list.</div></span></label>
@@ -1042,7 +1195,20 @@ function payStepPayee(d){
       <div class="field${bad(d,"np-number")}"><label for="f-np-number">Account number</label>
         <input id="f-np-number" type="text" data-field="np-number" data-testid="input-payee-number" value="${esc(d.newPayee.number)}">
         <span class="hint">${d.newPayee.country === "GB" ? "Eight digits." : "An IBAN, for example DE89370400440532013000."}</span>${payErr(d,"np-number")}</div>
-    </div>`}
+    </div>
+
+    ${cop ? `
+    <div class="banner ${copCls}" data-testid="cop-outcome">
+      <b class="mono" data-testid="cop-code">${esc(cop.code)}</b> &middot; ${esc(cop.reason)}
+      ${cop.code === "CP-03" && v2() ? `<div class="hint" style="margin-top:.25rem"><b>This payment cannot proceed in this release.</b></div>` : ""}
+    </div>
+    ${cop.confirm && !(cop.code === "CP-03" && v2()) ? `
+    <div class="field${bad(d,"copConfirmed")}">
+      <label class="radio-row" style="font-size:.9rem">
+        <input type="checkbox" data-field="copConfirmed" data-testid="input-cop-confirm" ${d.copConfirmed?"checked":""}>
+        <span>I have checked the payee's details and want to continue anyway.</span>
+      </label>${payErr(d,"copConfirmed")}
+    </div>` : ""}` : ""}`}
 
   <div class="row" style="margin-top:8px">
     <button class="btn" data-act="pay-cancel" data-testid="btn-cancel">Cancel</button>
@@ -1051,7 +1217,7 @@ function payStepPayee(d){
 }
 
 function payStepDetail(d){
-  const accs = myAccounts();
+  const accs = draftAccounts(d);
   const immediate = d.kind === "Immediate";
   return `
   <div class="grid g2">
@@ -1098,6 +1264,14 @@ function payStepDetail(d){
       <input id="f-ref" type="text" data-field="reference" data-testid="input-reference" value="${esc(d.reference)}">
       <span class="hint">Shown on the payee's statement. Up to 18 characters.</span>${payErr(d,"reference")}</div>
 
+    ${v2() && d.actingFor ? `
+    <div class="field f-sm${bad(d,"instructionFrom")}"><label for="f-instr">Instruction received from <span class="rel-new">New</span></label>
+      <select id="f-instr" data-field="instructionFrom" data-testid="input-instruction-from">
+        <option value="">Select...</option>
+        ${["Telephone","Written instruction","In person","Secure message"].map(x => `<option value="${esc(x)}" ${d.instructionFrom===x?"selected":""}>${esc(x)}</option>`).join("")}
+      </select>
+      <span class="hint">Required when paying under an authority.</span>${payErr(d,"instructionFrom")}</div>` : ""}
+
     ${v2() ? `
     <div class="field${bad(d,"purpose")}"><label for="f-purpose">Payment purpose <span class="rel-new">New</span></label>
       <select id="f-purpose" data-field="purpose" data-testid="input-purpose">
@@ -1133,6 +1307,7 @@ function payStepReview(d){
 
   return `
   <dl class="kv" data-testid="review">
+    ${ctx.authority ? `<dt>Acting for</dt><dd data-testid="review-acting-for">${esc(CUSTOMERS[ctx.authority.ownerId] ? CUSTOMERS[ctx.authority.ownerId].name : ctx.authority.ownerId)} <span class="muted">(${esc(ctx.authority.type)})</span></dd>` : ""}
     <dt>Pay from</dt><dd>${esc(ctx.account.name)} <span class="mono">${esc(ctx.account.sort)} ${esc(ctx.account.number)}</span></dd>
     <dt>Payee</dt><dd data-testid="review-payee">${esc(ctx.payee.name)} <span class="mono">${esc(ctx.payee.number)}</span></dd>
     <dt>Country</dt><dd>${esc(countryName(ctx.payee.country))}</dd>
@@ -1140,6 +1315,7 @@ function payStepReview(d){
     <dt>Payment type</dt><dd>${esc(d.kind)}${d.kind !== "Standing order" ? " by " + esc(d.rail) : " " + esc(d.frequency.toLowerCase())}</dd>
     <dt>Value date</dt><dd data-testid="review-date">${esc(ukDate(effectiveDate))}${rolled ? ` <span class="pill p-warn" data-testid="review-date-moved">Moved</span>` : ""}</dd>
     <dt>Reference</dt><dd>${esc(d.reference || "-")}</dd>
+    ${ctx.cop ? `<dt>Payee name check</dt><dd class="mono" data-testid="review-cop">${esc(ctx.cop.code)}</dd>` : ""}
     ${v2() ? `<dt>Payment purpose</dt><dd data-testid="review-purpose">${esc(d.purpose || "-")}</dd>
     <dt>Source of funds</dt><dd data-testid="review-source-of-funds">${esc(d.sourceOfFunds || "-")}</dd>` : ""}
   </dl>
@@ -1203,6 +1379,9 @@ function viewPaymentDetail(ref){
       <dt>Submitted</dt><dd>${esc(ukDate(p.valueDate))} at ${esc(p.submittedAt)}</dd>
       <dt>Reference</dt><dd>${esc(p.reference || "-")}</dd>
       <dt>Release</dt><dd class="mono" data-testid="payment-release">${esc(p.release)}</dd>
+      ${p.authorityId ? `<dt>Instructed by</dt><dd data-testid="payment-instructed-by">${esc(p.instructedBy)} <span class="muted">(${esc(p.authorityType)} ${esc(p.authorityId)})</span></dd>` : ""}
+      ${p.instructionFrom ? `<dt>Instruction received</dt><dd>${esc(p.instructionFrom)}</dd>` : ""}
+      ${p.copCode ? `<dt>Payee name check</dt><dd class="mono" data-testid="payment-cop">${esc(p.copCode)}${p.copHeldName ? ` <span class="muted">(held as ${esc(p.copHeldName)})</span>` : ""}</dd>` : ""}
       ${p.holdCode ? `<dt>Hold</dt><dd class="mono" data-testid="payment-hold">${esc(p.holdCode)} ${esc(p.holdReason)}</dd>` : ""}
       ${p.decidedBy ? `<dt>Decided by</dt><dd data-testid="payment-decided-by">${esc(p.decidedBy)}</dd>` : ""}
       ${p.purpose ? `<dt>Payment purpose</dt><dd>${esc(p.purpose)}</dd>` : ""}
@@ -1250,6 +1429,80 @@ function viewStandingOrders(){
     </table>` : `<p class="muted" data-testid="standing-orders-empty">No standing orders.</p>`}
   </div>`;
 }
+
+/* ============================================================
+   PAYMENT LIMITS - the customer's own daily limit
+   ============================================================ */
+
+function viewLimits(){
+  const c = myCustomer();
+  const bank = DAILY_LIMIT[c.tier];
+  const own = ownLimitFor(c.id);
+  const eff = effectiveLimit(c.id, c.tier);
+  const used = spentToday(c.id);
+  const pending = (ui.limitDraft !== undefined) ? ui.limitDraft : (own !== null ? money(own) : "");
+
+  return `
+  <h1>Payment limits</h1>
+  <p class="lede">Your ${esc(c.tier)} tier allows ${esc(money(bank))} a day. You can set a lower limit for yourself; you cannot set a higher one.</p>
+
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card"><div class="stat-l">Bank limit</div><div class="stat" data-testid="limit-bank">${esc(money(bank))}</div>
+      <div class="hint">${esc(c.tier)} tier</div></div>
+    <div class="card"><div class="stat-l">Your limit</div><div class="stat" data-testid="limit-own">${own !== null ? esc(money(own)) : "Not set"}</div>
+      <div class="hint">${own !== null ? "Set by you" : "No limit of your own"}</div></div>
+    <div class="card"><div class="stat-l">Applies today</div><div class="stat" data-testid="limit-effective">${esc(money(eff))}</div>
+      <div class="hint">${esc(money(used))} used</div></div>
+  </div>
+
+  <div class="card" style="max-width:520px">
+    <h2>Set your daily limit</h2>
+    <div class="field f-xs${ui.limitError ? " bad" : ""}">
+      <label for="f-limit">Daily limit</label>
+      <input id="f-limit" type="text" inputmode="decimal" placeholder="0.00" data-field="limit-amount"
+             data-testid="input-limit" value="${esc(pending)}">
+      <span class="hint">Pounds and pence, at or below ${esc(money(bank))}.</span>
+      ${ui.limitError ? `<span class="err" data-testid="error-limit">${esc(ui.limitError)}</span>` : ""}
+    </div>
+    <div class="row">
+      <button class="btn btn-primary" data-act="limit-save" data-testid="btn-save-limit">Save limit</button>
+      ${own !== null ? `<button class="btn" data-act="limit-clear" data-testid="btn-clear-limit">Remove my limit</button>` : ""}
+    </div>
+    <div class="hint" style="margin-top:.6rem">
+      A limit you set applies immediately and counts the payments already made today.
+      Where your limit is the tighter of the two, a payment that would exceed it is refused
+      under its own code rather than the bank's.
+    </div>
+  </div>`;
+}
+
+function saveOwnLimit(){
+  const c = myCustomer();
+  const bank = DAILY_LIMIT[c.tier];
+  const raw = (ui.limitDraft !== undefined) ? ui.limitDraft : "";
+  const pence = toPence(raw);
+  ui.limitError = "";
+
+  if(pence === null) ui.limitError = "Daily limit is required.";
+  else if(isNaN(pence)) ui.limitError = "Enter an amount in pounds and pence, for example 1250.00";
+  else if(pence <= 0) ui.limitError = "Enter an amount greater than zero.";
+  else if(pence > bank) ui.limitError = "Your limit cannot be above the bank limit of " + money(bank) + ".";
+
+  if(ui.limitError){ render(); return; }
+
+  state.customerLimits[c.id] = pence;
+  ui.limitDraft = undefined;
+  save(); render();
+  toast("Daily limit set to " + money(pence) + ".");
+}
+
+function clearOwnLimit(){
+  const c = myCustomer();
+  delete state.customerLimits[c.id];
+  ui.limitDraft = undefined; ui.limitError = "";
+  save(); render();
+  toast("Your own limit was removed.");
+}
 /* ============================================================
    PAYMENT FLOW - context, validation, submission, cancellation
    ============================================================ */
@@ -1258,8 +1511,15 @@ function viewStandingOrders(){
    provisional object so that the engine sees the same shape whether
    the payee already exists or is about to be created. */
 function buildContext(d){
-  const c = myCustomer();
+  const signedIn = myCustomer();
+
+  /* Acting for another customer changes whose account is debited, whose
+     payees are available and whose limits apply - but the authority's
+     own limits are checked against the holder, not the owner. */
+  const auth = d.actingFor ? authorityById(d.actingFor) : null;
+  const c = auth ? CUSTOMERS[auth.ownerId] : signedIn;
   if(!c) return null;
+
   const account = accountById(d.fromAccount);
   if(!account) return null;
 
@@ -1281,11 +1541,17 @@ function buildContext(d){
   const parsed = parseUk(d.valueDate);
   const valueDate = parsed ? onOrNextWorkingDay(iso(parsed)) : today();
 
+  const own = state.customerLimits[c.id];
+
   return {
     account, payee, amount,
     rail: d.kind === "Standing order" ? "Standing order" : d.rail,
     kind: d.kind,
     valueDate, customer: c,
+    actingFor: d.actingFor || "",
+    authority: auth,
+    ownLimit: (typeof own === "number") ? own : null,
+    cop: d.payeeMode === "new" ? checkPayee(d.newPayee.name, d.newPayee.number) : null,
     spentToday: spentToday(c.id),
     payeeCreatedToday: !!payee.createdToday,
     samePayeeToday: payee.id ? countToPayeeToday(c.id, payee.id) : 0,
@@ -1301,6 +1567,10 @@ function validatePayStep(d){
   d.errors = {};
 
   if(d.step === 1){
+    if(d.actingFor){
+      const a = authorityById(d.actingFor);
+      if(!a) d.errors["actingFor"] = "Select an authority.";
+    }
     if(d.payeeMode === "existing"){
       if(!d.payeeId) d.errors["payeeId"] = "Select a payee.";
     }else{
@@ -1316,6 +1586,20 @@ function validatePayStep(d){
         if(!np.number.trim()) d.errors["np-number"] = "An IBAN is required for an international payee.";
         else if(!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(np.number.trim().toUpperCase()))
           d.errors["np-number"] = "Enter a valid IBAN, for example DE89370400440532013000.";
+      }
+
+      /* The payee name check. Advisory in release 1.0 - a close match or
+         a no match asks the customer to confirm and then lets them
+         continue - and blocking on a no match in release 2.1. This is the
+         clearest advisory-versus-blocking pair in the application, and
+         the same control behaves differently in the two releases. */
+      if(!d.errors["np-name"] && !d.errors["np-number"]){
+        const cop = checkPayee(np.name, np.number);
+        if(cop.code === "CP-03" && v2()){
+          d.errors["np-name"] = "The name does not match the account. This payment cannot proceed.";
+        }else if(cop.confirm && !d.copConfirmed){
+          d.errors["copConfirmed"] = "Confirm you have checked the payee's details before continuing.";
+        }
       }
     }
   }
@@ -1364,6 +1648,8 @@ function validatePayStep(d){
     if(v2()){
       if(!d.purpose) d.errors["purpose"] = "Payment purpose is required.";
       if(!d.sourceOfFunds) d.errors["sourceOfFunds"] = "Source of funds is required.";
+      if(d.actingFor && !d.instructionFrom)
+        d.errors["instructionFrom"] = "Record where the instruction was received from.";
     }
   }
 
@@ -1479,6 +1765,15 @@ function recordPayment(ctx, d, decision, forcedStatus){
     valueDate, reference:d.reference, submittedAt: clockText(),
     outcomeCode: decision.code, outcomeReason: decision.reason,
     purpose: d.purpose || "", sourceOfFunds: d.sourceOfFunds || "",
+    /* Who actually instructed the payment, and under what authority. On
+       a payment the customer made themselves both are empty, which is
+       how Sentinel tells the two apart. */
+    instructedBy: ctx.authority ? session.name : "",
+    authorityId: ctx.authority ? ctx.authority.id : "",
+    authorityType: ctx.authority ? ctx.authority.type : "",
+    instructionFrom: d.instructionFrom || "",
+    copCode: ctx.cop ? ctx.cop.code : "",
+    copHeldName: ctx.cop ? ctx.cop.held : "",
     release: ctx.release,
     status: forcedStatus || "Scheduled",
     audit: [{ at: stamp(), who: session.name, what: "Submitted - " + decision.code }]
@@ -1650,6 +1945,9 @@ function viewSentinelCase(ref){
         <dt>Value date</dt><dd>${esc(ukDate(p.valueDate))}</dd>
         <dt>Channel outcome</dt><dd class="mono">${esc(p.outcomeCode)}</dd>
         <dt>Release</dt><dd class="mono">${esc(p.release)}</dd>
+        ${p.authorityId ? `<dt>Instructed by</dt><dd data-testid="case-instructed-by">${esc(p.instructedBy)} <span class="muted">(${esc(p.authorityType)} ${esc(p.authorityId)})</span></dd>
+        <dt>Instruction received</dt><dd>${esc(p.instructionFrom || "-")}</dd>` : ""}
+        ${p.copCode ? `<dt>Payee name check</dt><dd class="mono" data-testid="case-cop">${esc(p.copCode)}${p.copHeldName ? ` <span class="muted">(held as ${esc(p.copHeldName)})</span>` : ""}</dd>` : ""}
         ${p.purpose ? `<dt>Payment purpose</dt><dd>${esc(p.purpose)}</dd>` : ""}
         ${p.sourceOfFunds ? `<dt>Source of funds</dt><dd>${esc(p.sourceOfFunds)}</dd>` : ""}
       </dl>
@@ -1724,6 +2022,8 @@ function viewSentinelPayment(ref){
       <dt>Hold</dt><dd class="mono" data-testid="hold-code">${esc(p.holdCode || "none")}</dd>
       <dt>Case</dt><dd class="mono">${k ? `<a href="#/sentinel/case/${esc(k.ref)}" data-testid="open-case">${esc(k.ref)}</a>` : "none"}</dd>
       <dt>Decided by</dt><dd data-testid="decided-by">${esc(p.decidedBy || "-")}</dd>
+      ${p.authorityId ? `<dt>Instructed by</dt><dd data-testid="payment-instructed-by">${esc(p.instructedBy)} <span class="muted">(${esc(p.authorityType)})</span></dd>` : ""}
+      ${p.copCode ? `<dt>Payee name check</dt><dd class="mono" data-testid="payment-cop">${esc(p.copCode)}</dd>` : ""}
       <dt>Release</dt><dd class="mono">${esc(p.release)}</dd>
     </dl>
     ${(p.audit || []).length ? `
@@ -1897,7 +2197,8 @@ const NAV = {
     ["#/online", "Overview", "nav-overview"],
     ["#/online/pay/new", "Make a payment", "nav-new-payment"],
     ["#/online/payees", "Payees", "nav-payees"],
-    ["#/online/standing-orders", "Standing orders", "nav-standing-orders"]
+    ["#/online/standing-orders", "Standing orders", "nav-standing-orders"],
+    ["#/online/limits", "Payment limits", "nav-limits"]
   ],
   sentinel: [
     ["#/sentinel", "Hold queue", "nav-queue"],
@@ -1981,6 +2282,7 @@ function render(){
     else if(r[1] === "pay" && r[2] === "confirm"){ body = viewStepUp(); crumb = "Marchmont Online / Confirm it is you"; }
     else if(r[1] === "payees"){ body = viewPayees(); crumb = "Marchmont Online / Payees"; }
     else if(r[1] === "standing-orders"){ body = viewStandingOrders(); crumb = "Marchmont Online / Standing orders"; }
+    else if(r[1] === "limits"){ body = viewLimits(); crumb = "Marchmont Online / Payment limits"; }
     else if(r[1] === "payment" && r[2]){ body = viewPaymentDetail(decodeURIComponent(r[2])); crumb = "Marchmont Online / Payment"; }
     else { body = viewOnlineDashboard(); crumb = "Marchmont Online / Overview"; }
   }else{
@@ -1994,7 +2296,7 @@ function render(){
 }
 
 /* ---------- field writes ---------- */
-function writeField(el){
+function writeField(el, evType){
   const f = el.dataset.field;
   if(!f) return false;
 
@@ -2011,6 +2313,7 @@ function writeField(el){
     return true;
   }
   if(f === "sentinel-search"){ ui.sentinelQuery = el.value; renderListOnly(); return true; }
+  if(f === "limit-amount"){ ui.limitDraft = el.value; return true; }
 
   const d = ensureDraft();
 
@@ -2033,7 +2336,35 @@ function writeField(el){
     /* Country is a revealing control: a United Kingdom payee is identified
        by sort code and account number, an overseas one by IBAN alone. The
        field set has to be redrawn, not only revalidated. */
-    if(f === "np-country") render();
+    if(f === "np-country"){ render(); return true; }
+    /* The payee name check deliberately does NOT re-render here. Rendering
+       on blur destroys the button the user is in the middle of clicking -
+       mousedown blurs the field, the change event replaces the whole view,
+       and the click lands on an element that no longer exists, so Continue
+       appears to do nothing until it is pressed a second time. The check
+       runs on Continue instead, with every other validation. */
+    return true;
+  }
+
+  if(f === "copConfirmed"){
+    d.copConfirmed = !!el.checked;
+    delete d.errors["copConfirmed"];
+    render();
+    return true;
+  }
+
+  /* Changing who the payment is for changes whose accounts and whose
+     payees are on offer, so both selections are cleared rather than
+     carried across to a customer they do not belong to. */
+  if(f === "actingFor"){
+    d.actingFor = el.value;
+    d.payeeId = "";
+    d.copConfirmed = false;
+    const accs = draftAccounts(d);
+    const a = d.actingFor ? authorityById(d.actingFor) : null;
+    d.fromAccount = a ? a.accountId : (accs.length ? accs[0].id : "");
+    d.errors = {};
+    render();
     return true;
   }
 
@@ -2067,12 +2398,12 @@ function renderListOnly(){
 document.addEventListener("input", ev => {
   const el = ev.target;
   if(el.dataset && el.dataset.lfield){ loginDraft[el.dataset.lfield] = el.value; return; }
-  if(el.dataset && el.dataset.field) writeField(el);
+  if(el.dataset && el.dataset.field) writeField(el, "input");
 });
 document.addEventListener("change", ev => {
   const el = ev.target;
   if(el.dataset && el.dataset.lfield){ loginDraft[el.dataset.lfield] = el.value; return; }
-  if(el.dataset && el.dataset.field) writeField(el);
+  if(el.dataset && el.dataset.field) writeField(el, "change");
 });
 
 document.addEventListener("submit", ev => {
@@ -2120,6 +2451,9 @@ document.addEventListener("click", ev => {
       render(); return;
     }
     case "dash-filter-clear": ui.dashFilter = ""; render(); return;
+
+    case "limit-save": saveOwnLimit(); return;
+    case "limit-clear": clearOwnLimit(); return;
 
     case "new-payment": clearDraft(); go("/online/pay/new"); return;
 
