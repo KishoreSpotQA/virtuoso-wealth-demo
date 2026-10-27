@@ -140,8 +140,16 @@ the control the process exists for. Two traps:
 - **The controls render nothing.** Release and reject are absent from the page,
   with a notice in `decision-blocked` instead. A requirement asserting a
   disabled button is asserting something that does not exist.
+- **There is a third refusal: the release limit.** Payment Operations may
+  release up to 5,000.00 and no further. The limit sits below the anti money
+  laundering threshold deliberately, so that it is reachable at all - above it,
+  `PH-H02` would route every case to Financial Crime first and the limit could
+  never fire. Cover 5,000.00 and 5,000.01 as a boundary pair.
 - **Saving the note is what records the investigator.** A journey that saves a
   note as the user it intends to release with has just disqualified that user.
+- **A decision cannot absorb unsaved text.** Activating Release or Reject with a
+  note still in the box returns `Save the investigation note before recording a
+  decision.` A journey must activate `btn-save-note` first.
 
 ---
 
@@ -201,7 +209,7 @@ two different refusals in `decision-blocked`.
 **Portable, with two settings specific to this application.**
 
 ```
-Every journey opens by resetting the demo data from the sign in screen, pinning the release with ?release=off or ?release=on, pinning the clock with ?now= where the cut-off matters, and then signing in. It closes with a verification checkpoint asserting the terminal state: the reference assigned, the decision code reported, or the payment status reached.
+Every journey opens by navigating with ?session=out so it starts signed out, pinning the release with ?release=off or ?release=on, pinning the clock with ?now= where the cut-off matters, then resetting the demo data from the sign in screen, then signing in. It closes with a verification checkpoint asserting the terminal state: the reference assigned, the decision code reported, or the payment status reached.
 ```
 
 **Fixes:** inherited state, and two settings a journey cannot set any other way.
@@ -209,8 +217,9 @@ Every journey opens by resetting the demo data from the sign in screen, pinning 
 - **The daily limit is cumulative across the day.** Without a reset, a journey
   inherits the previous run's spending and the 25,000.01 boundary moves. This
   is the application where skipping the reset does the most damage.
-- **Both URL setters are applied at page load, and a page load signs the user
-  out.** So the order is navigate, then sign in - not the reverse.
+- **All three URL setters are applied at page load.** A session survives a
+  reload, so without `?session=out` a journey that navigates and then signs in
+  finds itself already signed in and the sign in form absent.
 - `login-reset` on the sign in screen is a **single** control with no
   confirmation, and it clears lockouts as well as data.
 
@@ -306,7 +315,7 @@ three journeys` is the fourth, and the first one to add.
 | Advisory versus blocking versus absent | A requirement asserts the cancel control is **absent** on a settled payment |
 | Unreachable rules | PA-D02 appears under branches not covered with a stated reason, not as a submitted payment |
 | Exact messages | Acceptance criteria contain quoted strings, and the four account number messages are not conflated |
-| Start and end state | Journeys reset, pin the release, and sign in **after** navigating |
+| Start and end state | Journeys navigate with `?session=out`, pin the release, reset, then sign in |
 | Read the passcode | No journey contains a literal six digit passcode |
 | Revealing controls | Journeys re-read the form after changing the payment type |
 | Template | Every requirement carries a **System** line and a **Branches not covered** section |
