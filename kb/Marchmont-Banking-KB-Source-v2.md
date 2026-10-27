@@ -162,8 +162,14 @@ card.
   `1,250.00`. Headline figures carry the prefix `GBP`. Amounts are entered as
   plain pounds and pence, for example `1250.00`; a comma is accepted and
   stripped.
-- **Dates are displayed and entered as `dd-mm-yyyy`.** There is no date picker
-  anywhere in the application - every date field is a plain text input.
+- **Dates are displayed and entered as `dd-mm-yyyy`.** Every date field is a
+  text input holding that format, with a **calendar button beside it**. The
+  button opens the browser's own picker and writes the chosen day back into the
+  text input as `dd-mm-yyyy`, so the value on the page is identical whether it
+  was typed or picked. **The text input is the field of record.** A journey
+  should type into it rather than drive the calendar: date pickers are a known
+  weak control type for generated automation, and the button adds nothing a
+  typed value does not already achieve.
 - Reference numbers:
 
 | Kind | Format | Example |
@@ -735,6 +741,7 @@ label based identification breaks across those branches.
 | Payee mode | `mode-existing`, `mode-new` |
 | Step 1 fields | `input-payee`, `input-payee-name`, `input-payee-country`, `input-payee-sort`, `input-payee-number` |
 | Step 2 fields | `input-from`, `input-amount`, `kind-immediate`, `kind-scheduled`, `kind-standing-order`, `input-rail`, `input-date`, `input-frequency`, `input-end-date`, `input-reference`, `input-purpose`, `input-source-of-funds` |
+| Calendar buttons beside the date fields | `calendar-input-date`, `calendar-input-end-date` |
 | Field errors | `error-<field key>`, for example `error-amount`, `error-valueDate`, `error-np-sort` |
 | Review | `review`, `review-payee`, `review-amount`, `review-date`, `review-date-moved`, `review-purpose`, `review-source-of-funds`, `indicative-outcome`, `indicative-code` |
 | Wizard buttons | `btn-continue`, `btn-back`, `btn-cancel`, `btn-submit` |
@@ -826,7 +833,10 @@ there.
 - **Select options by their full exact visible text.** The country list contains
   three entries beginning `United`.
 - **Enter dates as literal `dd-mm-yyyy` values from the test data.** The clock is
-  fixed, so a date derived from the real today drifts.
+  fixed, so a date derived from the real today drifts. Type into `input-date` and
+  `input-end-date`; do not drive `calendar-input-date` or
+  `calendar-input-end-date`. The calendar is a convenience for a person and
+  reaches the same result by a route that generated automation handles poorly.
 - **Nothing in this application is asynchronous.** Rating, the decision engines
   and the screening are all synchronous. Do not insert a fixed pause; wait on
   the element that proves the step finished.
