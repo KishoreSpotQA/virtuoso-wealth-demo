@@ -165,6 +165,33 @@ h3{font-size:.95rem; margin:0 0 .4rem}
 }
 .field.bad input,.field.bad select,.field.bad textarea{border-color:var(--risk); background:#fffafa}
 .hint{font-size:.76rem; color:var(--ink-3)}
+
+/* Constrained field widths. An amount or a date is a short value, and a
+   box stretched to half the page invites the reader to expect more than
+   two or three words in it. */
+.field.f-xs input,.field.f-xs select{max-width:190px}
+.field.f-sm input,.field.f-sm select{max-width:250px}
+
+/* The calendar sits beside the text field rather than replacing it. The
+   text input stays the field of record in dd-mm-yyyy, because a native
+   date input reports yyyy-mm-dd and a generated journey types what the
+   document tells it to type. The button is a convenience for a person
+   driving the demonstration by hand. */
+.date-wrap{display:flex; align-items:center; gap:.35rem; max-width:250px; position:relative}
+.date-wrap input[type=text]{flex:1 1 auto; min-width:0}
+.cal-btn{
+  flex:none; width:34px; height:34px; display:grid; place-items:center;
+  border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; padding:0;
+}
+.cal-btn:hover,.cal-btn:focus-visible{border-color:var(--brand); background:#f6fbfa}
+.cal-btn svg{width:17px; height:17px; stroke:var(--ink-2); fill:none; stroke-width:1.7}
+/* Specific enough to beat ".field input{width:100%}", which otherwise
+   stretched this to the full field width and pushed the page sideways
+   on a phone even though the control is invisible. */
+.date-wrap input.cal-native{
+  position:absolute; left:0; bottom:0; width:1px; height:1px; min-width:0;
+  max-width:1px; opacity:0; pointer-events:none; border:0; padding:0;
+}
 .err{font-size:.78rem; color:var(--risk); font-weight:700}
 .radio-set{display:flex; flex-direction:column; gap:.35rem; align-items:flex-start}
 /* inline-flex, not flex: a stretched label makes the whole row clickable,
@@ -938,6 +965,31 @@ function payErr(d, k){
 }
 function bad(d, k){ return d.errors[k] ? " bad" : ""; }
 
+/* A date field: the text input a journey types into, plus a calendar
+   button for a person. The native picker is visually hidden and driven
+   by the button; whatever it returns is written back into the text
+   field in dd-mm-yyyy, so the value on the page is always the format
+   the knowledge base documents. */
+function dateField(d, key, id, label, testid, hint){
+  const ukValue = d[key] || "";
+  const isoValue = (() => { const p = parseUk(ukValue); return p ? iso(p) : ""; })();
+  return `
+  <div class="field${bad(d, key)}">
+    <label for="${esc(id)}">${esc(label)}</label>
+    <div class="date-wrap">
+      <input id="${esc(id)}" type="text" placeholder="dd-mm-yyyy" data-field="${esc(key)}"
+             data-testid="${esc(testid)}" value="${esc(ukValue)}" autocomplete="off">
+      <button type="button" class="cal-btn" data-act="open-cal" data-cal-for="${esc(key)}"
+              data-testid="calendar-${esc(testid)}" aria-label="Open the calendar for ${esc(label)}" title="Open the calendar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+      </button>
+      <input type="date" class="cal-native" data-field="cal:${esc(key)}" data-cal-native="${esc(key)}"
+             tabindex="-1" aria-hidden="true" value="${esc(isoValue)}">
+    </div>
+    ${hint ? `<span class="hint">${hint}</span>` : ""}${payErr(d, key)}
+  </div>`;
+}
+
 function viewPayNew(){
   const d = ensureDraft();
   const stepBar = PAY_STEPS.map((s, i) => {
@@ -1008,7 +1060,7 @@ function payStepDetail(d){
         ${accs.map(a => `<option value="${esc(a.id)}" ${d.fromAccount===a.id?"selected":""}>${esc(a.name)} - ${esc(money(a.available))} available</option>`).join("")}
       </select>${payErr(d,"fromAccount")}</div>
 
-    <div class="field${bad(d,"amount")}"><label for="f-amount">Amount</label>
+    <div class="field f-xs${bad(d,"amount")}"><label for="f-amount">Amount</label>
       <input id="f-amount" type="text" inputmode="decimal" placeholder="0.00" data-field="amount" data-testid="input-amount" value="${esc(d.amount)}">
       <span class="hint">Pounds and pence, for example 1250.00</span>${payErr(d,"amount")}</div>
   </div>
@@ -1023,27 +1075,26 @@ function payStepDetail(d){
 
   <div class="grid g2">
     ${d.kind !== "Standing order" ? `
-    <div class="field${bad(d,"rail")}"><label for="f-rail">Send by</label>
+    <div class="field f-sm${bad(d,"rail")}"><label for="f-rail">Send by</label>
       <select id="f-rail" data-field="rail" data-testid="input-rail">
         <option value="Faster Payment" ${d.rail==="Faster Payment"?"selected":""}>Faster Payment</option>
         <option value="CHAPS" ${d.rail==="CHAPS"?"selected":""}>CHAPS</option>
       </select>
       <span class="hint">Faster Payments run at any hour and settle at once. CHAPS has a 16:00 cut-off.</span>${payErr(d,"rail")}</div>` : ""}
 
-    <div class="field${bad(d,"valueDate")}"><label for="f-date">${d.kind === "Standing order" ? "First payment date" : "Value date"}</label>
-      <input id="f-date" type="text" placeholder="dd-mm-yyyy" data-field="valueDate" data-testid="input-date" value="${esc(d.valueDate)}">
-      <span class="hint">Today is ${esc(ukDate(today()))}. A weekend date moves to the next working day.</span>${payErr(d,"valueDate")}</div>
+    ${dateField(d, "valueDate", "f-date",
+       d.kind === "Standing order" ? "First payment date" : "Value date",
+       "input-date",
+       "Today is " + esc(ukDate(today())) + ". A weekend date moves to the next working day.")}
 
     ${d.kind === "Standing order" ? `
-    <div class="field${bad(d,"frequency")}"><label for="f-freq">Frequency</label>
+    <div class="field f-xs${bad(d,"frequency")}"><label for="f-freq">Frequency</label>
       <select id="f-freq" data-field="frequency" data-testid="input-frequency">
         ${["Weekly","Monthly","Quarterly"].map(f => `<option value="${esc(f)}" ${d.frequency===f?"selected":""}>${esc(f)}</option>`).join("")}
       </select>${payErr(d,"frequency")}</div>
-    <div class="field${bad(d,"endDate")}"><label for="f-end">End date</label>
-      <input id="f-end" type="text" placeholder="dd-mm-yyyy" data-field="endDate" data-testid="input-end-date" value="${esc(d.endDate)}">
-      <span class="hint">Leave empty for no end date.</span>${payErr(d,"endDate")}</div>` : ""}
+    ${dateField(d, "endDate", "f-end", "End date", "input-end-date", "Leave empty for no end date.")}` : ""}
 
-    <div class="field${bad(d,"reference")}"><label for="f-ref">Reference</label>
+    <div class="field f-sm${bad(d,"reference")}"><label for="f-ref">Reference</label>
       <input id="f-ref" type="text" data-field="reference" data-testid="input-reference" value="${esc(d.reference)}">
       <span class="hint">Shown on the payee's statement. Up to 18 characters.</span>${payErr(d,"reference")}</div>
 
@@ -1962,6 +2013,21 @@ function writeField(el){
   if(f === "sentinel-search"){ ui.sentinelQuery = el.value; renderListOnly(); return true; }
 
   const d = ensureDraft();
+
+  /* The hidden native picker reports yyyy-mm-dd. Translate it into the
+     dd-mm-yyyy the text field and the knowledge base both use, so the
+     value on the page is identical whether it was typed or picked. */
+  if(f.indexOf("cal:") === 0){
+    const target = f.slice(4);
+    if(el.value){
+      const p = el.value.split("-");
+      if(p.length === 3) d[target] = p[2] + "-" + p[1] + "-" + p[0];
+      delete d.errors[target];
+      render();
+    }
+    return true;
+  }
+
   if(f.indexOf("np-") === 0){
     d.newPayee[f.slice(3)] = el.value;
     /* Country is a revealing control: a United Kingdom payee is identified
@@ -2034,6 +2100,17 @@ document.addEventListener("click", ev => {
       RELEASE = !RELEASE; saveRelease(); render();
       toast(v2() ? "New features are on." : "New features are off.");
       return;
+
+    case "open-cal": {
+      const key = t.dataset.calFor;
+      const native = document.querySelector('[data-cal-native="' + key + '"]');
+      if(!native) return;
+      /* showPicker is the supported way to open a date picker from a
+         button. Where it is unavailable, focusing and clicking the input
+         is the fallback, which is what older engines respond to. */
+      try{ if(typeof native.showPicker === "function"){ native.showPicker(); return; } }catch(e){}
+      native.focus(); native.click(); return;
+    }
 
     case "dash-filter": {
       /* Activating the tile that is already applied clears it, so the
