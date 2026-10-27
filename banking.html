@@ -144,6 +144,15 @@ h3{font-size:.95rem; margin:0 0 .4rem}
 .stat{font-size:1.5rem; font-weight:800; letter-spacing:-.02em}
 .stat-l{font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); font-weight:800}
 
+/* A stat tile that filters the list below it. Rendered as a real button so
+   it is reachable by keyboard and announces its pressed state, rather than
+   a div with a click handler. */
+.card-btn{font:inherit; text-align:left; cursor:pointer; width:100%}
+.card-btn:hover{border-color:var(--brand); background:#fbfdfd}
+.card-btn[aria-pressed="true"]{border-color:var(--brand); box-shadow:0 0 0 2px #cdeee7 inset}
+.card-btn .stat-l{color:var(--brand-ink)}
+.filter-note{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; margin-bottom:10px}
+
 /* ---------- forms ---------- */
 .field{display:flex; flex-direction:column; gap:.28rem; margin-bottom:12px}
 .field label{font-size:.82rem; font-weight:700; color:var(--ink-2)}
@@ -157,9 +166,12 @@ h3{font-size:.95rem; margin:0 0 .4rem}
 .field.bad input,.field.bad select,.field.bad textarea{border-color:var(--risk); background:#fffafa}
 .hint{font-size:.76rem; color:var(--ink-3)}
 .err{font-size:.78rem; color:var(--risk); font-weight:700}
-.radio-set{display:flex; flex-direction:column; gap:.35rem}
-.radio-row{display:flex; align-items:flex-start; gap:.5rem; font-size:.9rem}
-.radio-row input{width:auto; margin-top:.2rem}
+.radio-set{display:flex; flex-direction:column; gap:.35rem; align-items:flex-start}
+/* inline-flex, not flex: a stretched label makes the whole row clickable,
+   including the empty space to the right of the text, so a stray click
+   several centimetres away silently changes the selection. */
+.radio-row{display:inline-flex; align-items:flex-start; gap:.5rem; font-size:.9rem; align-self:flex-start; cursor:pointer}
+.radio-row input{width:auto; margin-top:.2rem; cursor:pointer}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -446,6 +458,43 @@ let loginError = "";
 let lockouts = {};           /* username -> failed attempt count */
 let ui = {};                 /* per view scratch, never persisted */
 
+/* ---------- the signed in user ----------
+   Held under its own key, separate from the demo data, for two reasons.
+   A page reload used to sign the user out, which made the ?release= and
+   ?now= setters painful: both are applied at load, so pinning either one
+   meant signing in again afterwards. And resetting the demo data should
+   restore records without ejecting whoever is using the application, so
+   the two cannot share a key. */
+const SESSION_KEY = "marchmont.banking.session.v1";
+
+function saveSession(){
+  try{
+    if(session) localStorage.setItem(SESSION_KEY, session.username);
+    else localStorage.removeItem(SESSION_KEY);
+  }catch(e){}
+}
+function loadSession(){
+  /* An absolute setter, for the same reason the release has one. Because a
+     session now survives a reload, a journey that navigates and then signs
+     in would find itself already signed in and the sign in form absent.
+     ?session=out makes the starting state deterministic:
+
+         banking.html?session=out                always lands on sign in
+         banking.html?release=off&session=out    pinned release, signed out
+
+     Anything other than out is ignored. Applied before the first render. */
+  try{
+    if(new URLSearchParams(location.search).get("session") === "out"){
+      localStorage.removeItem(SESSION_KEY);
+      return;
+    }
+  }catch(e){}
+  try{
+    const u = localStorage.getItem(SESSION_KEY);
+    if(u) session = userByName(u);
+  }catch(e){}
+}
+
 function save(){
   try{
     localStorage.setItem(KEY, JSON.stringify({
@@ -584,8 +633,15 @@ const DAILY_LIMIT = { Standard: 2500000, Premier: 10000000 };   /* 25,000.00 / 1
 
 /* Release limits in Sentinel. Payment Operations works the ordinary
    queue; anything larger, and anything held for financial crime
-   reasons, belongs to Financial Crime. */
-const RELEASE_LIMIT = { "Payment Operations": 5000000 };        /* 50,000.00 */
+   reasons, belongs to Financial Crime.
+
+   The limit sits below the anti money laundering threshold on purpose.
+   An operations owned case only ever arises from PH-H03 or PH-H04, and
+   PH-H02 takes everything at or above 10,000.00 for Financial Crime, so
+   a limit above that figure could never be reached through the
+   interface - the rule would exist and never fire. At 5,000.00 it
+   divides the operations queue in two, which is the point of having it. */
+const RELEASE_LIMIT = { "Payment Operations": 500000 };         /* 5,000.00 */
 
 const SANCTIONED_COUNTRIES = ["KP", "IR", "SY"];
 const SERVED_COUNTRIES = [
@@ -781,6 +837,11 @@ function viewOnlineDashboard(){
   const pays = myPayments().slice().sort((a,b) => (b.createdAt||"").localeCompare(a.createdAt||""));
   const held = pays.filter(p => p.status === "Held");
   const sched = pays.filter(p => p.status === "Scheduled");
+
+  /* The two counts above are also controls: activating one filters the list
+     below to exactly the records it counted, so a number on screen can
+     always be reconciled against the rows behind it. */
+  const shown = ui.dashFilter ? pays.filter(p => p.status === ui.dashFilter) : pays;
   const limit = DAILY_LIMIT[c.tier];
   const used = spentToday(c.id);
 
@@ -792,8 +853,18 @@ function viewOnlineDashboard(){
     <div class="card"><div class="stat-l">Total balance</div><div class="stat" data-testid="stat-balance">${esc(gbp(total))}</div></div>
     <div class="card"><div class="stat-l">Daily limit used</div><div class="stat" data-testid="stat-limit-used">${esc(money(used))}</div>
       <div class="hint">of ${esc(money(limit))}</div></div>
-    <div class="card"><div class="stat-l">Awaiting review</div><div class="stat" data-testid="stat-held">${held.length}</div></div>
-    <div class="card"><div class="stat-l">Scheduled</div><div class="stat" data-testid="stat-scheduled">${sched.length}</div></div>
+    <button type="button" class="card card-btn" data-act="dash-filter" data-status="Held"
+            aria-pressed="${ui.dashFilter === "Held" ? "true" : "false"}" data-testid="tile-held"
+            title="Show only the payments awaiting review">
+      <div class="stat-l">Awaiting review</div><div class="stat" data-testid="stat-held">${held.length}</div>
+      <div class="hint">${ui.dashFilter === "Held" ? "Showing these" : "Click to show"}</div>
+    </button>
+    <button type="button" class="card card-btn" data-act="dash-filter" data-status="Scheduled"
+            aria-pressed="${ui.dashFilter === "Scheduled" ? "true" : "false"}" data-testid="tile-scheduled"
+            title="Show only the scheduled payments">
+      <div class="stat-l">Scheduled</div><div class="stat" data-testid="stat-scheduled">${sched.length}</div>
+      <div class="hint">${ui.dashFilter === "Scheduled" ? "Showing these" : "Click to show"}</div>
+    </button>
   </div>
 
   <div class="card" style="margin-bottom:16px">
@@ -815,11 +886,16 @@ function viewOnlineDashboard(){
   </div>
 
   <div class="card">
-    <h2>Recent payments</h2>
-    ${pays.length ? `
+    <h2>${ui.dashFilter === "Held" ? "Awaiting review" : (ui.dashFilter === "Scheduled" ? "Scheduled payments" : "Recent payments")}</h2>
+    ${ui.dashFilter ? `
+    <div class="filter-note" data-testid="payments-filter">
+      <span class="pill p-info">Filtered to ${esc(ui.dashFilter === "Held" ? "awaiting review" : "scheduled")}</span>
+      <button class="btn btn-sm" data-act="dash-filter-clear" data-testid="btn-clear-filter">Show all payments</button>
+    </div>` : ""}
+    ${shown.length ? `
     <table data-testid="grid-payments">
       <thead><tr><th>Reference</th><th>Payee</th><th class="num">Amount</th><th>Value date</th><th>Status</th><th>Outcome</th><th></th></tr></thead>
-      <tbody>${pays.slice(0,10).map(p => `
+      <tbody>${shown.slice(0,10).map(p => `
         <tr data-testid="row-${esc(p.ref)}">
           <td class="mono">${esc(p.ref)}</td>
           <td>${esc(p.payeeName)}</td>
@@ -829,7 +905,9 @@ function viewOnlineDashboard(){
           <td class="mono">${esc(p.outcomeCode || "")}</td>
           <td><a href="#/online/payment/${esc(p.ref)}" data-testid="open-${esc(p.ref)}">Open</a></td>
         </tr>`).join("")}</tbody>
-    </table>` : `<p class="muted" data-testid="payments-empty">No payments yet.</p>`}
+    </table>` : `<p class="muted" data-testid="payments-empty">${ui.dashFilter
+        ? "No payments " + esc(ui.dashFilter === "Held" ? "awaiting review" : "scheduled") + "."
+        : "No payments yet."}</p>`}
   </div>`;
 }
 
@@ -1211,6 +1289,15 @@ function validatePayStep(d){
     if(!d.errors["valueDate"] && d.kind === "Immediate" && vd && iso(vd) !== today())
       d.errors["valueDate"] = "An immediate payment must be dated today. Choose Scheduled for a later date.";
 
+    /* The mirror of the rule above, and the more important of the two. The
+       date field defaults to today, so choosing Scheduled and continuing
+       without touching it used to produce a Faster Payment that settled at
+       once: the type said Scheduled, the status said Settled, and the
+       Scheduled count on the overview stayed at zero. The payment type and
+       the value date have to agree. */
+    if(!d.errors["valueDate"] && d.kind === "Scheduled" && vd && iso(vd) === today())
+      d.errors["valueDate"] = "A scheduled payment must be dated after today. Choose Immediate to pay today.";
+
     if(d.reference && d.reference.length > 18) d.errors["reference"] = "A reference can be at most 18 characters.";
 
     if(d.kind === "Standing order"){
@@ -1521,7 +1608,7 @@ function viewSentinelCase(ref){
       <h2>Investigation</h2>
       <div class="field">
         <label for="f-notes">Investigation note</label>
-        <textarea id="f-notes" rows="4" data-field="case-notes" data-testid="input-case-notes">${esc(k.notes)}</textarea>
+        <textarea id="f-notes" rows="4" data-field="case-notes" data-case="${esc(k.ref)}" data-testid="input-case-notes">${esc(pendingNote(k.ref) !== null ? pendingNote(k.ref) : k.notes)}</textarea>
         <span class="hint">At least 20 characters before a decision can be recorded.</span>
         ${ui.caseError ? `<span class="err" data-testid="error-case-notes">${esc(ui.caseError)}</span>` : ""}
       </div>
@@ -1597,11 +1684,22 @@ function viewSentinelPayment(ref){
   </div>`;
 }
 
-/* ---------- decisions ---------- */
+/* ---------- decisions ----------
+   The note being typed is held in ui until it is committed to the case.
+   It is keyed by case reference because ui is global: without the key,
+   opening a second case showed the first case's unsaved text. */
+function pendingNote(ref){
+  return (ui.caseNotesFor === ref && ui.caseNotes !== undefined) ? ui.caseNotes : null;
+}
+function commitNote(k){
+  const pending = pendingNote(k.ref);
+  if(pending !== null) k.notes = String(pending);
+}
+
 function saveCaseNote(ref){
   const k = caseByRef(ref);
   if(!k) return;
-  k.notes = String(ui.caseNotes !== undefined ? ui.caseNotes : k.notes);
+  commitNote(k);
   if(k.notes.trim().length >= 20){
     k.investigatedBy = session.name;
     ui.caseError = "";
@@ -1618,6 +1716,22 @@ function decideCase(ref, action){
   if(!k) return;
   const p = paymentByRef(k.paymentRef);
   if(!p) return;
+
+  /* Saving the note is a separate, recorded act, because it is what names
+     the investigator and the identity check in mayDecide compares against.
+     A decision therefore cannot quietly absorb unsaved text - but it must
+     not pretend the box is empty either, which is what used to happen:
+     the note was read from the case rather than the box, the message said
+     twenty characters were required, and the re-render then wiped what had
+     been typed. Say plainly that the note needs saving, and keep the text. */
+  const pending = pendingNote(k.ref);
+  if(pending !== null && pending.trim() !== k.notes.trim()){
+    ui.caseError = pending.trim().length < 20
+      ? "An investigation note of at least 20 characters is required."
+      : "Save the investigation note before recording a decision.";
+    render();
+    return;
+  }
 
   if(k.notes.trim().length < 20){
     ui.caseError = "An investigation note of at least 20 characters is required.";
@@ -1703,7 +1817,7 @@ function viewLauncher(){
         <span class="brand-mark">MB</span>
         <span><span class="brand-name">Marchmont Bank</span><div class="brand-sub">Applications</div></span>
       </div>
-      <p style="color:#9aa8b6; margin:0 0 22px">Signed in as ${esc(session.name)} - ${esc(session.role)}</p>
+      <p style="color:#9aa8b6; margin:0 0 22px" data-testid="current-user">Signed in as ${esc(session.name)} - ${esc(session.role)}</p>
 
       <div class="grid g2">
         <a class="app-card" href="#/online" data-testid="app-online" ${canOnline ? "" : `aria-disabled="true"`}>
@@ -1834,7 +1948,17 @@ function writeField(el){
   if(!f) return false;
 
   if(f === "otp"){ ui.otp = el.value; return true; }
-  if(f === "case-notes"){ ui.caseNotes = el.value; return true; }
+  if(f === "case-notes"){
+    /* The owning case is read from the element, never from the route.
+       Leaving a case while text is unsaved destroys the focused textarea,
+       and the browser then fires its change event - by which time the
+       route has already moved on. Deriving the owner from the route at
+       that moment handed the first case's unsaved text to the second,
+       which showed an empty box and still refused a decision on it. */
+    ui.caseNotes = el.value;
+    ui.caseNotesFor = el.dataset.case || "";
+    return true;
+  }
   if(f === "sentinel-search"){ ui.sentinelQuery = el.value; renderListOnly(); return true; }
 
   const d = ensureDraft();
@@ -1898,6 +2022,7 @@ document.addEventListener("click", ev => {
   switch(act){
     case "sign-out":
       session = null; loginDraft = { username:"", password:"" }; loginError = ""; ui = {};
+      saveSession();
       go("/"); render(); return;
 
     case "reset":
@@ -1909,6 +2034,15 @@ document.addEventListener("click", ev => {
       RELEASE = !RELEASE; saveRelease(); render();
       toast(v2() ? "New features are on." : "New features are off.");
       return;
+
+    case "dash-filter": {
+      /* Activating the tile that is already applied clears it, so the
+         control is its own off switch rather than a one way trap. */
+      const want = t.dataset.status;
+      ui.dashFilter = (ui.dashFilter === want) ? "" : want;
+      render(); return;
+    }
+    case "dash-filter-clear": ui.dashFilter = ""; render(); return;
 
     case "new-payment": clearDraft(); go("/online/pay/new"); return;
 
@@ -1973,7 +2107,7 @@ function doSignIn(){
   session = found;
   loginDraft = { username:"", password:"" };
   ui = {};
-  save();
+  save(); saveSession();
   go("/apps");
   render();
 }
@@ -1981,6 +2115,7 @@ function doSignIn(){
 /* ---------- boot ---------- */
 window.addEventListener("hashchange", render);
 load();
+loadSession();
 render();
 </script>
 </body>
