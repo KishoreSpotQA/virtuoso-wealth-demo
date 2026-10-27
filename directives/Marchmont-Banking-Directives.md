@@ -12,7 +12,7 @@
 
 ## How to read this set
 
-Thirteen directives. Six are the same wording used on the wealth, insurance,
+Fifteen directives. Six are the same wording used on the wealth, insurance,
 pensions and Halcyon projects and are marked **portable**. Seven are **specific
 to this application** and carry what makes it different from the other four:
 a step-up that interrupts and resumes, a cut-off that depends on the time of
@@ -26,7 +26,7 @@ deliberately. Set them before the first run; retro-fitting means regenerating.
 
 | Target | Directives | Notes |
 |---|---|---|
-| **Requirement** | 1, 2, 3, 4, 7, 8, 9, 13 | Templates exist here and nowhere else |
+| **Requirement** | 1, 2, 3, 4, 7, 8, 9, 13, 14, 15 | Templates exist here and nowhere else |
 | **Journey** | 5, 6, 10, 11 | Instructions and conventions only |
 | **Autopilot** | 12 | Instructions and conventions only |
 
@@ -37,11 +37,11 @@ deliberately. Set them before the first run; retro-fitting means regenerating.
 **Rewritten for this application.**
 
 ```
-Produce a separate requirement for each branch of a branching control rather than one requirement listing several outcomes. The branching controls are: the channel decision code, the step-up trigger, the payment type, the rail, the hold code, the release or reject decision, the case ownership gate, the investigator identity check, and whether a payment can be cancelled.
+Produce a separate requirement for each branch of a branching control rather than one requirement listing several outcomes. The branching controls are: the channel decision code, the authority refusal, the step-up trigger, the payment type, the rail, the payee name check outcome, the hold code, the release or reject decision, the case ownership gate, the investigator identity check, the release limit, and whether a payment can be cancelled.
 ```
 
-**Fixes:** collapsed coverage. This application carries **seventeen decision
-codes across two engines** - twelve PA codes in the channel and five PH codes in
+**Fixes:** collapsed coverage. This application carries **twenty seven decision
+codes across two engines and the payee name check** - twelve PA codes in the channel and five PH codes in
 operations - and they are mutually exclusive by precedence. A generation that
 writes "the payment is accepted, held or rejected" as one requirement has
 covered nothing, and the coverage figure will say otherwise.
@@ -85,6 +85,10 @@ earlier code is ever observable:
 - A 1,500.00 payment to an established overseas payee reports **PA-S01**, never
   PA-S03. PA-S03 is only observable below 1,000.00.
 - A 20,000.00 payment to a watchlisted payee reports **PH-H01**, never PH-H02.
+- An expired authority reports **PA-T04** and nothing else, even where the
+  payment also breaks the payee restriction and the per-payment limit.
+- Where the customer's own daily limit equals the tier limit, **PA-D05** is
+  reported, never PA-D06.
 
 Without this directive, generation will write a requirement for PA-S02 using a
 5,000.00 amount, the test will report PA-S01, and the failure will look like a
@@ -267,7 +271,47 @@ place.
 
 ---
 
-## 13. Requirement · Template
+## 13. Requirement · Instruction — `Acting for another customer`
+
+**Specific to this application.**
+
+```
+A payment may be made by the account holder or by a third party acting under an authority. The Acting for control is absent for a customer who holds no authority, so a requirement must state which of the two it covers. Authority refusals are evaluated before every other rule, including the available balance. Where a requirement covers a payment made under an authority, its acceptance criteria must name the authority, the account it covers and its per-payment limit.
+```
+
+**Fixes:** requirements that assume one actor. The same payment screen behaves
+differently for a holder and for a third party, and the control that selects
+between them is not rendered at all for most customers. Two traps:
+
+- **The payee and account lists change with the selection.** They become the
+  account owner's, not the signed-in customer's, and both selections are
+  cleared when the authority changes.
+- **An authority is held against one account, not a customer.** The owner's
+  other accounts appear in the list and are refused under `PA-T01`, which is
+  the only way that code is observable.
+
+---
+
+## 14. Requirement · Instruction — `The payee name check is advisory, then blocking`
+
+**Specific to this application, and the clearest release difference in it.**
+
+```
+A new payee is checked against the name the receiving bank holds. In the previous release a no match is advisory: the customer acknowledges it, the payment proceeds and is held for review. In release 2.1 the same outcome is refused at step 1 and no acknowledgement is offered. A requirement covering this control must state which release it describes, and must not assert that a no match blocks without saying so.
+```
+
+**Fixes:** a requirement that is correct in one release and wrong in the other.
+This is the pair to point at when a customer asks what happens to existing
+coverage when a rule changes: the control, the screen and the test id are
+identical, and only the outcome moved.
+
+It also tells generation that a close match and a no match are **different
+branches** rather than two names for a failure, and that an account number the
+check does not cover is a fourth outcome rather than an error.
+
+---
+
+## 15. Requirement · Template
 
 **Portable, with one addition.**
 
@@ -321,6 +365,8 @@ three journeys` is the fourth, and the first one to add.
 | Start and end state | Journeys navigate with `?session=out`, pin the release, reset, then sign in |
 | Read the passcode | No journey contains a literal six digit passcode |
 | Revealing controls | Journeys re-read the form after changing the payment type |
+| Acting for another customer | At least one requirement covers a payment made under an authority and names its limit |
+| The payee name check is advisory, then blocking | A requirement states which release it describes, and the 1.0 and 2.1 outcomes are not conflated |
 | Template | Every requirement carries a **System** line and a **Branches not covered** section |
 
 ---
