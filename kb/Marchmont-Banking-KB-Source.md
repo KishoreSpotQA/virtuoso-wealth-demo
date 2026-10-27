@@ -125,8 +125,11 @@ out and sign back in.
   warning before the lockout** and **no time based expiry**. It clears only on a
   demo data reset.
 - The form submits on Enter as well as on the button.
-- Signing out returns to the sign in screen and clears the session. The session
-  is held in memory only, so a page reload also signs the user out.
+- Signing out returns to the sign in screen and clears the session.
+- **The session survives a page reload.** It is held under its own key,
+  `marchmont.banking.session.v1`, separate from the demo data, so refreshing
+  the browser does not sign the user out and **Reset demo data** does not
+  either. Only signing out, or the `?session=out` setter below, ends it.
 
 ### Role gates
 
@@ -189,6 +192,23 @@ to `23:59`, or one that is not `HH:MM`, is ignored rather than guessed at.
 
 The current clock is shown in the top bar as `Clock 26-10-2026 10:00`.
 
+### Starting signed out
+
+Because a session survives a reload, a journey that navigates and then signs in
+would find itself already signed in and the sign in form absent. The third
+setter makes the starting state deterministic:
+
+```
+banking.html?session=out
+banking.html?release=off&session=out&now=09:00
+```
+
+`?session=out` signs out at page load. Any other value is ignored. The three
+setters are independent and combine in any order.
+
+**A journey should open with `?session=out`** unless it deliberately relies on
+an existing session.
+
 ### Seeded accounts
 
 | Customer | Account | Type | Sort code | Number | Balance |
@@ -227,6 +247,21 @@ evaluated first and would always win.
 **`Albrecht Partners` returns a sanctions match** in Sentinel. The demonstration
 watchlist matches the names `albrecht`, `voronov` and `ferreira-dos-santos`
 anywhere in the payee name, case insensitively.
+
+---
+
+### The count tiles are controls
+
+**Awaiting review** and **Scheduled** on the overview are buttons, not labels.
+Activating one filters the payment list below to exactly the records it counted,
+sets `aria-pressed` to `true`, changes the card heading, and shows a clear
+control in `payments-filter`. Activating the same tile again clears the filter,
+so the control is its own off switch.
+
+This matters for a journey that counts rows: the list is filtered state, and a
+row count taken after activating a tile is not the same assertion as a row count
+taken before it. Clear the filter, or assert the tile's pressed state alongside
+the count.
 
 ---
 
@@ -291,7 +326,7 @@ draft, and a payment rejected by the channel, both leave no payee behind.
 | Amount | `input-amount` | Yes | Pounds and pence, greater than zero | `Amount is required.` / `Enter an amount in pounds and pence, for example 1250.00` / `Enter an amount greater than zero.` |
 | Payment type | `kind-immediate`, `kind-scheduled`, `kind-standing-order` | Yes (defaulted to Immediate) | - | - |
 | Send by | `input-rail` | Not shown for a standing order | Faster Payment or CHAPS | - |
-| Value date | `input-date` | Yes | `dd-mm-yyyy`, not past, at most 365 days ahead | `Value date is required.` / `Enter the date as dd-mm-yyyy.` / `The value date cannot be in the past.` / `A payment cannot be dated more than 365 days ahead.` / `An immediate payment must be dated today. Choose Scheduled for a later date.` |
+| Value date | `input-date` | Yes | `dd-mm-yyyy`, not past, at most 365 days ahead | `Value date is required.` / `Enter the date as dd-mm-yyyy.` / `The value date cannot be in the past.` / `A payment cannot be dated more than 365 days ahead.` / `An immediate payment must be dated today. Choose Scheduled for a later date.` / `A scheduled payment must be dated after today. Choose Immediate to pay today.` |
 | Frequency | `input-frequency` | Standing order only | Weekly, Monthly, Quarterly | - |
 | End date | `input-end-date` | No | After the first payment date | `Enter the date as dd-mm-yyyy.` / `The end date must be after the first payment date.` |
 | Reference | `input-reference` | No | At most 18 characters | `A reference can be at most 18 characters.` |
@@ -299,6 +334,13 @@ draft, and a payment rejected by the channel, both leave no payee behind.
 **Changing the payment type adds and removes fields.** Choosing Standing order
 hides **Send by** and reveals **Frequency** and **End date**. Re-read the form
 after changing it.
+
+**The payment type and the value date must agree.** An immediate payment must be
+dated today; a scheduled payment must be dated after today. The date field
+defaults to today, so choosing Scheduled and continuing without changing the
+date is refused rather than quietly producing an immediate payment. Each refusal
+names which control to change instead, so a requirement should assert the
+message rather than only the failure.
 
 **Every failing field is reported at once**, each message naming its own field,
 so an agent that reads the errors can correct everything in one pass.
@@ -332,7 +374,7 @@ matches**: five rejections, then three step-up triggers, then four acceptances.
 | PA-S03 | Step-up | Payee country is not the United Kingdom | `International payments need a passcode.` |
 | PA-A04 | Accept | Payment type is Standing order | `Standing order set up.` |
 | PA-A03 | Accept | CHAPS, dated today, submitted at or after 16:00 | `Submitted after the 16:00 CHAPS cut-off, so this payment is dated the next working day.` |
-| PA-A02 | Accept | Value date is not today | `Scheduled for a future date.` |
+| PA-A02 | Accept | Value date is not today, which validation now guarantees for a Scheduled payment | `Scheduled for a future date.` |
 | PA-A01 | Accept | Everything else | `Accepted for execution today.` |
 
 ### Precedence, and what it hides
@@ -495,12 +537,20 @@ control compares against.
 
 | Role | Release limit |
 |---|---|
-| Payment Operations | 50,000.00 |
+| Payment Operations | 5,000.00 |
 | Financial Crime | No limit |
 | Platform Administrator | No limit |
 
-Above the limit: `This payment is above your release limit of 50,000.00. Only
+Above the limit: `This payment is above your release limit of 5,000.00. Only
 Financial Crime can release it.`
+
+**The limit sits below the anti money laundering threshold on purpose.** An
+operations owned case only ever arises from `PH-H03` or `PH-H04`, and `PH-H02`
+takes everything at or above 10,000.00 for Financial Crime. A limit above that
+figure could never be reached through the interface. At 5,000.00 it divides the
+operations queue: a new payee paid 4,000.00 can be released by Payment
+Operations, and one paid 5,000.01 cannot. Both were confirmed against the
+running application.
 
 ### Two independent four-eyes controls
 
@@ -528,6 +578,15 @@ release it. Omar Farrell is the only other account with no release limit.
 | Control | `data-testid` | Effect |
 |---|---|---|
 | Save note | `btn-save-note` | Records the note and the investigator |
+
+**The note must be saved before a decision can be recorded.** Saving is what
+names the investigator, so a decision cannot absorb unsaved text. Activating
+Release or Reject with text in the box that has not been saved returns
+`Save the investigation note before recording a decision.` and leaves the typed
+text in place. Text shorter than twenty characters returns the length message
+instead. A journey must activate `btn-save-note` before `btn-release` or
+`btn-reject`.
+
 | Release payment | `btn-release` | Status becomes `Released`, the account is debited, the case closes |
 | Reject payment | `btn-reject` | Status becomes `Rejected`, no debit, the case closes |
 
@@ -585,6 +644,7 @@ rule uses *at or above* rather than *above*, the pair below shows it.
 | Value date horizon | 365 days ahead accepted | 366 days returns the error | |
 | Reference length | 18 characters accepted | 19 returns the error | |
 | Investigation note | 19 characters refused | **20** accepted | At least |
+| Operations release limit | 5,000.00 may be released by Payment Operations | **5,000.01** may not | Above |
 | Sign in lockout | Four failures still allow a sign in | **Five** locks the account | |
 
 ---
@@ -629,6 +689,8 @@ label based identification breaks across those branches.
 | Element | `data-testid` |
 |---|---|
 | Headline figures | `stat-balance`, `stat-limit-used`, `stat-held`, `stat-scheduled` |
+| Count tiles, which filter the list | `tile-held`, `tile-scheduled` |
+| Active filter notice and its clear control | `payments-filter`, `btn-clear-filter` |
 | Accounts grid, and each row | `grid-accounts`, `row-<account id>` |
 | Payments grid, each row, status and link | `grid-payments`, `row-<reference>`, `status-<reference>`, `open-<reference>` |
 | Empty payments | `payments-empty` |
@@ -713,8 +775,9 @@ there.
 - **Pin the release.** Open `?release=off` as the first navigation for a journey
   written against this document. Never click `release-toggle` from a journey: it
   is a toggle, correct only from a known starting state.
-- **Pin the clock when the cut-off matters.** `?now=16:30` before signing in.
-  The setter applies at page load, and a page load signs the user out.
+- **Pin the clock when the cut-off matters.** `?now=16:30`. The setter applies
+  at page load. A page load no longer signs the user out, so combine it with
+  `?session=out` when the journey needs to sign in itself.
 - **Reset, then sign in.** `login-reset` on the sign in screen restores
   everything and clears lockouts in one activation. The daily limit is
   cumulative, so a journey that does not reset inherits the previous run's
