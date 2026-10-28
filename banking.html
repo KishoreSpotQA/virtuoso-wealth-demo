@@ -205,10 +205,15 @@ h3{font-size:.95rem; margin:0 0 .4rem}
 .btn{
   font:inherit; font-weight:700; padding:.5rem .85rem; border-radius:8px;
   border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer;
+  /* Some buttons are anchors, because they navigate. Without this they
+     carry the default underline and sit beside identical looking
+     buttons that do not. */
+  text-decoration:none; display:inline-block; line-height:1.2;
 }
 .btn:hover{background:#f6f8fb}
 .btn:disabled{opacity:.5; cursor:not-allowed}
 .btn-primary{background:var(--brand); border-color:var(--brand); color:#fff}
+.right{text-align:right; white-space:nowrap}
 .btn-primary:hover{background:#0f7265; border-color:#0f7265}
 .btn-sent{background:var(--sentinel); border-color:var(--sentinel); color:#fff}
 .btn-sent:hover{background:#3a4fa8; border-color:#3a4fa8}
@@ -457,17 +462,39 @@ function seed(){
       { id:"30-91-55-48801934", customerId:"C-100873", name:"Premier Current",  type:"Current", sort:"30-91-55", number:"48801934", balance:12480900, available:12480900, currency:"GBP" },
       { id:"30-91-55-48801942", customerId:"C-100873", name:"Premier Saver",    type:"Savings", sort:"30-91-55", number:"48801942", balance:38950000, available:38950000, currency:"GBP" }
     ],
+    /* Payees carry two independent flags, and conflating them is the
+       commonest mistake made against this application.
+
+         status       where the payee is in its own lifecycle:
+                      Pending while it is in cooling off, then Active,
+                      and Removed once the customer takes it off the
+                      list. Only an Active payee can be paid.
+
+         established  whether the bank has seen a payment to it before.
+                      This drives the step up at PA-S02, the hold at
+                      PH-H04, and an authority restricted to established
+                      payees. It is not changed by the lifecycle.
+
+       A payee can therefore be Active and not established, which is the
+       ordinary state of a payee whose cooling off has passed but which
+       has never been paid. */
     payees: [
-      { id:"P-0001", customerId:"C-100412", name:"Hannah Whitfield", sort:"20-44-18", number:"70113396", country:"GB", established:true,  reference:"Rent" },
-      { id:"P-0002", customerId:"C-100412", name:"Meridian Utilities", sort:"60-12-03", number:"88204417", country:"GB", established:true,  reference:"Account 44120" },
-      { id:"P-0003", customerId:"C-100412", name:"Kestrel Letting",   sort:"09-01-72", number:"31559028", country:"GB", established:false, reference:"Deposit" },
-      { id:"P-0004", customerId:"C-100873", name:"Okonjo Holdings",   sort:"40-26-11", number:"62340018", country:"GB", established:true,  reference:"Transfer" },
-      { id:"P-0005", customerId:"C-100873", name:"Vertex Legal LLP",  sort:"16-55-40", number:"29087741", country:"GB", established:true,  reference:"Fees" },
-      { id:"P-0006", customerId:"C-100873", name:"Albrecht Partners", sort:"00-00-00", number:"DE89370400440532013000", country:"DE", established:false, reference:"Consultancy" },
+      { id:"P-0001", customerId:"C-100412", name:"Hannah Whitfield", sort:"20-44-18", number:"70113396", country:"GB", established:true,  reference:"Rent",          status:"Active", addedOn:"2026-09-02", availableFromMin:0 },
+      { id:"P-0002", customerId:"C-100412", name:"Meridian Utilities", sort:"60-12-03", number:"88204417", country:"GB", established:true,  reference:"Account 44120", status:"Active", addedOn:"2026-08-14", availableFromMin:0 },
+      { id:"P-0003", customerId:"C-100412", name:"Kestrel Letting",   sort:"09-01-72", number:"31559028", country:"GB", established:false, reference:"Deposit",       status:"Active", addedOn:"2026-10-19", availableFromMin:0 },
+      { id:"P-0004", customerId:"C-100873", name:"Okonjo Holdings",   sort:"40-26-11", number:"62340018", country:"GB", established:true,  reference:"Transfer",      status:"Active", addedOn:"2026-07-30", availableFromMin:0 },
+      { id:"P-0005", customerId:"C-100873", name:"Vertex Legal LLP",  sort:"16-55-40", number:"29087741", country:"GB", established:true,  reference:"Fees",          status:"Active", addedOn:"2026-08-22", availableFromMin:0 },
+      { id:"P-0006", customerId:"C-100873", name:"Albrecht Partners", sort:"00-00-00", number:"DE89370400440532013000", country:"DE", established:false, reference:"Consultancy", status:"Active", addedOn:"2026-10-20", availableFromMin:0 },
       /* An established international payee. Without one, PA-S03 could
          never be observed: the only other overseas payee is new, and
          PA-S02 is evaluated first and would always win. */
-      { id:"P-0007", customerId:"C-100873", name:"Clonmel Trading", sort:"00-00-00", number:"IE64IRCE92050112345678", country:"IE", established:true, reference:"Supply" }
+      { id:"P-0007", customerId:"C-100873", name:"Clonmel Trading", sort:"00-00-00", number:"IE64IRCE92050112345678", country:"IE", established:true, reference:"Supply", status:"Active", addedOn:"2026-09-11", availableFromMin:0 },
+      /* Seeded inside its cooling off window, which ends at 12:00. At
+         the default clock of 10:00 this payee cannot be paid; with
+         ?now=12:00 it can. Without it, PA-D07 would be reachable only
+         by adding a payee first, and a journey covering the refusal
+         would have to build its own fixture every run. */
+      { id:"P-0008", customerId:"C-100412", name:"Oakfield Services Ltd", sort:"30-00-55", number:"99887766", country:"GB", established:false, reference:"Services", status:"Pending", addedOn:"2026-10-26", availableFromMin:720 }
     ],
     /* Third party authority. One customer holding a mandate over another
        customer's account, with its own limits. The authority is held
@@ -498,7 +525,11 @@ function seed(){
     draft: null,
     nextPayment: 1,
     nextCase: 1,
-    nextOrder: 1
+    nextOrder: 1,
+    /* Payee ids are issued from a counter rather than the array length,
+       because a removed payee stays in the array to keep the names on
+       historic payments resolvable. */
+    nextPayee: 9
   };
 }
 
@@ -553,6 +584,7 @@ function save(){
       standingOrders: state.standingOrders, cases: state.cases, draft: state.draft,
       authorities: state.authorities, customerLimits: state.customerLimits,
       nextPayment: state.nextPayment, nextCase: state.nextCase, nextOrder: state.nextOrder,
+      nextPayee: state.nextPayee,
       lockouts: lockouts
     }));
   }catch(e){}
@@ -569,7 +601,7 @@ function load(){
     if(Array.isArray(o[k])) s[k] = o[k];
   });
   if(o.customerLimits && typeof o.customerLimits === "object") s.customerLimits = o.customerLimits;
-  ["nextPayment","nextCase","nextOrder"].forEach(k => {
+  ["nextPayment","nextCase","nextOrder","nextPayee"].forEach(k => {
     if(typeof o[k] === "number") s[k] = o[k];
   });
   if(o.draft && typeof o.draft === "object") s.draft = o.draft;
@@ -581,6 +613,15 @@ function load(){
      release is turned on, which is exactly what the stamp prevents. */
   [state.payments, state.standingOrders].forEach(list => {
     if(Array.isArray(list)) list.forEach(r => { if(r && !r.release) r.release = "1.0"; });
+  });
+
+  /* Payees stored before the lifecycle existed carry no status. They
+     are treated as Active and out of cooling off, which is what they
+     behaved as when they were written. */
+  if(Array.isArray(state.payees)) state.payees.forEach(p => {
+    if(p && !p.status) p.status = "Active";
+    if(p && typeof p.availableFromMin !== "number") p.availableFromMin = 0;
+    if(p && !p.addedOn) p.addedOn = today();
   });
 }
 
@@ -682,6 +723,13 @@ const ROUND_SUM_INTL      = 500000;       /* 5,000.00 round sum, international *
 const VELOCITY_COUNT      = 4;            /* fourth payment to one payee in a day */
 const GIFT_REVIEW         = 250000;       /* 2,500.00, release 2.1 only */
 
+/* Cooling off, in minutes of the session clock rather than days. A
+   payee added at the default 10:00 becomes payable at 12:00, so both
+   sides of the boundary are reachable with the ?now= setter that
+   already exists. Expressed in days it would need a second clock
+   setter, and on a fixed date a payee would never go live at all. */
+const COOLING_OFF_MIN     = 120;          /* two hours */
+
 const DAILY_LIMIT = { Standard: 2500000, Premier: 10000000 };   /* 25,000.00 / 100,000.00 */
 
 /* Release limits in Sentinel. Payment Operations works the ordinary
@@ -729,6 +777,112 @@ function checkPayee(name, number){
   return { code:"CP-03", held, reason:"The name does not match. The account is held in the name " + held + ".", confirm:true, flag:true };
 }
 
+/* ---------- the PY engine ----------
+   Payee management. A third engine, with its own prefix, because the
+   decisions it makes are about the payee record and not about a
+   payment. A requirement citing a PY code alongside a PA or PH code is
+   describing two separate events.
+
+   PY is evaluated on the Payees screen only. The payment wizard never
+   produces a PY code: a payee created inside a payment is created by
+   that payment, and is rated by PA. */
+
+function sortCodeOk(s){ return /^\d{2}-\d{2}-\d{2}$/.test(String(s || "").trim()); }
+
+/* The account number format follows the country, which is the whole
+   point of asking for the country first. A United Kingdom payee takes
+   eight digits; everywhere else takes an IBAN shaped value. */
+function accountNumberOk(number, country){
+  const n = String(number || "").trim().toUpperCase().replace(/\s+/g, "");
+  if(country === "GB") return /^\d{8}$/.test(n);
+  return /^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(n);
+}
+
+/* Two payees are the same when the sort code and account number match.
+   The name is deliberately not part of the comparison: the same
+   account under a different spelling is still the same account, and
+   letting it through twice is how a customer ends up paying a payee
+   they thought they had removed. Removed payees are not compared, so
+   a payee taken off the list can be added again. */
+function duplicatePayee(customerId, sort, number, exceptId){
+  const s = String(sort || "").trim(), n = String(number || "").trim().toUpperCase();
+  return state.payees.find(p =>
+    p.customerId === customerId &&
+    p.id !== exceptId &&
+    p.status !== "Removed" &&
+    String(p.sort).trim() === s &&
+    String(p.number).trim().toUpperCase() === n) || null;
+}
+
+function orderForPayee(payeeId){
+  return state.standingOrders.find(o => o.payeeId === payeeId && o.status === "Active") || null;
+}
+function heldPaymentForPayee(payeeId){
+  return state.payments.find(p => p.payeeId === payeeId && p.status === "Held") || null;
+}
+
+/* Whether a payee may be paid now. Pending is the only status that
+   depends on the clock; Removed is refused at any time. */
+function payeeAvailable(p){
+  if(!p) return false;
+  if(p.status === "Removed") return false;
+  if(p.status === "Pending") return CLOCK_MIN >= Number(p.availableFromMin || 0);
+  return true;
+}
+function coolingOffText(p){
+  const m = Number(p && p.availableFromMin || 0);
+  return pad(Math.floor(m / 60), 2) + ":" + pad(m % 60, 2);
+}
+
+/* Adding a payee. Rejections first, then the single acceptance, in the
+   same shape as the other two engines. */
+function evaluateAdd(c, d){
+  if(!sortCodeOk(d.sort) && d.country === "GB")
+    return { code:"PY-R02", kind:"reject", field:"sort",
+             reason:"Enter a sort code as six digits, for example 20-44-18." };
+  if(!accountNumberOk(d.number, d.country))
+    return { code:"PY-R02", kind:"reject", field:"number",
+             reason: d.country === "GB"
+               ? "Enter an account number of eight digits."
+               : "Enter an international account number, for example DE89370400440532013000." };
+
+  const dup = duplicatePayee(c.id, d.sort, d.number, null);
+  if(dup)
+    return { code:"PY-R01", kind:"reject", field:"number",
+             reason:"You already have a payee for this account: " + dup.name + "." };
+
+  const cop = checkPayee(d.name, d.number);
+  if(cop.code === "CP-03" && v2())
+    return { code:"PY-R03", kind:"reject", field:"name", cop,
+             reason:"The name does not match the account. This payee cannot be added." };
+
+  /* The same acknowledgement the payment wizard asks for. Accepting a
+     name the receiving bank disputes without saying so here, while
+     refusing to let the same name through the wizard unacknowledged,
+     would be two different answers to one question. */
+  if(cop.confirm && !d.copConfirmed)
+    return { code:"PY-R06", kind:"reject", field:"copConfirmed", cop,
+             reason:"Confirm you have checked the payee's details before continuing." };
+
+  return { code:"PY-A01", kind:"accept", cop,
+           reason:"Payee added. It can be paid from " + pad(Math.floor((CLOCK_MIN + COOLING_OFF_MIN) / 60), 2)
+                  + ":" + pad((CLOCK_MIN + COOLING_OFF_MIN) % 60, 2) + "." };
+}
+
+/* Removing a payee. Nothing is deleted: the record is marked Removed so
+   that the name on a historic payment still resolves. */
+function evaluateRemove(p){
+  const order = orderForPayee(p.id);
+  if(order)
+    return { code:"PY-R04", kind:"reject",
+             reason:"Standing order " + order.ref + " pays this payee. Cancel it first." };
+  const held = heldPaymentForPayee(p.id);
+  if(held)
+    return { code:"PY-R05", kind:"reject",
+             reason:"Payment " + held.ref + " to this payee is under review. It must be settled or rejected first." };
+  return { code:"PY-A03", kind:"accept", reason:"Payee removed." };
+}
+
 const SANCTIONED_COUNTRIES = ["KP", "IR", "SY"];
 const SERVED_COUNTRIES = [
   ["GB","United Kingdom"], ["DE","Germany"], ["FR","France"], ["IE","Ireland"],
@@ -764,6 +918,18 @@ const PA_RULES = [
 
   { code:"PA-T03", kind:"reject", reason:"This payment is above the limit set on your authority.",
     test: c => c.authority && c.amount > c.authority.perPayment },
+
+  /* --- the payee's own lifecycle ---
+     Ahead of the balance, for the same reason the authority rules are:
+     a payee that cannot be paid at all is not a payment to rate.
+
+     A payee in cooling off is still offered in the payment form, marked
+     as such, rather than hidden. Hiding it would make this rule
+     unreachable through the interface and leave the customer wondering
+     where their payee went. A removed payee is not offered at all. */
+  { code:"PA-D07", kind:"reject",
+    reason:"This payee is still in its cooling off period and cannot be paid yet.",
+    test: c => c.payee && c.payee.status === "Pending" && !payeeAvailable(c.payee) },
 
   /* --- rejections --- */
   { code:"PA-D01", kind:"reject", reason:"The available balance on this account is not enough to make this payment.",
@@ -931,9 +1097,14 @@ function draftAccounts(d){
   const c = draftCustomer(d); if(!c) return [];
   return state.accounts.filter(a => a.customerId === c.id);
 }
+/* A removed payee is never offered. One in cooling off is, marked, so
+   that PA-D07 is reachable and the customer can see why. */
 function draftPayees(d){
   const c = draftCustomer(d); if(!c) return [];
-  return state.payees.filter(p => p.customerId === c.id);
+  return state.payees.filter(p => p.customerId === c.id && p.status !== "Removed");
+}
+function payeeOptionLabel(p){
+  return p.name + (p.status === "Pending" && !payeeAvailable(p) ? " (cooling off until " + coolingOffText(p) + ")" : "");
 }
 
 /* ---------- limits ---------- */
@@ -1069,24 +1240,347 @@ function viewOnlineDashboard(){
   </div>`;
 }
 
+/* ============================================================
+   PAYEE MANAGEMENT
+   The payee list, and adding, amending and removing a payee.
+   ============================================================ */
+
+/* The lifecycle pill. Pending reads differently once its window has
+   passed, because a payee whose cooling off expired is payable and
+   saying Pending would be a lie - but it is still not Active until the
+   next render reconciles it, so the text is derived rather than
+   stored. */
+function payeeStatusText(p){
+  if(p.status === "Removed") return "Removed";
+  if(p.status === "Pending") return payeeAvailable(p) ? "Available" : "Cooling off";
+  return "Active";
+}
+function payeeStatusClass(p){
+  if(p.status === "Removed") return "p-mute";
+  if(p.status === "Pending") return payeeAvailable(p) ? "p-ok" : "p-warn";
+  return "p-ok";
+}
+
 function viewPayees(){
-  const ps = myPayees();
+  /* Leaving the add or amend form abandons what was typed. Keeping it
+     meant that opening Add a payee after a refused attempt showed the
+     refused payee already filled in, with its error still attached, as
+     though the customer had typed it again. A refused attempt keeps its
+     values while the form stays open, which is the useful half of the
+     behaviour, and loses them on the way out, which is the correct
+     half. */
+  ui.payeeDraft = null; ui.payeeDraftFor = null;
+  ui.payeeErrors = {}; ui.payeeOutcome = null;
+
+  const all = myPayees();
+  const live = all.filter(p => p.status !== "Removed");
+  const gone = all.filter(p => p.status === "Removed");
+  const showRemoved = !!ui.payeesShowRemoved;
+  const shown = showRemoved ? all : live;
+  const asking = ui.removeAsk ? payeeById(ui.removeAsk) : null;
+
+  /* The confirmation sits above the table rather than inside it. As a
+     row it was inside the card's horizontal scroll, so at phone width
+     the two buttons were cut off the right hand edge of a panel the
+     customer had just opened. */
+  const confirm = asking ? `
+  <div class="banner b-warn" data-testid="remove-confirm">
+    <b>Remove ${esc(asking.name)}?</b>
+    <div class="hint">The payee stays on your past payments; it is only taken off this list and out of the payment form.</div>
+    <div class="row" style="margin-top:.6rem">
+      <button class="btn btn-risk" data-act="payee-remove" data-payee="${esc(asking.id)}" data-testid="btn-confirm-remove">Remove payee</button>
+      <button class="btn" data-act="payee-remove-cancel" data-testid="btn-cancel-remove">Keep it</button>
+    </div>
+    ${ui.removeError ? `<span class="err" data-testid="error-remove">${esc(ui.removeError)}</span>` : ""}
+    ${ui.removeCode ? `<div class="hint" data-testid="remove-code">${esc(ui.removeCode)}</div>` : ""}
+  </div>` : "";
+
   return `
   <h1>Payees</h1>
-  <p class="lede">A payee added today is treated as new until its first payment settles.</p>
+  <p class="lede">A payee added here cannot be paid for ${esc(String(COOLING_OFF_MIN / 60))} hours. Until its first payment settles it is also treated as new, which is a separate thing and shown in its own column.</p>
+
+  <div class="row" style="margin-bottom:14px">
+    <a class="btn btn-primary" href="#/online/payees/add" data-testid="btn-add-payee">Add a payee</a>
+    ${gone.length ? `<button class="btn" data-act="payees-toggle-removed" aria-pressed="${showRemoved ? "true" : "false"}" data-testid="btn-show-removed">${showRemoved ? "Hide" : "Show"} removed (${gone.length})</button>` : ""}
+  </div>
+
+  ${confirm}
+
   <div class="card">
     <table data-testid="grid-payees">
-      <thead><tr><th>Name</th><th>Sort code</th><th>Account</th><th>Country</th><th>Status</th></tr></thead>
-      <tbody>${ps.map(p => `
+      <thead><tr><th>Name</th><th>Sort code</th><th>Account</th><th>Country</th><th>Status</th><th>Seen before</th><th></th></tr></thead>
+      <tbody>${shown.map(p => `
         <tr data-testid="row-${esc(p.id)}">
-          <td><b>${esc(p.name)}</b></td>
+          <td><b>${esc(p.name)}</b><div class="hint">${esc(p.reference || "")}</div></td>
           <td class="mono">${esc(p.sort)}</td>
           <td class="mono">${esc(p.number)}</td>
           <td>${esc(countryName(p.country))}</td>
-          <td><span class="pill ${p.established ? "p-ok" : "p-warn"}" data-testid="payee-status-${esc(p.id)}">${p.established ? "Established" : "New"}</span></td>
+          <td><span class="pill ${payeeStatusClass(p)}" data-testid="payee-status-${esc(p.id)}">${esc(payeeStatusText(p))}</span>
+            ${p.status === "Pending" && !payeeAvailable(p) ? `<div class="hint" data-testid="payee-available-${esc(p.id)}">From ${esc(coolingOffText(p))}</div>` : ""}</td>
+          <td><span class="pill ${p.established ? "p-ok" : "p-warn"}" data-testid="payee-established-${esc(p.id)}">${p.established ? "Established" : "New"}</span></td>
+          <td class="right">${p.status === "Removed" ? "" : `
+            <a class="btn btn-sm" href="#/online/payees/edit/${esc(p.id)}" data-testid="btn-edit-${esc(p.id)}">Amend</a>
+            <button class="btn btn-sm" data-act="payee-remove-ask" data-payee="${esc(p.id)}" data-testid="btn-remove-${esc(p.id)}">Remove</button>`}</td>
         </tr>`).join("")}</tbody>
     </table>
+    ${shown.length ? "" : `<p class="hint" data-testid="payees-empty">No payees.</p>`}
   </div>`;
+}
+
+/* ---------- add ---------- */
+
+function blankPayeeDraft(){
+  return { name:"", sort:"", number:"", country:"GB", reference:"", copConfirmed:false };
+}
+function payeeDraft(){
+  if(!ui.payeeDraft) ui.payeeDraft = blankPayeeDraft();
+  return ui.payeeDraft;
+}
+function pErr(k){
+  return ui.payeeErrors && ui.payeeErrors[k]
+    ? `<span class="err" data-testid="error-${esc(k)}">${esc(ui.payeeErrors[k])}</span>` : "";
+}
+function pBad(k){ return (ui.payeeErrors && ui.payeeErrors[k]) ? " bad" : ""; }
+
+function viewPayeeAdd(){
+  /* Arriving from the amend form, or from a hash typed straight into
+     the address bar, must not inherit the other form's draft. */
+  if(ui.payeeDraftFor !== "add"){
+    ui.payeeDraft = blankPayeeDraft();
+    ui.payeeDraftFor = "add";
+    ui.payeeErrors = {}; ui.payeeOutcome = null;
+  }
+  const d = payeeDraft();
+  const gb = d.country === "GB";
+  const out = ui.payeeOutcome;
+
+  return `
+  <h1>Add a payee</h1>
+  <p class="lede">The name is checked against the name the receiving bank holds for the account. The check runs when you save, not as you type.</p>
+
+  <div class="card" style="max-width:620px">
+    <div class="field f-md${pBad("name")}">
+      <label for="f-pname">Payee name</label>
+      <input id="f-pname" type="text" data-field="py:name" data-testid="input-new-payee-name" value="${esc(d.name)}">
+      ${pErr("name")}
+    </div>
+
+    <div class="field f-sm${pBad("country")}">
+      <label for="f-pcountry">Country</label>
+      <select id="f-pcountry" data-field="py:country" data-testid="input-new-payee-country">
+        ${SERVED_COUNTRIES.map(x => `<option value="${esc(x[0])}"${d.country === x[0] ? " selected" : ""}>${esc(x[1])}</option>`).join("")}
+      </select>
+      <span class="hint">The account number format follows the country.</span>
+    </div>
+
+    ${gb ? `
+    <div class="field f-xs${pBad("sort")}">
+      <label for="f-psort">Sort code</label>
+      <input id="f-psort" type="text" placeholder="20-44-18" data-field="py:sort" data-testid="input-new-payee-sort" value="${esc(d.sort)}">
+      ${pErr("sort")}
+    </div>` : ""}
+
+    <div class="field f-md${pBad("number")}">
+      <label for="f-pnumber">${gb ? "Account number" : "International account number"}</label>
+      <input id="f-pnumber" type="text" placeholder="${gb ? "12345678" : "DE89370400440532013000"}" data-field="py:number" data-testid="input-new-payee-number" value="${esc(d.number)}">
+      ${pErr("number")}
+    </div>
+
+    <div class="field f-md">
+      <label for="f-pref">Reference</label>
+      <input id="f-pref" type="text" data-field="py:reference" data-testid="input-new-payee-reference" value="${esc(d.reference)}">
+      <span class="hint">Shown to the payee. Optional.</span>
+    </div>
+
+    ${out ? `
+    <div class="banner ${out.kind === "reject" ? "b-risk" : "b-ok"}" data-testid="payee-outcome">
+      <b data-testid="payee-code">${esc(out.code)}</b> ${esc(out.reason)}
+      ${out.cop ? `<div class="hint" data-testid="payee-cop">${esc(out.cop.code)} - ${esc(out.cop.reason)}</div>` : ""}
+    </div>` : ""}
+
+    ${out && out.cop && out.cop.confirm ? `
+    <div class="field${pBad("copConfirmed")}">
+      <label class="radio-row">
+        <input type="checkbox" data-field="py:copConfirmed" data-testid="input-new-payee-cop-confirm" ${d.copConfirmed ? "checked" : ""}>
+        <span>I have checked the payee's details and want to add them anyway.</span>
+      </label>
+      ${pErr("copConfirmed")}
+    </div>` : ""}
+
+    <div class="row">
+      <button class="btn btn-primary" data-act="payee-add" data-testid="btn-save-payee">Save payee</button>
+      <a class="btn" href="#/online/payees" data-testid="btn-cancel-payee">Cancel</a>
+    </div>
+  </div>`;
+}
+
+/* ---------- amend ----------
+   Only the name and the reference can be changed. The sort code and
+   account number are shown as text with no control at all, rather than
+   a disabled one: a payee whose account number can be edited is a
+   different payee, and the bank would have to check it again. Changing
+   the name does exactly that - see amendPayee. */
+function viewPayeeEdit(id){
+  const p = payeeById(id);
+  const c = myCustomer();
+  if(!p || !c || p.customerId !== c.id || p.status === "Removed"){
+    return `<h1>Payee</h1><div class="card"><p data-testid="payee-missing">That payee could not be found.</p></div>`;
+  }
+  if(!ui.payeeDraft || ui.payeeDraftFor !== id){
+    ui.payeeDraft = { name:p.name, sort:p.sort, number:p.number, country:p.country, reference:p.reference || "", copConfirmed:false };
+    ui.payeeDraftFor = id;
+  }
+  const d = ui.payeeDraft;
+  const out = ui.payeeOutcome;
+
+  return `
+  <h1>Amend ${esc(p.name)}</h1>
+  <p class="lede">The account this payee is paid into cannot be changed. To pay a different account, add a payee.</p>
+
+  <div class="card" style="max-width:620px">
+    <div class="grid g2" style="margin-bottom:14px">
+      <div><div class="stat-l">Sort code</div><div class="mono" data-testid="edit-sort">${esc(p.sort)}</div></div>
+      <div><div class="stat-l">Account</div><div class="mono" data-testid="edit-number">${esc(p.number)}</div></div>
+    </div>
+
+    <div class="field f-md${pBad("name")}">
+      <label for="f-ename">Payee name</label>
+      <input id="f-ename" type="text" data-field="py:name" data-testid="input-edit-payee-name" value="${esc(d.name)}">
+      <span class="hint">Changing the name runs the bank's name check again and restarts the cooling off period.</span>
+      ${pErr("name")}
+    </div>
+
+    <div class="field f-md">
+      <label for="f-eref">Reference</label>
+      <input id="f-eref" type="text" data-field="py:reference" data-testid="input-edit-payee-reference" value="${esc(d.reference)}">
+      <span class="hint">Changing the reference alone has no other effect.</span>
+    </div>
+
+    ${out ? `
+    <div class="banner ${out.kind === "reject" ? "b-risk" : "b-ok"}" data-testid="payee-outcome">
+      <b data-testid="payee-code">${esc(out.code)}</b> ${esc(out.reason)}
+      ${out.cop ? `<div class="hint" data-testid="payee-cop">${esc(out.cop.code)} - ${esc(out.cop.reason)}</div>` : ""}
+    </div>` : ""}
+
+    ${out && out.cop && out.cop.confirm ? `
+    <div class="field${pBad("copConfirmed")}">
+      <label class="radio-row">
+        <input type="checkbox" data-field="py:copConfirmed" data-testid="input-edit-payee-cop-confirm" ${d.copConfirmed ? "checked" : ""}>
+        <span>I have checked the payee's details and want to save this name.</span>
+      </label>
+      ${pErr("copConfirmed")}
+    </div>` : ""}
+
+    <div class="row">
+      <button class="btn btn-primary" data-act="payee-amend" data-payee="${esc(p.id)}" data-testid="btn-save-amend">Save changes</button>
+      <a class="btn" href="#/online/payees" data-testid="btn-cancel-payee">Cancel</a>
+    </div>
+  </div>`;
+}
+
+/* ---------- the actions ---------- */
+
+function addPayee(){
+  const c = myCustomer();
+  const d = payeeDraft();
+  ui.payeeErrors = {}; ui.payeeOutcome = null;
+
+  if(!d.name.trim()) ui.payeeErrors.name = "Payee name is required.";
+  if(d.country === "GB" && !d.sort.trim()) ui.payeeErrors.sort = "Sort code is required.";
+  if(!d.number.trim()) ui.payeeErrors.number = "Account number is required.";
+  if(Object.keys(ui.payeeErrors).length){ render(); return; }
+
+  const decision = evaluateAdd(c, d);
+  ui.payeeOutcome = decision;
+  if(decision.kind === "reject"){
+    if(decision.field) ui.payeeErrors[decision.field] = decision.reason;
+    render(); return;
+  }
+
+  const p = {
+    id: "P-" + pad(state.nextPayee++, 4),
+    customerId: c.id,
+    name: d.name.trim(),
+    sort: d.country === "GB" ? d.sort.trim() : "00-00-00",
+    number: d.number.trim(),
+    country: d.country,
+    reference: d.reference.trim(),
+    established: false,
+    status: "Pending",
+    addedOn: today(),
+    availableFromMin: CLOCK_MIN + COOLING_OFF_MIN,
+    copCode: decision.cop ? decision.cop.code : "CP-04"
+  };
+  state.payees.push(p);
+  ui.payeeDraft = null; ui.payeeDraftFor = null; ui.payeeOutcome = null; ui.payeeErrors = {};
+  save();
+  toast(p.name + " added. " + decision.reason);
+  go("/online/payees");
+}
+
+function amendPayee(id){
+  const p = payeeById(id);
+  const c = myCustomer();
+  if(!p || !c || p.customerId !== c.id) return;
+  const d = ui.payeeDraft || {};
+  ui.payeeErrors = {}; ui.payeeOutcome = null;
+
+  const newName = String(d.name || "").trim();
+  if(!newName){ ui.payeeErrors.name = "Payee name is required."; render(); return; }
+
+  const nameChanged = normName(newName) !== normName(p.name);
+
+  if(nameChanged){
+    const cop = checkPayee(newName, p.number);
+    if(cop.code === "CP-03" && v2()){
+      ui.payeeOutcome = { code:"PY-R03", kind:"reject", cop,
+        reason:"The name does not match the account. This change cannot be saved." };
+      ui.payeeErrors.name = ui.payeeOutcome.reason;
+      render(); return;
+    }
+    if(cop.confirm && !d.copConfirmed){
+      ui.payeeOutcome = { code:"PY-R06", kind:"reject", cop,
+        reason:"Confirm you have checked the payee's details before continuing." };
+      ui.payeeErrors.copConfirmed = ui.payeeOutcome.reason;
+      render(); return;
+    }
+    p.name = newName;
+    p.copCode = cop.code;
+    /* A changed name is a changed payee as far as the bank is
+       concerned, so the window starts again. */
+    p.status = "Pending";
+    p.availableFromMin = CLOCK_MIN + COOLING_OFF_MIN;
+    ui.payeeOutcome = { code:"PY-A02", kind:"accept", cop,
+      reason:"Name changed. The cooling off period has restarted." };
+  }else{
+    ui.payeeOutcome = { code:"PY-A02", kind:"accept",
+      reason:"Reference changed." };
+  }
+
+  p.reference = String(d.reference || "").trim();
+  ui.payeeDraft = null; ui.payeeDraftFor = null;
+  save();
+  toast(ui.payeeOutcome.reason);
+  go("/online/payees");
+}
+
+function removePayee(id){
+  const p = payeeById(id);
+  const c = myCustomer();
+  if(!p || !c || p.customerId !== c.id) return;
+  ui.removeError = ""; ui.removeCode = "";
+
+  const decision = evaluateRemove(p);
+  if(decision.kind === "reject"){
+    ui.removeError = decision.reason;
+    ui.removeCode = decision.code;
+    render(); return;
+  }
+  p.status = "Removed";
+  p.removedOn = today();
+  ui.removeAsk = null; ui.removeError = ""; ui.removeCode = "";
+  save(); render();
+  toast(p.name + " removed.");
 }
 
 /* ---------- the payment wizard ---------- */
@@ -1178,7 +1672,7 @@ function payStepPayee(d){
       <label for="f-payee">Payee</label>
       <select id="f-payee" data-field="payeeId" data-testid="input-payee">
         <option value="">Select...</option>
-        ${ps.map(p => `<option value="${esc(p.id)}" ${d.payeeId===p.id?"selected":""}>${esc(p.name)} ${esc(p.sort)} ${esc(p.number)}</option>`).join("")}
+        ${ps.map(p => `<option value="${esc(p.id)}" ${d.payeeId===p.id?"selected":""}>${esc(payeeOptionLabel(p))} ${esc(p.sort)} ${esc(p.number)}</option>`).join("")}
       </select>${payErr(d,"payeeId")}
     </div>` : `
     <div class="grid g2">
@@ -1733,10 +2227,17 @@ function recordPayment(ctx, d, decision, forcedStatus){
   let payee = ctx.payee;
   if(d.payeeMode === "new" && decision.kind !== "reject"){
     payee = {
-      id: "P-" + pad(state.payees.length + 1, 4),
+      id: "P-" + pad(state.nextPayee++, 4),
       customerId: c.id, name: d.newPayee.name.trim(), sort: d.newPayee.sort.trim(),
       number: d.newPayee.number.trim(), country: d.newPayee.country,
-      established: false, createdToday: true, reference: d.reference
+      established: false, createdToday: true, reference: d.reference,
+      /* The payment that creates the payee is the payment that
+         authorised it, so it is not refused by its own cooling off.
+         The window runs from here, and applies to the next payment. */
+      status: "Pending",
+      addedOn: today(),
+      availableFromMin: CLOCK_MIN + COOLING_OFF_MIN,
+      copCode: ctx.cop ? ctx.cop.code : "CP-04"
     };
     state.payees.push(payee);
   }
@@ -2280,6 +2781,8 @@ function render(){
     if(!c){ root.innerHTML = viewLauncher(); return; }
     if(r[1] === "pay" && r[2] === "new"){ body = viewPayNew(); crumb = "Marchmont Online / Make a payment"; }
     else if(r[1] === "pay" && r[2] === "confirm"){ body = viewStepUp(); crumb = "Marchmont Online / Confirm it is you"; }
+    else if(r[1] === "payees" && r[2] === "add"){ body = viewPayeeAdd(); crumb = "Marchmont Online / Payees / Add"; }
+    else if(r[1] === "payees" && r[2] === "edit" && r[3]){ body = viewPayeeEdit(decodeURIComponent(r[3])); crumb = "Marchmont Online / Payees / Amend"; }
     else if(r[1] === "payees"){ body = viewPayees(); crumb = "Marchmont Online / Payees"; }
     else if(r[1] === "standing-orders"){ body = viewStandingOrders(); crumb = "Marchmont Online / Standing orders"; }
     else if(r[1] === "limits"){ body = viewLimits(); crumb = "Marchmont Online / Payment limits"; }
@@ -2314,6 +2817,19 @@ function writeField(el, evType){
   }
   if(f === "sentinel-search"){ ui.sentinelQuery = el.value; renderListOnly(); return true; }
   if(f === "limit-amount"){ ui.limitDraft = el.value; return true; }
+
+  /* The payee management forms keep their own draft, outside the
+     payment draft: a half typed payee must not survive into a payment,
+     and a payment in progress must not be disturbed by one. Country is
+     a revealing control here too, so it alone re-renders. */
+  if(f.indexOf("py:") === 0){
+    const k = f.slice(3);
+    const pd = ui.payeeDraft || (ui.payeeDraft = blankPayeeDraft());
+    pd[k] = (el.type === "checkbox") ? !!el.checked : el.value;
+    if(ui.payeeErrors) delete ui.payeeErrors[k];
+    if(k === "country"){ render(); }
+    return true;
+  }
 
   const d = ensureDraft();
 
@@ -2454,6 +2970,18 @@ document.addEventListener("click", ev => {
 
     case "limit-save": saveOwnLimit(); return;
     case "limit-clear": clearOwnLimit(); return;
+
+    case "payee-add": addPayee(); return;
+    case "payee-amend": amendPayee(t.dataset.payee); return;
+    case "payee-remove": removePayee(t.dataset.payee); return;
+    case "payee-remove-ask":
+      ui.removeAsk = t.dataset.payee; ui.removeError = ""; ui.removeCode = "";
+      render(); return;
+    case "payee-remove-cancel":
+      ui.removeAsk = null; ui.removeError = ""; ui.removeCode = "";
+      render(); return;
+    case "payees-toggle-removed":
+      ui.payeesShowRemoved = !ui.payeesShowRemoved; render(); return;
 
     case "new-payment": clearDraft(); go("/online/pay/new"); return;
 
