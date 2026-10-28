@@ -34,9 +34,9 @@ for this application.
 | 16 | What this application deliberately does not do | both |
 | 17 | Notes for automation | both |
 
-**Twenty eight decision codes in total**, across two engines plus the payee name check. The prefix names the
-engine: `PA` is the channel, `PH` is operations, and `CP` is the payee
-name check. A requirement must never cite
+**Thirty eight decision codes in total**, across three engines plus the payee name check. The prefix names the
+engine: `PA` is the channel, `PH` is operations, `PY` is payee management,
+and `CP` is the payee name check. A requirement must never cite
 codes from both engines at once.
 
 ---
@@ -255,12 +255,17 @@ account explicitly rather than relying on the default.
 | P-0005 | Daniel | Vertex Legal LLP | United Kingdom | Established |
 | P-0006 | Daniel | Albrecht Partners | Germany | **New** |
 | P-0007 | Daniel | Clonmel Trading | Ireland | Established |
+| P-0008 | Rose | Oakfield Services Ltd | United Kingdom | **New, and in cooling off until 12:00** |
 
 **Established and new are different things from the point of view of two
 separate rules.** A new payee always triggers step-up under `PA-S02`. A payee
 *created during this session* additionally triggers the hold `PH-H04` above
 2,500.00. `P-0003` and `P-0006` are seeded as new but were not created today, so
 they trigger the step-up and not the hold.
+
+**`P-0008` is seeded inside its cooling off window**, which closes at 12:00, so
+that `PA-D07` is reachable without building a fixture first. It is Rose's
+fourth payee: a journey that counts her payees must expect four, not three.
 
 **`P-0007` exists so that `PA-S03` can be observed at all.** It is the only
 established overseas payee; `P-0006` is overseas but new, and `PA-S02` is
@@ -309,6 +314,110 @@ told they reached the bank's limit when it was their own.
 
 Both counts are **cumulative across the day**, so a journey that does not reset
 inherits the previous run's spending and the boundary moves.
+
+---
+
+### Managing payees
+
+`#/online/payees`, reached from `nav-payees`. The screen lists the customer's
+payees and is also where they are added, amended and removed. Three further
+routes sit under it:
+
+| Route | Reached by | Shows |
+|---|---|---|
+| `#/online/payees` | `nav-payees` | The list |
+| `#/online/payees/add` | `btn-add-payee` | The add form |
+| `#/online/payees/edit/<id>` | `btn-edit-<id>` | The amend form |
+
+**Two columns that are often confused.** *Status* is the payee's own lifecycle,
+and *Seen before* is whether the bank has ever paid it. They move independently,
+and a payee that is `Active` and `New` at the same time is the ordinary state of
+one whose cooling off has passed and which has never been paid.
+
+| Status | Meaning | Can it be paid |
+|---|---|---|
+| Cooling off | Added less than two hours ago by the session clock | No, `PA-D07` |
+| Available | Added, and the two hours have passed | Yes |
+| Active | Seeded, or a payee whose window closed and was reconciled | Yes |
+| Removed | Taken off the list by the customer | Not offered at all |
+
+### The cooling off period
+
+A payee added from this screen cannot be paid for **two hours of the session
+clock**. At the default clock of 10:00 it becomes payable at 12:00, so the
+`?now=` setter already documented reaches both sides of the boundary:
+
+    banking.html?now=11:59#/online/payees    still inside the window
+    banking.html?now=12:00#/online/payees    payable
+
+It is expressed in hours rather than days deliberately. On a fixed clock date a
+cooling off measured in days would never expire, and the rule that enforces it
+could never be observed passing.
+
+**A payee in cooling off is still offered in the payment form**, with the reason
+in the option text, and refused at the decision with `PA-D07`. It is not hidden:
+hiding it would make the rule unreachable and leave a customer looking for a
+payee they had just added.
+
+**`P-0008`, Oakfield Services Ltd, is seeded inside its window**, which closes at
+12:00. Without it, a journey covering `PA-D07` would have to add a payee first
+and build its own fixture on every run.
+
+**A payee created inside a payment is not refused by its own window.** That
+payment is what authorised the payee, so it proceeds; the window applies from
+then on, and the *second* payment to that payee is the one that returns
+`PA-D07`.
+
+### Adding a payee
+
+| Element | `data-testid` |
+|---|---|
+| Name, country | `input-new-payee-name`, `input-new-payee-country` |
+| Sort code, account number | `input-new-payee-sort`, `input-new-payee-number` |
+| Reference | `input-new-payee-reference` |
+| Save, cancel | `btn-save-payee`, `btn-cancel-payee` |
+| The outcome, and its code | `payee-outcome`, `payee-code` |
+| The name check result | `payee-cop` |
+| The acknowledgement | `input-new-payee-cop-confirm`, `error-copConfirmed` |
+
+**Country is a revealing control here as well as in the payment wizard.** The
+sort code field is **absent** outside the United Kingdom, where the account is
+identified by an international account number alone.
+
+The name is checked against the name the receiving bank holds, using the same
+registry and the same `CP` codes as the payment wizard. **The check runs when
+Save is activated**, not as the fields are typed.
+
+### Amending a payee
+
+**Only the name and the reference can be changed.** The sort code and account
+number are shown as text with **no control at all**, not a disabled one: a payee
+paid into a different account is a different payee.
+
+| Element | `data-testid` |
+|---|---|
+| Name, reference | `input-edit-payee-name`, `input-edit-payee-reference` |
+| The acknowledgement | `input-edit-payee-cop-confirm` |
+| The account, as text | `edit-sort`, `edit-number` |
+| Save | `btn-save-amend` |
+
+**Changing the name restarts the cooling off period** and runs the name check
+again, because the bank is being told to pay a differently named party.
+**Changing the reference alone does neither.** This is the single most useful
+distinction on the screen to write a requirement against.
+
+### Removing a payee
+
+Removal asks for confirmation inline, in `remove-confirm`, with
+`btn-confirm-remove` and `btn-cancel-remove`. **Nothing is deleted.** The record
+is marked `Removed` so that the payee name on a historic payment still resolves;
+it leaves the list and the payment form, and `btn-show-removed` brings it back
+into view.
+
+A refusal appears in `error-remove` with its code in `remove-code`.
+
+**The same account can be added again after removal.** The duplicate check
+ignores removed payees, and the new payee starts a fresh cooling off period.
 
 ---
 
@@ -508,8 +617,9 @@ a `Moved` badge in `review-date-moved`, not the date typed into the form.
 
 ## 6. PA decision codes
 
-The channel evaluates **twelve rules in a fixed order and returns the first that
-matches**: five rejections, then three step-up triggers, then four acceptances.
+The channel evaluates **eighteen rules in a fixed order and returns the first
+that matches**: eleven rejections, then three step-up triggers, then four
+acceptances.
 
 | Code | Kind | Condition | Reason text |
 |---|---|---|---|
@@ -517,21 +627,30 @@ matches**: five rejections, then three step-up triggers, then four acceptances.
 | PA-T01 | Reject | Acting under an authority that does not cover the chosen account | `You do not hold authority over the account you have chosen.` |
 | PA-T02 | Reject | The authority permits established payees only, and the payee is not established | `This authority allows payments to established payees only.` |
 | PA-T03 | Reject | Above the authority's per-payment limit | `This payment is above the limit set on your authority.` |
+| PA-D07 | Reject | The payee is in its cooling off period | `This payee is still in its cooling off period and cannot be paid yet.` |
 | PA-D01 | Reject | Amount above the available balance on the chosen account | `The available balance on this account is not enough to make this payment.` |
 | PA-D02 | Reject | Faster Payment above 1,000,000.00 | `A Faster Payment cannot be more than 1,000,000.00. Use CHAPS for a higher value.` |
 | PA-D03 | Reject | Standing order instalment above 25,000.00 | `A standing order instalment cannot be more than 25,000.00.` |
 | PA-D04 | Reject | Payee country is Korea (DPR), Iran or Syria | `Payments to this destination country are not available.` |
+| PA-D06 | Reject | Amount plus the day's committed total above the customer's own daily limit, where that is the tighter | `This payment would take you past the daily limit you set yourself.` |
 | PA-D05 | Reject | Amount plus the day's committed total above the customer's daily limit | `This payment would take you past your daily payment limit.` |
 | PA-S01 | Step-up | Amount at or above **500.00** | `This payment is above your step-up limit, so it needs a passcode.` |
 | PA-S02 | Step-up | Payee is not established | `This is your first payment to this payee, so it needs a passcode.` |
 | PA-S03 | Step-up | Payee country is not the United Kingdom | `International payments need a passcode.` |
-| PA-D06 | Reject | Amount plus the day's committed total above the customer's own daily limit, where that is the tighter | `This payment would take you past the daily limit you set yourself.` |
 | PA-A04 | Accept | Payment type is Standing order | `Standing order set up.` |
 | PA-A03 | Accept | CHAPS, dated today, submitted at or after 16:00 | `Submitted after the 16:00 CHAPS cut-off, so this payment is dated the next working day.` |
 | PA-A02 | Accept | Value date is not today, which validation now guarantees for a Scheduled payment | `Scheduled for a future date.` |
 | PA-A01 | Accept | Everything else | `Accepted for execution today.` |
 
 ### Precedence, and what it hides
+
+- **`PA-D07` is evaluated ahead of the balance**, for the same reason the
+  authority rules are: a payee that cannot be paid at all is not a payment
+  worth rating. A 50,000.00 payment from an empty account to a payee in
+  cooling off reports `PA-D07`, not `PA-D01`.
+- **`PA-D06` is evaluated before the step-up triggers.** A payment of
+  5,000.01 against an own limit of 5,000.00 reports `PA-D06`, not `PA-S01`,
+  even though it is far above the step-up threshold.
 
 - **An expired authority reports `PA-T04` and nothing else.** A 5,000.00 payment
   to a payee that is not established, under `AU-0002`, satisfies `PA-T04`,
@@ -569,6 +688,47 @@ payments than before.
 
 A requirement asserting that the recorded outcome code equals the indicative one
 is wrong for every stepped-up payment.
+
+---
+
+## 6a. PY decision codes
+
+Payee management has its own engine and its own prefix. **A `PY` code describes
+something that happened to the payee record, never to a payment.** A requirement
+citing a `PY` code and a `PA` code together is describing two separate events.
+
+The payment wizard never produces a `PY` code: a payee created inside a payment
+is created by that payment and is rated by `PA`.
+
+| Code | Kind | Condition | Reason text |
+|---|---|---|---|
+| PY-R02 | Reject | Sort code or account number not valid for the country | `Enter an account number of eight digits.` and similar |
+| PY-R01 | Reject | An existing payee, not removed, already holds that sort code and account number | `You already have a payee for this account: {name}.` |
+| PY-R03 | Reject | The name check returned `CP-03` | `The name does not match the account. This payee cannot be added.` |
+| PY-R06 | Reject | The name check asked for an acknowledgement and it was not given | `Confirm you have checked the payee's details before continuing.` |
+| PY-A01 | Accept | Payee added, and in cooling off | `Payee added. It can be paid from {time}.` |
+| PY-A02 | Accept | Amendment saved | `Name changed. The cooling off period has restarted.` or `Reference changed.` |
+| PY-R04 | Reject | Removal refused: an active standing order pays this payee | `Standing order {ref} pays this payee. Cancel it first.` |
+| PY-R05 | Reject | Removal refused: a payment to this payee is held | `Payment {ref} to this payee is under review. It must be settled or rejected first.` |
+| PY-A03 | Accept | Payee removed | `Payee removed.` |
+
+**Format is checked before duplication, and the name check runs last.** An
+account number that is both malformed and a duplicate returns `PY-R02`, never
+`PY-R01`, and a duplicate is reported before the name is ever checked.
+
+**`PY-R06` is the same acknowledgement the payment wizard asks for**, raised by
+the same `CP-02` and `CP-03` outcomes, with the tick at
+`input-new-payee-cop-confirm` on the add form and `input-edit-payee-cop-confirm`
+on the amend form. Adding a payee and paying one give the same answer to the
+same question.
+
+**`PY-R03` refuses outright.** In release 2.1 a name the receiving bank
+disputes cannot be added at all, and no acknowledgement is offered. A close
+match still only asks, under `PY-R06`.
+
+**The duplicate check ignores the name.** Two payees are the same when the sort
+code and account number match; the same account under a different spelling is
+the same account.
 
 ---
 
@@ -819,6 +979,7 @@ rule uses *at or above* rather than *above*, the pair below shows it.
 | `PA-T03` authority per-payment limit | 2,500.00 is allowed and reaches step-up | **2,500.01** returns `PA-T03` | Above. In this release 500.00 already triggers step-up, so every authority payment above that figure steps up |
 | `PA-D06` customer's own limit | 5,000.00 is allowed with an own limit of 5,000.00 | **5,000.01** returns `PA-D06` | Above, cumulative |
 | Own limit against the tier limit | 25,000.00 accepted on the Standard tier | **25,000.01** refused on the limits screen | At or below |
+| Cooling off | 11:59 returns `PA-D07` | **12:00** is payable | At or after |
 | Investigation note | 19 characters refused | **20** accepted | At least |
 | Operations release limit | 5,000.00 may be released by Payment Operations | **5,000.01** may not | Above |
 | Sign in lockout | Four failures still allow a sign in | **Five** locks the account | |
@@ -880,6 +1041,9 @@ label based identification breaks across those branches.
 | Acting for, and the authority summary | `input-acting-for`, `authority-summary`, `authority-type` |
 | Payee name check | `cop-outcome`, `cop-code`, `input-cop-confirm`, `error-copConfirmed`, `review-cop` |
 | Payment limits screen | `nav-limits`, `limit-bank`, `limit-own`, `limit-effective`, `input-limit`, `btn-save-limit`, `btn-clear-limit`, `error-limit` |
+| Payee list | `grid-payees`, `row-<id>`, `payee-status-<id>`, `payee-established-<id>`, `payee-available-<id>`, `btn-add-payee`, `btn-show-removed` |
+| Add and amend a payee | `input-new-payee-name`, `input-new-payee-country`, `input-new-payee-sort`, `input-new-payee-number`, `input-new-payee-reference`, `btn-save-payee`, `input-new-payee-cop-confirm`, `input-edit-payee-name`, `input-edit-payee-reference`, `input-edit-payee-cop-confirm`, `edit-sort`, `edit-number`, `btn-save-amend`, `btn-cancel-payee` |
+| Payee outcome, and removal | `payee-outcome`, `payee-code`, `payee-cop`, `btn-edit-<id>`, `btn-remove-<id>`, `remove-confirm`, `btn-confirm-remove`, `btn-cancel-remove`, `error-remove`, `remove-code` |
 | Authority on a payment and a case | `payment-instructed-by`, `case-instructed-by`, `payment-cop`, `case-cop` |
 
 | Field errors | `error-<field key>`, for example `error-amount`, `error-valueDate`, `error-np-sort` |
@@ -945,6 +1109,10 @@ there.
   international payment carries no rate or fee.
 - **No inactivity timeout.** A session ends on sign out or a page reload, never
   on its own.
+- **A removed payee is never deleted.** There is no screen, and no control,
+  that destroys a payee record.
+- **Cooling off is not configurable.** It is two hours for every customer
+  and every payee, and no screen changes it.
 - **An authority cannot be created or amended in the application.** The two
   seeded authorities are fixed, and there is no screen to add a third.
 - **The payee name check is a lookup, not a service.** It returns `CP-04` for
@@ -996,6 +1164,12 @@ there.
   control existed will stop at step 1.
 - **Reset before any journey that touches a limit.** Both the tier limit and the
   customer's own limit count the day's payments cumulatively.
+- **A payee added during a journey cannot be paid in the same journey**
+  unless the clock is moved past the window with `?now=`. This is the
+  commonest way a payee journey fails for a reason that is not a defect.
+- **Leaving the add or amend form abandons what was typed.** Returning to
+  it gives a blank form, so a journey cannot rely on values surviving a
+  trip back to the list.
 - **Read the passcode from `passcode-value`.** It differs per amount.
 - **Take the base URL, usernames and passwords from environment variables.** The
   sign in screen displays the demo credentials, which makes hard coding them
